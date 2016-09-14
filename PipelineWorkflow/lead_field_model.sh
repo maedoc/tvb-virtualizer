@@ -25,7 +25,7 @@ freeview -v $MRI/T1.nii.gz -f ./watershed/*-low -viewport coronal
 #Convert BEM surfaces to BrainVisa format
 for surf in *surface-low
 do
-    python -c “import reconutils; reconutils.convert_fs_to_brain_visa(“$surf”)”
+    python -c "import reconutils; reconutils.convert_fs_to_brain_visa('$surf')"
 done
 
 #Generate and invert head model
@@ -38,7 +38,7 @@ om_minverser ./head.mat ./head-inv.mat # 3m30s
 for h in rh lh
 do
     cp ../surf/$h.pial.fsaverage5 ./cortical-$h
-    python -c “import reconutils; reconutils.convert_fs_to_brain_visa(“cortical-$h”)”
+    python -c "import reconutils; reconutils.convert_fs_to_brain_visa('cortical-$h')"
 done
 
 #Cortical sources surfaces model
@@ -48,7 +48,7 @@ done
 
 #Subcortical volume sources (list of dipoles)
 #TODO:
-python -c “import reconutils; reconutils.gen_subcort_sources()”
+python -c "import reconutils; reconutils.gen_subcort_sources()"
 
 #Subcortical volume sources model
 for h in rh lh

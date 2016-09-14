@@ -22,7 +22,7 @@ do
     for sensors in SEEG EEG MEG
     do
         #TODO
-        python -c “import reconutils; reconutils.parc_gain(“$MRI/$vol”,“./$sensors”)”
+        python -c "import reconutils; reconutils.parc_gain('$MRI/$vol','./$sensors')"
     done
 done
 

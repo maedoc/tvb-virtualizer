@@ -6,7 +6,7 @@ for area in $SUBAPARC_AREA
 do
     for h in lh rh
     do
-        python -c “import reconutils; reconutils.subparc_files(“$h”,“aparc”,“aparc$area”,$area)”
+        python -c "import reconutils; reconutils.subparc_files('$h','aparc','aparc$area',$area)"
         #or equivalently if PYTHONPATH is NOT set:
         #python $CODE/reconutils.py subparc $h aparc aparc$area $area
     done

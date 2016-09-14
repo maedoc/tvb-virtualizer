@@ -17,7 +17,7 @@ then
     #Generate labels for sub-parcellations (LOOP)
     for vol in $vols
     do
-        python -c “import reconutils; reconutils.simple_label_config(“./$vol-in-d.nii.gz”,“/$vol_lbl.nii.gz”)”
+        python -c "import reconutils; reconutils.simple_label_config('./$vol-in-d.nii.gz','/$vol_lbl.nii.gz')"
     done
 
     #Generate track counts and mean track lengths for all parcellations
@@ -41,7 +41,7 @@ else
     mrconvert ./tdi_ends.mif ./tdi_ends.nii
 
     #Label:
-    python -c “import reconutils; reconutils.label_vol_tdi(“./tdi_ends.nii”,“./tdi_lbl.nii”)”
+    python -c "import reconutils; reconutils.label_vol_tdi('./tdi_ends.nii','./tdi_lbl.nii')"
 
     #Generate track counts and mean track lengths
     tck2connectome -assignement_end_voxels ./$STRMLNS_SIFT_NO.tck ./tdilbl.nii ./counts$STRMLNS_SIFT_NO.csv
