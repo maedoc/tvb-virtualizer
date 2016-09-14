@@ -58,7 +58,8 @@ do
 		
 		# copy to src dir
 		cp $trg/surf/$hemi.$sval.$SUBJECT \
-		   $src/surf/$hemi.$sval.$TRGSUBJECT
+		   $src/surf/$hemi.$sval.low
+
 	done
 done
 
@@ -77,8 +78,14 @@ do
 			--hemi $hemi \
 			--sval-annot $src/label/$hemi.$parc.annot \
 			--tval $src/label/$hemi.$TRGSUBJECT.$parc
+
+        mv $src/label/$hemi.$TRGSUBJECT.$parc.annot $src/label/$hemi.low.$parc.annot
+        rm $src/label/$hemi.$TRGSUBJECT.$parc.annot
+
 	done
 done
+
+
 
 # clean up
 rm -r $SUBJECTS_DIR/$SUBJECT-$TRGSUBJECT
