@@ -16,6 +16,11 @@ do
     #aseg2surf etc...
 
     #Create aparc+asseg
-    mri_aparc2aseg --s ${SUBJECT} --aseg aseg$area --annot aparc$area
+    #mri_aparc2aseg --s ${SUBJECT} --aseg aseg$area --annot aparc$area
+    mri_aparc2aseg --s ${SUBJECT} --aseg aseg --annot aparc$area
+
+    #mri_convert $MRI/aparc$area+aseg$area.mgz $MRI/aparc$area+aseg$area.nii.gz --out_orientation RAS -rt nearest
+    mri_convert $MRI/aparc$area+aseg.mgz $MRI/aparc$area+aseg.nii.gz --out_orientation RAS -rt nearest
+
 
 done

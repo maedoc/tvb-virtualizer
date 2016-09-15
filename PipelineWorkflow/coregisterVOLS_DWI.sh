@@ -11,7 +11,7 @@ for vol in $vols
 do
 
     #Not really necessary if we have already created .nii.gz files at each previous step:
-    mri_convert $MRI/$vol.mgz $MRI/$vol.nii.gz --out_orientation RAS -rt nearest
+    #mri_convert $MRI/$vol.mgz $MRI/$vol.nii.gz --out_orientation RAS -rt nearest
 
     fslreorient2std $MRI/$vol.nii.gz $MRI/$vol-reo.nii.gz
     mv $MRI/$vol-reo.nii.gz $MRI/$vol.nii.gz

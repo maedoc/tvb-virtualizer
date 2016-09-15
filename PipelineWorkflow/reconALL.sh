@@ -34,7 +34,7 @@ fi
 
 #This could be made already here:
 #Generate nifti file with good orientation
-#mri_convert $MRI/aparc+aseg.mgz $MRI/aparc+aseg.nii.gz --out_orientation RAS -rt nearest
+mri_convert $MRI/aparc+aseg.mgz $MRI/aparc+aseg.nii.gz --out_orientation RAS -rt nearest
 
 #TODO: Visual checks for brain, pial, white, aparc+asseg
 #
