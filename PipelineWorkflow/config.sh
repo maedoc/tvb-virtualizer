@@ -3,24 +3,68 @@
 #Configuration common for all processing streams:
 
 #Subject codename, to be the name of the respective folder as well
-SUBJECT=BARI
+SUBJECT=JUNG
 export SUBJECT
 echo $SUBJECT
-#SUBJECT=BARI ./script
+#SUBJECT=JUNG ./script
 
 #Maybe make a copy of freesurfer subjects’ directory for each subject
+# copy target to avoid modifying it
+CURRENT_SUBJECTS_DIR=/Users/dionperd/CBR/VEP/$SUBJECT
+if [ ! -d $CURRENT_SUBJECTS_DIR ]
+then
+    mkdir CURRENT_SUBJECTS_DIR
+fi
+
+SUBJS=fsaverage5
+for s in $SUBJS
+do
+    if [ ! -d $CURRENT_SUBJECTS_DIR/$s ]
+    then
+        cp -r $SUBJECTS_DIR/$s $CURRENT_SUBJECTS_DIR
+    fi
+done
+SUBJECTS_DIR=$CURRENT_SUBJECTS_DIR
+export SUBJECTS_DIR
+echo $SUBJECTS_DIR
+
 #The path to the subject's folder
 SUBJ_DIR=$SUBJECTS_DIR/$SUBJECT
 export SUBJ_DIR
 echo $SUBJ_DIR
 
 #The path to the input data
-DATA=/Users/dionperd/VirtualVEP/subjects/BARI/data
+DATA=/Volumes/datasets/MRS/JUNG
 export DATA
 echo $DATA
 
+#The path to T1
+T1=$DATA/T1 #or $DATA/T1/T1_raw.nii.gz for nifti format
+export T1
+echo $T1
+
+#The path to T2
+T2=$DATA/T2 #or $DATA/T2/T2_raw.nii.gz for nifti format
+export T2
+echo $T2
+
+#The path to FLAIR
+FLAIR=$DATA/FLAIR #or $DATA/FLAIR/flair_raw.nii.gz for nifti format
+export FLAIR
+echo $FLAIR
+
+#The path to DWI
+DWI=$DATA/DWI #or $DATA/DWI/dwi_raw.nii.gz for nifti format
+export DWI
+echo $DWI
+
+#The path to CT
+CT=$DATA/CT/CT.nii.gz
+export CT
+echo $CT
+
 #The path to the pipeline code
-CODE=/Users/dionperd/VirtualVEP/software/bnm-recon-tools/PipelineWorkflow
+CODE=/Users/dionperd/CBR/software/git/bnm-recon-tools/PipelineWorkflow
 export CODE
 echo $CODE
 
@@ -31,6 +75,10 @@ echo $PYTHONPATH
 
 #DMR folder location:
 DMR=$SUBJ_DIR/dmr
+if [ ! -d $DMR ]
+then
+    mkdir $DMR
+fi
 export DMR
 echo $DMR
 
@@ -43,6 +91,7 @@ echo $MRI
 BEM=$SUBJ_DIR/bem
 export BEM
 echo $BEM
+
 
 #Freesurfer:
 
@@ -93,8 +142,8 @@ echo $DWI_INPUT_FRMT
 
 #Reversed scanning?
 DWI_REVERSED=no #yes
-export DWI_INPUT_FRMT
-echo $DWI_INPUT_FRMT
+export DWI_REVERSED
+echo $DWI_REVERSED
 
 #Scanning direction
 DWI_PE_DIR=ap
@@ -137,5 +186,10 @@ export TRCT_VXL_EDGE
 echo $TRCT_VXL_EDGE
 
 
+#Lead fields:
+#Format of input
+CT_INPUT_FRMT=nifti #or nifti
+export CT_INPUT_FRMT
+echo $CT_INPUT_FRMT
 
 

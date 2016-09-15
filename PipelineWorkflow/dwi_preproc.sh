@@ -2,20 +2,19 @@
 
 #DWI preprocessing
 
-#Make dwi folder and push dir there
-mkdir $DMR
+#Push dir to dwi folder
 pushd $DMR
+echo debug
+echo $DWI
 
 if [ "$DWI_REVERSED" = "no" ]
 then
-    if [ "$DWI_INPUT_FRMT" = "dicom" ]
-    then
-        #Convert dicoms to .mif
-        mrconvert $DATA/DWI ./dwi_raw.mif
-    fi
+
+    #Convert dicoms or nifti to .mif
+    mrconvert $DWI ./dwi_raw.mif
 
     #Preprocess with eddy correct (no topup applicable here)
-    #ap direction doesn’t matter in this case of NOT reversed
+    #ap direction doesn’t matter in this case if NOT reversed
     dwipreproc $DWI_PE_DIR ./dwi_raw.mif ./dwi.mif -rpe_none -nthreads $MRTRIX_THRDS
 
 else

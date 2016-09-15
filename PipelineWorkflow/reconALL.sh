@@ -3,30 +3,33 @@
 #T1 input pre-processing
 if [ "$T1_INPUT_FRMT" = "dicom" ]
 then
-    mrconvert $DATA/T1 $DATA/t1_raw.nii.gz
+    mrconvert $T1 $T1/t1_raw.nii.gz
+    T1=$T1/t1_raw.nii.gz
 fi
 #ENDIF
 
 #Freesurfer T1 processing
-recon-all -s ${SUBJECT} -i $DATA/t1_raw.nii.gz -all -parallel -openmp $OPENMP_THRDS
+recon-all -s ${SUBJECT} -i $T1 -all -parallel -openmp $OPENMP_THRDS
 
 #Additional processing if T2 and/or FLAIR is available
 if [ "$T2_FLAG" = "yes" ]
 then
     if [ "$T2_INPUT_FRMT" = "dicom" ]
     then
-        mrconvert $DATA/T2 $DATA/t2_raw.nii.gz
+        mrconvert $T2 $T2/t2_raw.nii.gz
+        T2=$T2/t2_raw.nii.gz
     fi
-    recon-all s ${SUBJECT} -T2 $DATA/t2_raw.nii.gz -T2pial -autorecon3 -parallel -openmp $OPENMP_THRDS
+    recon-all s ${SUBJECT} -T2 $T2 -T2pial -autorecon3 -parallel -openmp $OPENMP_THRDS
 fi
 
 if [ "$FLAIR_FLAG" = "yes" ]
 then
     if [ "$FLAIR_INPUT_FRMT" = "dicom" ]
     then
-        mrconvert $DATA/FLAIR $DATA/flair_raw.nii.gz
+        mrconvert $FLAIR $FLAIR/flair_raw.nii.gz
+        FLAIR=$FLAIR/flair_raw.nii.gz
     fi
-    recon-all s ${SUBJECT} -FLAIR $DATA/flair_raw.nii.gz -FLAIRpial -autorecon3 -parallel -openmp $OPENMP_THRDS
+    recon-all s ${SUBJECT} -FLAIR $FLAIR -FLAIRpial -autorecon3 -parallel -openmp $OPENMP_THRDS
 fi
 
 #This could be made already here:
