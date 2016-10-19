@@ -1,31 +1,41 @@
 # -*- coding: utf-8 -*-
 
 import os
+from enum import Enum
 from Pegasus.DAX3 import File
 from bnm.recon.pegasus.utils import get_logger, OUTPUT_FOLDER
 
-KEY_SUBJECT = "subject"
-KEY_THREADS = "open.mp.threads"
-KEY_THREADS_MRTRIX = "mrtrix.threads"
 
-# Flow parameters --> These will influence the DAX generation
-KEY_T1_INPUT_FRMT = "t1.format"
-KEY_T2_FLAG = "t2.flag"
-KEY_T2_INPUT_FRMT = "t2.format"
-KEY_FLAIR_FLAG = "flair.flag"
-KEY_FLAIR_INPUT_FRMT = "flair.format"
-KEY_DWI_IS_REVERSED = "dwi.is.reversed"
-KEY_DWI_INPUT_FRMT = "dwi.format"
-KEY_DWI_SCAN_DIRECTION = "dwi.scan.direction"
+class Env(Enum):
+    SUBJECT = "${SUBJECT_NAME}"
+    THREADS = "${OPENMP_THRDS}"
+    THREADS_MRTRIX = "{MRTRIX_THRDS}"
 
-# Placeholders that need to be defined in rc.txt when execution submit will be done
-RC_T1 = "T1"
-RC_T2 = "T2"
-RC_FLAIR = "FLAIR"
-RC_DWI = "DWI"
-RC_MRI = "MRI"
-RC_MRI_ASEG_MGZ = "MRI_aparc_aseg.mgz"
-RC_MRI_T1_MGZ = "MRI_T1.mgz"
+
+class ConfigKey(Enum):
+    """
+    Flow parameters --> These will influence the DAX generation
+    """
+    T1_INPUT_FRMT = "t1.format"
+    T2_FLAG = "t2.flag"
+    T2_INPUT_FRMT = "t2.format"
+    FLAIR_FLAG = "flair.flag"
+    FLAIR_INPUT_FRMT = "flair.format"
+    DWI_IS_REVERSED = "dwi.is.reversed"
+    DWI_INPUT_FRMT = "dwi.format"
+    DWI_SCAN_DIRECTION = "dwi.scan.direction"
+
+
+class RC(Enum):
+    """
+    Replica Catalog keys.
+    Placeholders that need to be defined in rc.txt when execution submit will be done
+    """
+    T1 = "T1"
+    T2 = "T2"
+    FLAIR = "FLAIR"
+    DWI = "DWI"
+
 
 LOGGER = get_logger(__name__)
 
@@ -54,9 +64,8 @@ class SubtypeConfiguration(object):
 
 class MRIConfiguration(object):
     def __init__(self):
-        self.mri_folder = File(RC_MRI)
-        self.aseg_mgz_file = File(RC_MRI_ASEG_MGZ)
-        self.t1_mgz_file = File(RC_MRI_T1_MGZ)
+        self.aseg_mgz_file = File("aparc+aseg.mgz")
+        self.t1_mgz_file = File("t1.mgz")
         self.aseg_nii_file = File("aparc+aseg.nii.gz")
         self.t1_nii_file = File("t1-mri.nii.gz")
         self.d2t_file = File("d2t.mat")
@@ -66,7 +75,7 @@ class MRIConfiguration(object):
 
 
 class DiffusionConfiguration(SubtypeConfiguration):
-    def __init__(self, folder_path, file_format="", is_reversed=False, scan_direction="ap", threads=2):
+    def __init__(self, folder_path, file_format="", is_reversed=False, scan_direction="ap", threads="2"):
         super(DiffusionConfiguration, self).__init__(folder_path, file_format=file_format,
                                                      prefix=SubtypeConfiguration.DWI)
         self.is_dwi_reversed = is_reversed
@@ -90,17 +99,17 @@ class Configuration(object):
         LOGGER.info("Parsing patient configuration file %s" % config_file)
         props = self._parse_properties(config_file)
 
-        self.subject_name = props[KEY_SUBJECT]
-        self.number_of_threads = props[KEY_THREADS]
+        self.subject_name = Env.SUBJECT.value
+        self.number_of_threads = Env.THREADS.value
 
-        self.t1 = SubtypeConfiguration(RC_T1, props[KEY_T1_INPUT_FRMT], prefix=SubtypeConfiguration.T1)
-        self.t2 = SubtypeConfiguration(RC_T2, props[KEY_T2_INPUT_FRMT],
-                                       bool(props[KEY_T2_FLAG]), SubtypeConfiguration.T2)
-        self.flair = SubtypeConfiguration(RC_FLAIR, props[KEY_FLAIR_INPUT_FRMT],
-                                          bool(props[KEY_FLAIR_FLAG]), SubtypeConfiguration.FLAIR)
-        self.diffusion = DiffusionConfiguration(RC_DWI, props[KEY_DWI_INPUT_FRMT],
-                                                bool(props[KEY_DWI_IS_REVERSED]), props[KEY_DWI_SCAN_DIRECTION],
-                                                props[KEY_THREADS_MRTRIX])
+        self.t1 = SubtypeConfiguration(RC.T1.value, props[ConfigKey.T1_INPUT_FRMT], prefix=SubtypeConfiguration.T1)
+        self.t2 = SubtypeConfiguration(RC.T2.value, props[ConfigKey.T2_INPUT_FRMT],
+                                       bool(props[ConfigKey.T2_FLAG]), SubtypeConfiguration.T2)
+        self.flair = SubtypeConfiguration(RC.FLAIR.value, props[ConfigKey.FLAIR_INPUT_FRMT],
+                                          bool(props[ConfigKey.FLAIR_FLAG]), SubtypeConfiguration.FLAIR)
+        self.diffusion = DiffusionConfiguration(RC.DWI.value, props[ConfigKey.DWI_INPUT_FRMT],
+                                                bool(props[ConfigKey.DWI_IS_REVERSED]),
+                                                props[ConfigKey.DWI_SCAN_DIRECTION], Env.THREADS_MRTRIX.value)
         self.mri = MRIConfiguration()
 
     @staticmethod
@@ -110,7 +119,11 @@ class Configuration(object):
             for line in f:
                 if line.startswith("#") or len(line) < 3 or line.index("=") < 0:
                     continue
-                values = line.split("=")
-                result_dict[values[0]] = values[1].strip()
+                key_str, value = line.split("=")
+                try:
+                    key = ConfigKey(key_str)
+                except KeyError:
+                    raise Exception('Invalid property key %r in file %r.' % (key_str, config_file))
+                result_dict[key] = value.strip()
         LOGGER.debug("Read patient configuration %s" % result_dict)
         return result_dict

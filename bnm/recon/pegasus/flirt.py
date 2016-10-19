@@ -12,7 +12,7 @@ def step_coregister_t1_dwi(main_dax, config, relevant_t1_job, relevant_dwi_job):
     job1 = Job(name="mri_convert", node_label="Convert T1 to NIFTI with good orientation")
     job1.addArguments(config.mri.t1_mgz_file, config.mri.t1_nii_file, "--out_orientation", "RAS", "-rt", "nearest")
     job1.uses(config.mri.t1_mgz_file, link=Link.INPUT)
-    job1.uses(config.mri.t1_nii_file, link=Link.OUTPUT, transfer=False, register=False)
+    job1.uses(config.mri.t1_nii_file, link=Link.OUTPUT, transfer=True, register=False)
 
     job2 = Job(name="flirt", node_label="Register DWI to T1 and get the relevant transform")
     job2.addArguments("-in", config.diffusion.b0, "-ref", config.mri.t1_nii_file, "-omat", config.mri.d2t_file,
@@ -20,13 +20,13 @@ def step_coregister_t1_dwi(main_dax, config, relevant_t1_job, relevant_dwi_job):
                       "-searchry", "-180", "180", "-searchrz", "-180", "180", "-cost", "mutualinfo")
     job2.uses(config.diffusion.b0, link=Link.INPUT)
     job2.uses(config.mri.t1_nii_file, link=Link.INPUT)
-    job2.uses(config.mri.d2t_file, link=Link.OUTPUT, transfer=False, register=False)
-    job2.uses(config.mri.b0_in_t1_file, link=Link.OUTPUT, transfer=False, register=False)
+    job2.uses(config.mri.d2t_file, link=Link.OUTPUT, transfer=True, register=False)
+    job2.uses(config.mri.b0_in_t1_file, link=Link.OUTPUT, transfer=True, register=False)
 
     job3 = Job(name="convert_xfm", node_label="Generate inverse transform from T1 to DWI")
     job3.addArguments("-omat", config.mri.t2d_file, "-inverse", config.mri.d2t_file)
     job3.uses(config.mri.d2t_file, link=Link.INPUT)
-    job3.uses(config.mri.t2d_file, link=Link.OUTPUT, transfer=False, register=False)
+    job3.uses(config.mri.t2d_file, link=Link.OUTPUT, transfer=True, register=False)
 
     job4 = Job(name="flirt", node_label="Apply inverse transform from T1 to DWI")
     job4.addArguments("-applyxfm", "-in", config.mri.t1_nii_file, "-ref", config.diffusion.b0,
@@ -34,7 +34,7 @@ def step_coregister_t1_dwi(main_dax, config, relevant_t1_job, relevant_dwi_job):
     job4.uses(config.mri.t1_nii_file, link=Link.INPUT)
     job4.uses(config.diffusion.b0, link=Link.INPUT)
     job4.uses(config.mri.t2d_file, link=Link.INPUT)
-    job4.uses(config.mri.t1_in_d_file, link=Link.OUTPUT, transfer=False, register=False)
+    job4.uses(config.mri.t1_in_d_file, link=Link.OUTPUT, transfer=True, register=False)
 
     main_dax.addJob(job1)
     main_dax.addJob(job2)

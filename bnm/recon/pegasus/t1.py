@@ -15,7 +15,7 @@ def _step_recon_all(main_dax, previous_job, main_config, subtype_config):
         job1.addArguments(subtype_config.folder, subtype_config.raw_nii_file, "--out_orientation", "RAS", "-rt",
                           "nearest")
         job1.uses(subtype_config.folder, link=Link.INPUT)
-        job1.uses(subtype_config.raw_nii_file, link=Link.OUTPUT, transfer=False, register=False)
+        job1.uses(subtype_config.raw_nii_file, link=Link.OUTPUT, transfer=True, register=False)
         subtype_config.main_data = subtype_config.raw_nii_file
 
         main_dax.addJob(job1)
@@ -30,8 +30,8 @@ def _step_recon_all(main_dax, previous_job, main_config, subtype_config):
         job2.addArguments("-s", main_config.subject_name, "-i", subtype_config.main_data, "-all",
                           "-parallel", "-openmp", main_config.number_of_threads)
         # TODO see if these can work for implicit job dependency generation
-        # job2.uses(main_config.mri.mri_folder, link=Link.OUTPUT)
-        # job2.uses(main_config.mri.t1_mgz_file, link=Link.OUTPUT, register=True)
+        job2.uses(main_config.mri.aseg_mgz_file, link=Link.OUTPUT, transfer=True)
+        job2.uses(main_config.mri.t1_mgz_file, link=Link.OUTPUT, transfer=True)
     else:
         LOGGER.debug("recon-all steps for " + subtype_config.prefix)
         job2.addArguments("-s", main_config.subject_name, "-" + subtype_config.prefix.upper(), subtype_config.main_data,
@@ -59,7 +59,7 @@ def steps_recon_all(main_dax, config):
     mri_job.addArguments(config.mri.aseg_mgz_file, config.mri.aseg_nii_file, "--out_orientation", "RAS",
                          "-rt", "nearest")
     mri_job.uses(config.mri.aseg_mgz_file, link=Link.INPUT)
-    mri_job.uses(config.mri.aseg_nii_file, link=Link.OUTPUT, transfer=False, register=False)
+    mri_job.uses(config.mri.aseg_nii_file, link=Link.OUTPUT, transfer=True, register=False)
 
     main_dax.addJob(mri_job)
     main_dax.depends(mri_job, last_job)
