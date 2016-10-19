@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
+import os
 
-import numpy
 import matplotlib.pyplot as pyplot
-from mpl_toolkits.mplot3d import Axes3D
-import meshcut
+from mpl_toolkits.mplot3d import proj3d
+
 
 class ImageWriter(object):
     # TODO possible: Validate target path
     # maybe create missing folder
     # get nextName
+
+    # def __init__(self):
+    #     snapshot_directory = int(os.environ['FIGS'])
+    #     if snapshot_directory is not None:
+    #         if not os.path.isdir(snapshot_directory):
+
+
 
     def write_matrix(self, matrix, result_name):
         pyplot.matshow(matrix, cmap=pyplot.gray())
@@ -21,19 +28,38 @@ class ImageWriter(object):
         pyplot.savefig(result_name, bbox_inches='tight', pad_inches=0.0)
 
     def write_3_matrices(self, matrix_background, matrix_overlap_1, matrix_overlap_2, result_name):
-        pyplot.savefig(result_name)
+        pyplot.imshow(matrix_background, cmap="gray")
+        pyplot.imshow(matrix_overlap_1, cmap="hot", alpha=0.3)
+        pyplot.imshow(matrix_overlap_2, cmap="jet", alpha=0.5)
+        pyplot.axis('off')
+        pyplot.savefig(result_name, bbox_inches='tight', pad_inches=0.0)
 
-    def write_surf(self, surf_matrix, result_name):
-        x = surf_matrix[:,0]
-        y = surf_matrix[:,1]
-        z = surf_matrix[:,2]
+
+    def write_surface_with_annotation(self, surface, annot, shade_surface, result_name):
+        x = surface.vertices[:, 0]
+        y = surface.vertices[:, 1]
+        z = surface.vertices[:, 2]
+
         fig=pyplot.figure()
+
         ax=fig.gca(projection='3d')
-        ax.plot_surface(x,y,z,rstride=3, cstride=3, cmap="hot")
-        #Axes3D.plot3D(surf_matrix[:,0], surf_matrix[:,1])
-        # pyplot.setp(f, color='r', linewidth=2)
-        #pyplot.imshow(surf_matrix, alpha=0.3)
-        #pyplot.axis('off')
+        ax.set_xlim3d(-120, 60)
+        ax.set_ylim3d(-120, 120)
+        ax.set_zlim3d(-60, 120)
+        ax.view_init(elev=7, azim=176)
+        ax.dist = 4
+
+        face_colors = annot.face_colors(surface.triangles)
+
+        
+        normals = surface.compute_normals()
+        face_colors = ax._shade_colors(face_colors, normals)
+
+        poly_line = ax.plot_trisurf(x, y, z, triangles=surface.triangles)
+        poly_line.set_edgecolor(face_colors)
+        poly_line.set_facecolor(face_colors)
+
+        pyplot.axis('off')
         pyplot.savefig(result_name)
 
 

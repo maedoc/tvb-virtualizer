@@ -23,6 +23,7 @@ class Volume(object):
         return self.data[:,index]
 
     def align(self, projection, ras):
+        # TODO align diffusion images  which are smaller
         ras_current_point = [0 for x in range(3)]
 
         if projection == sagittal:
@@ -38,8 +39,8 @@ class Volume(object):
             ras_index_1 = 0
             ras_index_2 = 1
 
-        voxel_volume_center = (numpy.array(self.dims)) / 2
-        ras_new_center = self.affine_matrix.dot(list(voxel_volume_center) + [1])
+        volume_center_voxel = (numpy.array(self.dims[:3])) / 2
+        ras_new_center = self.affine_matrix.dot(list(volume_center_voxel) + [1])
         ras_new_center = map(int, ras_new_center)
         aligned_data = [[0 for x in range(self.dims[ras_index_1])] for y in range(self.dims[ras_index_2])]
 

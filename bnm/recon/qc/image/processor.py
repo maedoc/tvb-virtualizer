@@ -3,6 +3,7 @@
 import os
 
 from bnm.recon.snapshot.image.writer import ImageWriter
+from bnm.recon.snapshot.parser.annotation import AnnotationParser
 from bnm.recon.snapshot.parser.generic import GenericParser
 from bnm.recon.snapshot.parser.surface import SurfaceParser
 from bnm.recon.snapshot.parser.volume import VolumeParser
@@ -17,6 +18,7 @@ class ImageProcessor(object):
         self.parser_volume = VolumeParser()
         self.parser_surface = SurfaceParser()
         self.generic_parser = GenericParser()
+        self.annotation_parser = AnnotationParser()
         self.writer = ImageWriter()
         self.snapshot_count = int(os.environ['SNAPSHOT_NUMBER'])
 
@@ -53,9 +55,10 @@ class ImageProcessor(object):
             self.writer.write_3_matrices(background_matrix, overlay_1_matrix, overlay_2_matrix, self._new_name(i))
 
 
-    def overlap_surface_annotation(self, surface_path, annot):
+    def overlap_surface_annotation(self, surface_path, annotation):
+        annot = self.annotation_parser.parse(annotation)
         surface = self.parser_surface.parse(surface_path)
-        # TODO
+        self.writer.write_surface_with_annotation(surface, annot, self._new_name('surf'))
 
 
     def overlap_volume_surface(self, volume_background, surface_path):
@@ -66,8 +69,7 @@ class ImageProcessor(object):
         ras = self.generic_parser.get_ras_coordinates()
         for i in projections:
             background_matrix = volume.align(i, ras)
-            x_array = surface.get_x_array(i, ras)
-            y_array = surface.get_y_array(i, ras)
+            x_array, y_array = surface.get_x_y_array(i, ras)
             self.writer.write_matrix_and_surface(background_matrix, x_array, y_array, self._new_name(i))
 
 
@@ -83,8 +85,7 @@ class ImageProcessor(object):
             for k in ('rh', 'lh'):
                 for j in ('pial', 'white'):
                     current_surface = self.parser_surface.parse(surfaces_path + '/' + k + '.' + j + resampled_name + '.gii')
-                    surf_x_array = current_surface.get_x_array(i, ras)
-                    surf_y_array = current_surface.get_y_array(i, ras)
+                    surf_x_array, surf_y_array = current_surface.get_x_y_array(i, ras)
                     self.writer.write_matrix_and_surfaces(background_matrix, surf_x_array, surf_y_array, clear_flag, j, self._new_name(i))
                     clear_flag = 'false'
 
