@@ -9,10 +9,13 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='bnm',
+    name="bnm",
+    description="Brain Network Models - Reconstruction tool from structural MR scans",
     packages=find_packages(),
     version="1.0",
-    author="BNM Team"
+    license="Apache 2.0",
+    author="BNM Team",
+    install_requires=["numpy", "nibabel", "matplotlib", "meshcut", "Pegasus"]
 )
 
 shutil.rmtree('bnm.egg-info', True)

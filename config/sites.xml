@@ -1,32 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitecatalog xmlns="http://pegasus.isi.edu/schema/sitecatalog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://pegasus.isi.edu/schema/sitecatalog http://pegasus.isi.edu/schema/sc-4.1.xsd" version="4.1">
+             xsi:schemaLocation="http://pegasus.isi.edu/schema/sitecatalog http://pegasus.isi.edu/schema/sc-4.1.xsd"
+             version="4.1">
 
     <!-- The local site contains information about the submit host -->
-    <site handle="local" arch="x86_64" os="MACOSX">
+    <site handle="local" arch="x86_64" os="${OS}">
         <!-- This is where intermediate data will be stored -->
-        <directory type="shared-scratch" path="/opt/pegasus-home/diamond-demo/scratch">
-            <file-server operation="all" url="file:///opt/pegasus-home/diamond-demo/scratch"/>
+        <directory type="shared-scratch" path="${PEGASUS_HOME}/scratch">
+            <file-server operation="all" url="file://${PEGASUS_HOME}/scratch"/>
         </directory>
         <!-- This is where output data will be stored -->
-        <directory type="shared-storage" path="/opt/pegasus-home/diamond-demo/output">
-            <file-server operation="all" url="file:///opt/pegasus-home/diamond-demo/output"/>
+        <directory type="shared-storage" path="${PEGASUS_HOME}/output">
+            <file-server operation="all" url="file://${PEGASUS_HOME}/output"/>
         </directory>
     </site>
 
-    <site handle="condorpool" arch="x86_64" os="MACOSX">
+    <site handle="condorpool" arch="x86_64" os="${OS}">
         <!-- These profiles tell Pegasus that the site is a plain Condor pool -->
         <profile namespace="pegasus" key="style">condor</profile>
         <profile namespace="condor" key="universe">vanilla</profile>
 
-
-
-       <!-- This profile tells Pegasus to create two clustered jobs
-            per level of the workflow, when horizontal clustering is
-            enabled -->
-	<profile namespace="pegasus" key="clusters.num" >2</profile>
-
+        <!-- This profile tells Pegasus to create two clustered jobs
+             per level of the workflow, when horizontal clustering is enabled -->
+        <profile namespace="pegasus" key="clusters.num">2</profile>
     </site>
-
 
 </sitecatalog>
