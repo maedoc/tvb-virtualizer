@@ -64,12 +64,11 @@ def sample_vol_on_surf(surf_path,vol_path,annot_path,out_surf_path,cras_path, ct
 def subparc_files(surf_path, annot_path, out_annot_parc_name, trg_area):
     subparcelatioService.subparc_files(surf_path, annot_path, out_annot_parc_name, trg_area)
 
-def connectivity_geodesic_subparc(surf_path,annot_path,con_verts_idx,out_annot_path=None,
-                                  parc_area=100, labels=None, hemi=None, ctx=None, mode="con+geod+adj",
-                                  cras_path=None,ref_vol_path=None, consim_path=None,
-                                  lut_path=os.path.join(FREESURFER_HOME,'FreeSurferColorLUT.txt')):
-   subparcelatioService.connectivity_geodesic_subparc(surf_path, annot_path, con_verts_idx, out_annot_path, parc_area,
-                                                      labels, hemi, ctx, mode, cras_path, ref_vol_path, consim_path, lut_path)
+def connectivity_geodesic_subparc(self, surf_path, annot_path, con_verts_idx, out_annot_path=None,
+                                      labels=None, hemi=None, ctx=None,
+                                      parc_area=100, con_sim_aff=1.0, geod_dist_aff=1.0, structural_connectivity_constraint=True,
+                                      cras_path=None, ref_vol_path=None, consim_path=None,
+                                      lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
 
 def node_connectivity_metric(con_mat_path,metric="cosine", out_consim_path=None):
     subparcelatioService.node_connectivity_metric(con_mat_path, metric, out_consim_path)
