@@ -16,6 +16,7 @@ import numpy as np
 
 #Inputs:
 surf='lh.aseg'
+labels=ASEG_LIST_lh
 surf_path=os.path.join(os.environ['SURF'], surf)
 annot_path=os.path.join(os.environ['LABEL'], surf+'.annot')
 con_verts_idx = os.path.join(os.environ['SEGMENT'], surf+'-mask-idx.npy')
@@ -35,7 +36,7 @@ consim_path=os.path.join(os.environ['SEGMENT'], 'consim-vol-counts5M-v3.npy')
 
 subaparc_service=subaparc.SubparcellationService()
 subaparc_service.connectivity_geodesic_subparc(surf_path, annot_path, con_verts_idx, out_annot_path,
-                                      labels=None, hemi='lh', ctx=None,
+                                      labels=labels, hemi=None, ctx=None,
                                       parc_area=parc_area, con_sim_aff=con_sim_aff, geod_dist_aff=geod_dist_aff,
                                        structural_connectivity_constraint=structural_connectivity_constraint,
                                       cras_path=cras_path, ref_vol_path=ref_vol_path, consim_path=consim_path,
