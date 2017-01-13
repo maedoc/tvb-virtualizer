@@ -313,14 +313,14 @@ class SubparcellationService(object):
             # Get all different (dis)connected components
             n_components, components, comp_area = self.connected_surface_components(verts_lbl,faces_lbl, dist,mask=iv_con)
             n_components=len(comp_area)
-            print str(n_components)+" connected components in total of "+comp_area+"mm2 area, respectively"
+            print str(n_components)+" connected components in total of "+str(comp_area)+" mm2 area, respectively"
             n_parcels=0
             parcels=-numpy.ones(components.shape,dtype='i')
             too_small_parcels=dict()
             for iC in range(n_components):
                 i_comp_verts = components == iC
                 n_comp_verts=numpy.sum(i_comp_verts)
-                print "Treating connected surface component "+str(iC)+" of area "+str(comp_area[iC])+"mm2"
+                print "Treating connected surface component "+str(iC)+" of area "+str(comp_area[iC])+" mm2"
                 if comp_area[iC]<=1.5*parc_area:
                     if comp_area[iC]>=0.1*[parc_area]:
                         parcels[i_comp_verts] = n_parcels
