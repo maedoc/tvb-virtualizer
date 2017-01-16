@@ -15,6 +15,9 @@ from bnm.recon.algo.service.surface import SurfaceService
 from bnm.recon.algo.service.volume import VolumeService
 from bnm.recon.model.annotation import Annotation
 
+MIN_PARC_AREA_RATIO = 0.1
+MAX_PARC_AREA_RATIO = 1.5
+
 class SubparcellationService(object):
     def __init__(self):
         self.annotation_service = AnnotationService()
@@ -188,16 +191,76 @@ class SubparcellationService(object):
         # Convert them to normalized distances and return them
         return geodist/max_gdist
 
-    # This function clusters the nodes of a mesh, using hiearchical clustering,
+    # This function clusters the nodes of a mesh, using hierarchical clustering,
     # an affinity matrix, and connectivity constraints
-    def run_clustering(self,affinity,parc_area,connectivity=None):
-        model = AgglomerativeClustering(affinity="precomputed", connectivity=connectivity, linkage='average')
-        model.fit(affinity)
+    def run_clustering(self,affinity,parc_area,verts,faces,iv_con,connectivity=None):
+        #Total number of vertices to cluster:
+        n_verts = verts.shape[0]
+        #Initialize
+        #number of resulting clusters:
+        n_clusters = -1
+        # number of too small clusters to be assigned to other clusters:
+        n_too_small = -1
+        # the cluster indexes:
+        clusters=-numpy.ones((n_verts,))
+        # a list of masks for vertices to further cluster:
+        verts2cluster=[]
+        verts2cluster.append(numpy.ones((n_verts,)).astype('bool'))
+        # a list of masks for vertices of too small clusters:
+        too_small = []
+        # a list of affinities to further cluster:
+        affinity2cluster=[]
+        affinity2cluster.append(affinity)
+        if connectivity is not None:
+            # a list of connectivities to further cluster:
+            connectivity2cluster = []
+            connectivity2cluster.append(connectivity)
+        #Threshold for too small cluster
+        min_parc_area=MIN_PARC_AREA_RATIO*parc_area
+        #Threshold for acceptance of a cluster
+        max_parc_area = MAX_PARC_AREA_RATIO * parc_area
+        while len(verts2cluster)>0:
+            this_affinity=affinity2cluster.pop(0)
+            these_verts=verts2cluster.pop(0)
+            if connectivity is not None:
+                this_connectivity = connectivity2cluster.pop(0)
+                model = AgglomerativeClustering(affinity="precomputed", connectivity=this_connectivity, linkage='average')
+                model.fit(this_affinity)
+                these_clusters=model.labels_
+                for ic in range(2):
+                    subcluster_mask = numpy.logical_and(these_verts,these_clusters==ic)
+                    (this_verts, this_faces) = self.surface_service.extract_subsurf(verts, faces, subcluster_mask)
+                    this_lbl_area = self.compute_surface_area(this_verts, this_faces, iv_con[subcluster_mask])
+                    if this_lbl_area>min_parc_area and this_lbl_area<max_parc_area:
+                        n_clusters+=1
+                        clusters[subcluster_mask]=n_clusters
+                    elif this_lbl_area<min_parc_area:
+                        n_too_small += 1
+                        too_small.append(numpy.array(subcluster_mask))
+                    else:
+                        verts2cluster.append(numpy.array(subcluster_mask))
+                        affinity2cluster.append(affinity[subcluster_mask,:][:,subcluster_mask])
+                        if connectivity is not None:
+                            connectivity2cluster = \
+                                connectivity2cluster.append(connectivity[subcluster_mask,:][:,subcluster_mask])
+        cluster_labels=numpy.unique(clusters[clusters>-1])
+        for isc in range(n_too_small):
+            these_verts=too_small[isc]
+            mindist = 1000.0  # this is 1 meter long!
+            assign_to_cluster = -1
+            for iC in cluster_labels:
+                # TODO??!!: Alternatively, we could minimize the mean pacel distance with numpy. mean(.) here...
+                temp_dist = numpy.min(cdist(verts[these_verts, :], verts[clusters == ic, :], 'euclidean'),
+                                      axis=None)
+                if temp_dist < mindist:
+                    mindist = temp_dist
+                    assign_to_cluster = ic
+            clusters[these_verts] = assign_to_cluster
         #You can also do
         #children=model.children_
         #to get an (nVcon,2) array of all nodes with their children
         #or
-        cluster_tree=dict(enumerate(model.children_, model.n_leaves_))
+        #cluster_tree=dict(enumerate(model.children_, model.n_leaves_))
         #which will give you a dictionary where each key is the
         #ID of a node and the value is the pair of IDs of its children.
         #or to get a list:
@@ -205,7 +268,7 @@ class SubparcellationService(object):
 #       ii = itertools.count(nVcon)
 #       tree=[{'node_id': next(ii), 'left': x[0], 'right':x[1]} for x in model.children_]
         #Now make a tree out of it:
-        (cluster_tree,root)=tree.make_tree(cluster_tree)
+        #(cluster_tree,root)=tree.make_tree(cluster_tree)
         return clusters
 
     # This function
@@ -350,7 +413,7 @@ class SubparcellationService(object):
                         # ...normalized in [0,1], and add it to the affinity metric with the correct weight
                         affinity += geod_dist_aff*self.compute_geodesic_dist_affinity(dist[i_comp_verts, :][:, i_comp_verts].todense()).astype('single')
                     print "Running clustering..."
-                    clusters=self.run_clustering(affinity,parc_area,connectivity=connectivity)
+                    clusters=self.run_clustering(affinity,parc_area,verts_lbl[i_comp_verts,:],faces_lbl[i_comp_verts,:],iv_con[i_comp_verts],connectivity=connectivity)
                     clusters_labels=numpy.unique(clusters)
                     n_clusters=len(clusters_labels)
                     parcels[i_comp_verts] = clusters_labels+n_parcels
