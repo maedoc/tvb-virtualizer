@@ -122,11 +122,6 @@ class SubparcellationService(object):
             (v, f) = self.surface_service.extract_subsurf(v, f, mask)
         return numpy.sum(self.surface_service.tri_area(v[f]))
 
-    # This function takes as an input a reference tdi_lbl volume (ref_vol_path),
-    # where increasing integers>0 signify each voxel-connectome node,
-    #and it returns a vector of these voxels (vox),
-    #  and their coordinates in the ras space of the original T1 (voxxyz),
-    # simply by applying the affine transform of tdi_lbl.
     def con_vox_in_ras(self,ref_vol_path):
         """
         This function reads a tdi_lbl volume and returns the voxels that correspond to connectome nodes,
