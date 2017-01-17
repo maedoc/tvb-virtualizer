@@ -12,8 +12,9 @@ from bnm.recon.io.volume import VolumeIO
 from bnm.recon.model.surface import Surface
 from bnm.recon.model.annotation import Annotation
 from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import connected_components, shortest_path
 from sklearn.metrics.pairwise import paired_distances
-
+from scipy.spatial.distance import cdist
 
 class SurfaceService(object):
     logger = get_logger(__name__)
@@ -59,7 +60,31 @@ class SurfaceService(object):
             mat = gdist.local_gdist_matrix(surface.vertices, surface.triangles.astype('<i4'), max_distance=max_distance)
             scipy.io.savemat(mat_path, {'gdist': mat})
 
-    # TODO: instead of verts and faces we should use surface.
+    # TODO: maybe create a new "connectome" service and transfer this function there
+    # TODO: add more normalizations modes
+    def compute_geodesic_dist_affinity(self, dist, norm=None):
+        """
+        This function calculates geodesic distances among nodes of a mesh,
+        starting from the array of the distances between directly connected nodes.
+        Optionally, normalization with the maximum geodesic distances is performed.
+        Infinite distances (corresponding to disconnected components of the mesh, are not allowed)
+        :param dist: a dense array of distances between directly connected nodes of a mesh/network
+        :param norm: a flag to be currently used for optional normalization with the maximum geodesic distance
+
+        :return:
+        """
+        #TODO: make sure that this returns a symmetric matrix!
+        geodist = shortest_path(dist, method='auto', directed=False,
+                                return_predecessors=False, unweighted=False, overwrite=False).astype('single')
+        # Find the maximum non infinite geodesic distance:
+        max_gdist = numpy.max(geodist, axis=None)
+        assert numpy.isfinite(max_gdist)
+        if norm is not None:
+            geodist /= max_gdist
+        # Convert them to normalized distances and return them
+        return geodist
+
+    # TODO: instead of verts and faces we should use surface. Denis: not sure about this!..
     def extract_subsurf(self, verts, faces, verts_mask):
         """
         Extracts a sub-surface that contains only the masked vertices and the corresponding faces.
@@ -78,6 +103,81 @@ class SurfaceService(object):
                 faces_out[face_idx, vertex_idx], = numpy.where(faces_out[face_idx, vertex_idx] == verts_out_inds)
 
         return verts_out, faces_out
+
+    # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
+    def compute_surface_area(self, verts, faces, mask=None):
+        """
+            This function computes the surface area, after optionally applying a mask to choose a sub-surface
+            :param verts: vertices' coordinates array (number of vertices x 3)
+            :param faces: faces' array, integers>=0 (number of faces x 3)
+            :param mask: optional boolean mask (number of vertices x )
+            :return: (sub)surface area, float
+            """
+        if mask is not None:
+            # Apply the optional mask in order to extract the sub-surface (vertices and relevant triangles)
+            (v, f) = self.extract_subsurf(verts, faces, mask)
+        return numpy.sum(self.tri_area(verts[faces]))
+
+    # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
+    def vertex_connectivity(self, verts, faces, mode="sparse", metric=None):
+        """
+        It computes a sparse matrix of the connectivity among the vertices of a surface.
+        :param verts: vertices' coordinates array (number of vertices x 3)
+        :param faces: faces' array, integers>=0 (number of faces x 3)
+        :param mode: "sparse" by default or "2D"
+        :param metric: None by default, could be "euclidean"
+        :return: the computed matrix.
+        """
+        # Get all pairs of vertex indexes (i.e., edges) that appear in each face (triangle)
+        edges = numpy.r_[faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]]
+        # Remove repetitions
+        edges = numpy.vstack(set(map(tuple, faces)))
+        # Mark all existing pairs to 1
+        n_v = verts.shape[0]
+        n_e = edges.shape[0]
+        if metric is None:
+            con = csr_matrix((numpy.ones((n_e,)), (edges[:, 0], edges[:, 1])), shape=(n_v, n_v))
+            if mode != "sparse":
+                # Create non-sparse matrix
+                con = con.todense()
+        else:
+            d = paired_distances(verts[edges[:, 0]], verts[edges[:, 1]], metric)
+            if mode == "sparse":
+                # Create sparse matrix
+                con = csr_matrix((d, (edges[:, 0], edges[:, 1])), shape=(n_v, n_v))
+        return con
+
+    # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
+    def connected_surface_components(self, verts, faces, connectivity=None, mask=None):
+        """
+        This function returns all the different disconnected components of a surface, their number and their areas,
+        after applying an optional boolean mask to exclude some subsurface from the area calculation.
+        There should be at least one component returned, if the whole surface is connected.
+        :param verts: vertices' coordinates array (number of vertices x 3)
+        :param faces: faces' array, integers>=0 (number of faces x 3)
+        :param connectivity: optionally an array or sparse matrix of structural connectivity constraints,
+                            where True or 1 or entry>0 stands for the existing direct connections
+                            among neighboring vertices (i.e., vertices of a common triangular face)
+        :param mask: optional boolean mask (number of vertices x )
+        :return:
+        """
+        #Create the connectivity matrix, if not in the input:
+        if connectivity is None:
+           connectivity=self.vertex_connectivity(verts, faces)
+        # Find all connected components of this surface
+        (n_components, components) = \
+            connected_components(connectivity, directed=False, connection='weak', return_labels=True)
+        # Check out if there is a mask for the vertices to be included in the area calculation
+        if mask is None:
+            mask = numpy.ones(components.shape, dtype=bool)
+        comp_area = []
+        # For each component...
+        for ic in range(n_components):
+            i_comp_verts = components == ic
+            # ...compute the surface area, after applying any specified mask
+            comp_area.append(self.compute_surface_area(verts, faces, mask=numpy.logical_and(i_comp_verts, mask[i_comp_verts])))
+        return n_components, components, comp_area
+
 
     def aseg_surf_conc_annot(self, surf_path, out_surf_path, annot_path, label_indices,
                              lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
@@ -116,32 +216,7 @@ class SurfaceService(object):
         IOUtils.write_surface(out_surf_path, out_surface)
         IOUtils.write_annotation(annot_path, out_annotation)
 
-    #TODO: use surface instead of v and f
-    def vertex_connectivity(self, v, f, mode="sparse", metric=None):
-        """
-        It computes a sparse matrix of the connectivity among the vertices of a surface.
-        :param mode: "sparse" by default or "2D"
-        :param metric: None by default, could be "euclidean"
-        :return: the computed matrix.
-        """
-        # Get all pairs of vertex indexes that appear in each face
-        f = numpy.r_[f[:, [0, 1]], f[:, [1, 2]], f[:, [2, 0]]]
-        # Remove repetitions
-        f = numpy.vstack(set(map(tuple, f)))
-        # Mark all existing pairs to 1
-        n_v = v.shape[0]
-        n_f = f.shape[0]
-        if metric is None:
-            con = csr_matrix((numpy.ones((n_f,)), (f[:, 0], f[:, 1])), shape=(n_v, n_v))
-            if mode != "sparse":
-                # Create non-sparse matrix
-                con = con.todense()
-        else:
-            d = paired_distances(v[f[:, 0]], v[f[:, 1]], metric)
-            if mode == "sparse":
-                # Create sparse matrix
-                con = csr_matrix((d, (f[:, 0], f[:, 1])), shape=(n_v, n_v))
-        return con
+
 
     def __prepare_grid(self, vertex_neighbourhood):
         # Prepare grid if needed for possible use:
@@ -154,6 +229,7 @@ class SurfaceService(object):
             n_grid = grid.shape[0]
 
             return grid, n_grid
+
 
     def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path, ctx=None,
                            vertex_neighbourhood=1, add_lbl=[],
@@ -260,3 +336,34 @@ class SurfaceService(object):
 
             numpy.save(out_surf_path + "-idx.npy", verts_out_indices)
             numpy.savetxt(out_surf_path + "-idx.txt", verts_out_indices, fmt='%d')
+
+
+    # TODO: maybe create a new "connectome" service and transfer this function there
+    def compute_consim_affinity(self, verts, vox, voxxzy, con, cras=None):
+        """
+        This function creates a connectome affinity matrix among vertices,
+        starting from an affinity matrix among voxels,
+        by assignment from the nearest neighboring voxel to the respective vertex.
+        :param verts: vertices' coordinates array (number of vertices x 3)
+        :param vox: labels of connectome nodes-voxels (integers>=1)
+        :param voxxzy: coordinates of the connectome nodes-voxels in ras space
+        :param con: connectivity affinity matrix
+        :param cras: center ras point to be optionally added to the vertices coordinates
+                    (being probably in freesurfer tk-ras or surface ras coordinates) to align with the volume voxels
+        :return: the affinity matrix among vertices
+        """
+        # Add the cras to take them to scanner ras coordinates, if necessary:
+        if cras is not None:
+            verts += numpy.repeat(numpy.expand_dims(cras, 1).T, verts.shape[0], axis=0)
+        # TODO?: to use aparc+aseg to correspond vertices only to voxels of the same label
+        # There would have to be a vertex->voxel of aparc+aseg of the same label -> voxel of tdi_lbl_in_T1 mapping
+        # Maybe redundant  because we might be ending to the same voxel of tdi_lbl anyway...
+        # Something to test/discuss...
+        # Find for each vertex the closest voxel node in terms of euclidean distance:
+        v2n = numpy.argmin(cdist(verts, voxxzy, 'euclidean'), axis=1)
+        # Assign to each vertex the integer identity of the nearest voxel node.
+        v2n = vox[v2n]
+        print "Surface component's vertices correspond to " + \
+              str(numpy.size(numpy.unique(v2n))) + " distinct voxel nodes"
+        affinity = con[v2n - 1, :][:, v2n - 1]
+        return affinity
