@@ -16,14 +16,14 @@ import numpy as np
 
 #Inputs:
 surf='lh.aseg'
-labels='12 13'
+labels='10 11 12 17 18 26'
 surf_path=os.path.join(os.environ['SURF'], surf)
 annot_path=os.path.join(os.environ['LABEL'], surf+'.annot')
 con_verts_idx = os.path.join(os.environ['SEGMENT'], surf+'-mask-idx.npy')
 out_annot_path=os.path.join(os.environ['LABEL'], surf+'_CONSIM'+CON_SIM_AFF+'_GEODIST'+GEOD_DIST_AFF+'.annot')
-parc_area=float(SUBAPARC_AREA)
+parc_area=float(SUBAPARC_AREA)*2.0
 con_sim_aff=float(CON_SIM_AFF)
-geod_dist_aff=float(GEOD_DIST_AFF)
+geod_dist_aff=float(GEOD_DIST_AFF)*0.0
 if STRUCTURAL_CONNECTIVITY_CONSTRAINT == 'True':
     structural_connectivity_constraint = True
 elif STRUCTURAL_CONNECTIVITY_CONSTRAINT == 'False':

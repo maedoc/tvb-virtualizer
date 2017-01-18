@@ -143,7 +143,7 @@ class AnnotationService(object):
         ctab_lbl[:, :3][ctab_lbl[:, :3] < 0] = 0
         ctab_lbl[:, :3][ctab_lbl[:, :3] > 255] = 255
         # Calculate the resulting freesurfer magic number for each new RGB triplet
-        ctab_lbl[:, 4] = numpy.array([self.rgb_to_fs_magic_number(base_ctab[icl, :3])
+        ctab_lbl[:, 4] = numpy.array([self.rgb_to_fs_magic_number(ctab_lbl[icl, :3])
                                       for icl in range(n_parcels)])
         return (names_lbl, ctab_lbl)
 

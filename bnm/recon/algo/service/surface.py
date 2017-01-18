@@ -22,6 +22,26 @@ class SurfaceService(object):
     def __init__(self):
         self.annotation_service = AnnotationService()
 
+    # #TODO: transfer the following two to some general services?:
+    # def mask2index(self,mask):
+    #     """
+    #     Convert a mask to an array of indices
+    #     :param mask:
+    #     :return:
+    #     """
+    #     return numpy.where(mask)
+    #
+    # def index2mask(self,index):
+    #     """
+    #     Convert an array of indices to the corresponding mask
+    #     :param index:
+    #     :return:
+    #     """
+    #     index=numpy.unique(index)
+    #     mask=numpy.zeros((len(index,))).astype('bool')
+    #     mask[index]=True
+    #     return mask
+
     def tri_area(self, tri):
         i, j, k = numpy.transpose(tri, (1, 0, 2))
         ij = j - i
@@ -115,33 +135,48 @@ class SurfaceService(object):
             """
         if mask is not None:
             # Apply the optional mask in order to extract the sub-surface (vertices and relevant triangles)
-            (v, f) = self.extract_subsurf(verts, faces, mask)
+            (verts, faces) = self.extract_subsurf(verts, faces, mask)
         return numpy.sum(self.tri_area(verts[faces]))
 
     # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
-    def vertex_connectivity(self, verts, faces, mode="sparse", metric=None):
+    def vertex_connectivity(self, verts, faces, mode="sparse", metric=None, symmetric=False):
         """
         It computes a sparse matrix of the connectivity among the vertices of a surface.
         :param verts: vertices' coordinates array (number of vertices x 3)
         :param faces: faces' array, integers>=0 (number of faces x 3)
         :param mode: "sparse" by default or "2D"
         :param metric: None by default, could be "euclidean"
+        :param symmetric: True for symmetric matrix output
         :return: the computed matrix.
         """
         # Get all pairs of vertex indexes (i.e., edges) that appear in each face (triangle)
         edges = numpy.r_[faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]]
         # Remove repetitions
-        edges = numpy.vstack(set(map(tuple, faces)))
+        edges = numpy.vstack(set(map(tuple, edges)))
         # Mark all existing pairs to 1
         n_v = verts.shape[0]
         n_e = edges.shape[0]
+        #For symmetric output...
+        if symmetric:
+            #...create for the moment the "double" edges
+            edges2 = numpy.r_[edges, edges[:, [1, 0]]]
         if metric is None:
+            # For symmetric output...
+            if symmetric:
+                # ...remove repetitions of edges2
+                edges = numpy.vstack(set(map(tuple, edges2)))
+                n_e = edges.shape[0]
             con = csr_matrix((numpy.ones((n_e,)), (edges[:, 0], edges[:, 1])), shape=(n_v, n_v))
             if mode != "sparse":
                 # Create non-sparse matrix
                 con = con.todense()
         else:
             d = paired_distances(verts[edges[:, 0]], verts[edges[:, 1]], metric)
+            # For symmetric output...
+            if symmetric:
+                # double also d...
+                d=numpy.r_[d,d]
+                edges=edges2
             if mode == "sparse":
                 # Create sparse matrix
                 con = csr_matrix((d, (edges[:, 0], edges[:, 1])), shape=(n_v, n_v))
@@ -175,7 +210,7 @@ class SurfaceService(object):
         for ic in range(n_components):
             i_comp_verts = components == ic
             # ...compute the surface area, after applying any specified mask
-            comp_area.append(self.compute_surface_area(verts, faces, mask=numpy.logical_and(i_comp_verts, mask[i_comp_verts])))
+            comp_area.append(self.compute_surface_area(verts, faces, mask=numpy.logical_and(i_comp_verts,mask)))
         return n_components, components, comp_area
 
 
@@ -363,7 +398,7 @@ class SurfaceService(object):
         v2n = numpy.argmin(cdist(verts, voxxzy, 'euclidean'), axis=1)
         # Assign to each vertex the integer identity of the nearest voxel node.
         v2n = vox[v2n]
-        print "Surface component's vertices correspond to " + \
+        print "...surface component's vertices correspond to " + \
               str(numpy.size(numpy.unique(v2n))) + " distinct voxel nodes"
         affinity = con[v2n - 1, :][:, v2n - 1]
         return affinity
