@@ -4,7 +4,7 @@ import os
 import numpy
 import scipy.ndimage
 from bnm.recon.logger import get_logger
-from bnm.recon.algo.service.annotation import AnnotationService
+from bnm.recon.algo.service.annotation import AnnotationService, DEFAULT_LUT
 from bnm.recon.io.factory import IOUtils
 from bnm.recon.model.volume import Volume
 from bnm.recon.model.constants import NPY_EXTENSION
@@ -15,14 +15,14 @@ class VolumeService(object):
     def __init__(self):
         self.annotation_service = AnnotationService()
 
-    def vol_to_ext_surf_vol(self, in_vol_path, labels=None, hemi=None, out_vol_path=None, labels_surf=None,
+    def vol_to_ext_surf_vol(self, in_vol_path, labels=None, ctx=None, out_vol_path=None, labels_surf=None,
                             labels_inner='0'):
         """
         Separate the voxels of the outer surface of a structure, from the inner ones. Default behavior: surface voxels
         retain their label, inner voxels get the label 0, and the input file is overwritten by the output.
         """
 
-        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, hemi=hemi)
+        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, ctx=ctx)
         # Set the labels for the surfaces
         if labels_surf is None:
             labels_surf = labels
@@ -107,7 +107,7 @@ class VolumeService(object):
         numpy.save(filepath + "-idx.npy", out_ijk)
         numpy.savetxt(filepath + "-idx.txt", out_ijk, fmt='%d')
 
-    def mask_to_vol(self, in_vol_path, mask_vol_path, out_vol_path=None, labels=None, hemi=None, vol2mask_path=None,
+    def mask_to_vol(self, in_vol_path, mask_vol_path, out_vol_path=None, labels=None, ctx=None, vol2mask_path=None,
                     vn=1, th=0.999, labels_mask=None, labels_nomask='0'):
         """
         Identify the voxels that are neighbors within a voxel distance vn, to a mask volume, with a mask threshold of th
@@ -116,7 +116,7 @@ class VolumeService(object):
         """
 
         # Set the target labels:
-        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, hemi=hemi)
+        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, ctx=ctx)
         # Set the labels for the selected voxels
         if labels_mask is None:
             labels_mask = labels

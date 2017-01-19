@@ -218,12 +218,12 @@ python -m $SNAPSHOT --snapshot_name $vol-mask 2vols $MRI/T1.nii.gz ./$vol-mask.n
 #Give an empty list for add_lbl, if you want cerebral white matter to be masked out
 for h in lh rh
 do
-python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.white','./$vol-mask.nii.gz','$LABEL/$h.aparc.annot','./$h.white-mask','$CRAS_PATH',ctx='$h',vn=$SURF_VN,add_lbl=[2,41])"
+python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.white','./$vol-mask.nii.gz','$LABEL/$h.aparc.annot','./$h.white-mask','$CRAS_PATH',add_string='ctx-'+'$h'+'-',vn=$SURF_VN,add_lbl=[2,41], lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
 done
 #Sub-cortical:
 for h in lh rh
 do
-python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.aseg','./$vol-mask.nii.gz','$LABEL/$h.aseg.annot','./$h.aseg-mask','$CRAS_PATH',ctx=None,vn=$SURF_VN,add_lbl=[])"
+python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.aseg','./$vol-mask.nii.gz','$LABEL/$h.aseg.annot','./$h.aseg-mask','$CRAS_PATH',ctx=None,vn=$SURF_VN,add_lbl=[], lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
 done
 
 #Quality control snapshots:
@@ -276,7 +276,7 @@ fi
 
 for h in lh rh
 do
-    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.white', '$LABEL/$h.aparc.annot', './$h.white-mask-idx.npy', out_annot_path='$LABEL/$h.aparc$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels=None, hemi='$h', ctx='$h', mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
+    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.white', '$LABEL/$h.aparc.annot', './$h.white-mask-idx.npy', out_annot_path='$LABEL/$h.aparc$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels=None, ctx='$h', add_string='ctx-'+'$h'+'-', mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
 
     #Quality control snapshot
     python -m $SNAPSHOT --snapshot_name subaparc-aparc$SUBAPARC_AREA-$SUBAPARC_MODE-$h surf_annot $SURF/$h.inflated $LABEL/$h.aparc$SUBAPARC_AREA-$SUBAPARC_MODE.annot
@@ -285,7 +285,7 @@ done
 for h in lh rh
 do
     aseglist=ASEG_LIST_$h
-    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.aseg', '$LABEL/$h.aseg.annot', './$aseg-mask-idx.npy', out_annot_path='$LABEL/$h.aseg$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels='${!aseglist}', hemi=None, ctx=None, mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
+    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.aseg', '$LABEL/$h.aseg.annot', './$aseg-mask-idx.npy', out_annot_path='$LABEL/$h.aseg$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels='${!aseglist}', ctx=None, add_string=None, mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
 
     #Quality control snapshot
     python -m $SNAPSHOT --snapshot_name subaparc-aseg$SUBAPARC_AREA-$SUBAPARC_MODE-$h surf_annot $SURF/$h.aseg $LABEL/$h.aseg$SUBAPARC_AREA-$SUBAPARC_MODE.annot

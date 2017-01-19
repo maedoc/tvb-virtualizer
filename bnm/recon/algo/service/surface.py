@@ -7,7 +7,7 @@ import numpy
 import scipy
 from bnm.recon.io.factory import IOUtils
 from bnm.recon.logger import get_logger
-from bnm.recon.algo.service.annotation import AnnotationService
+from bnm.recon.algo.service.annotation import AnnotationService, DEFAULT_LUT
 from bnm.recon.io.volume import VolumeIO
 from bnm.recon.model.surface import Surface
 from bnm.recon.model.annotation import Annotation
@@ -215,7 +215,7 @@ class SurfaceService(object):
 
 
     def aseg_surf_conc_annot(self, surf_path, out_surf_path, annot_path, label_indices,
-                             lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
+                             lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
         Concatenate surfaces of specific labels to create a single annotated surface.
         """
@@ -266,9 +266,9 @@ class SurfaceService(object):
             return grid, n_grid
 
 
-    def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path, ctx=None,
+    def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path, add_string='',
                            vertex_neighbourhood=1, add_lbl=[],
-                           lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
+                           lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
         Sample a volume of a specific label on a surface, by keeping only those surface vertices, the nearest voxel of
         which is of the given label (+ of possibly additional target labels, such as white matter).
@@ -279,7 +279,8 @@ class SurfaceService(object):
         surface = IOUtils.read_surface(surf_path, False)
 
         annotation = IOUtils.read_annotation(annot_path)
-        labels = self.annotation_service.annot_names_to_labels(annotation.region_names, ctx, lut_path)
+        labels = self.annotation_service.annot_names_to_labels(annotation.region_names,
+                                                               add_string=add_string, lut_path=lut_path)
 
         volume_parser = VolumeIO()
         volume = volume_parser.read(vol_path)

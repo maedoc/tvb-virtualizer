@@ -5,9 +5,14 @@ import numpy
 from collections import OrderedDict
 from bnm.recon.io.factory import IOUtils
 
+DEFAULT_LUT = 'FreeSurferColorLUT_INS_test.txt'
 
 class AnnotationService(object):
-    def read_lut(self, lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt'),
+
+    def default_lut(self):
+        return DEFAULT_LUT
+
+    def read_lut(self, lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT),
                  key_mode='label'):
         f = open(lut_path, "r")
         l = list(f)
@@ -46,13 +51,33 @@ class AnnotationService(object):
     def rgb_to_fs_magic_number(self, rgb):
         return rgb[0] + 256 * rgb[1] + 256 * 256 * rgb[2]
 
-    def annot_to_lut(self, annot_path, lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
+    def annot_to_lut(self, annot_path,
+                     lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT), add_string=''):
+        """
+        This function creates from an annotation a new lut_file, or adds new entries to an existing lut file.
+        In the latter case, new entries have labels greater than the maximum alredy existing label inside the lut file.
+        :param annot_path: path to annotation
+        :param lut_path: path to an existing or new lut file
+        :param add_string: an optional string to be added at the beginning of each name (i.e., "ctx-lh-")
+        :return:
+        """
         annotation = IOUtils.read_annotation(annot_path)
-        with open(lut_path, 'w') as fd:
-            for name, (r, g, b, a, id) in zip(annotation.region_names, annotation.regions_color_table):
-                fd.write('%d\t%s\t%d %d %d %d\n' % (id, name, r, g, b, a))
+        #If this is an already existing lut file:
+        if os.path.isfile(lut_path):
+            #...find the maximum label in it and add 1
+            add_lbl= 1+numpy.max(self.read_lut(lut_path=lut_path, key_mode='label')[0])
+        else:
+            #...else, set it to 0
+            add_lbl=0
+        with open(lut_path, 'a') as fd:
+            fd.write('\n')
+            fd.write('%s\n' % (annot_path))
+            #NOTE that the fourth and fifth columns of color_table are not used in the lut file
+            for name, (r, g, b, dummy1, dummy2), lbl in \
+                    zip(annotation.region_names, annotation.regions_color_table,range(len(annotation.region_names))):
+                fd.write('%d\t%s\t%d %d %d %d\n' % (lbl+add_lbl, add_string+name, r, g, b, 0))
 
-    def lut_to_annot_names_ctab(self, lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt'),
+    def lut_to_annot_names_ctab(self, lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT),
                                 labels=None):
         _, names_dict, colors = self.read_lut(lut_path=lut_path)
         if labels is None:
@@ -71,16 +96,16 @@ class AnnotationService(object):
         ctab = numpy.asarray(ctab).astype('int64')
         return names, ctab
 
-    def annot_names_to_labels(self, names, ctx=None,
-                              lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
+    def annot_names_to_labels(self, names, add_string='',
+                              lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         labels_dict, _, _ = self.read_lut(lut_path=lut_path, key_mode='name')
         labels = []
-        if ctx == 'lh' or ctx == 'rh':
-            ctx = 'ctx-' + ctx + '-'
-        else:
-            ctx = ''
+        # if ctx == 'lh' or ctx == 'rh':
+        #     ctx = 'ctx-' + ctx + '-'
+        # else:
+        #     ctx = ''
         for name in names:
-            labels.append(labels_dict[ctx + name])
+            labels.append(labels_dict[add_string + name])
         return labels
 
     def annot_to_conn_conf(self, annot_path, conn_conf_path):
@@ -89,16 +114,16 @@ class AnnotationService(object):
             for id, name in enumerate(annotation.region_names):
                 fd.write('%d\t%s\n' % (id, name))
 
-    def read_input_labels(self, labels=None, hemi=None):
+    def read_input_labels(self, labels=None, ctx=None):
         if labels is not None:
             if isinstance(labels, basestring):
                 # Set the target labels
                 labels = numpy.array(labels.split()).astype('i').tolist()
         else:
             labels = []
-        if hemi is not None:
-            hemi = hemi.split()
-            for h in hemi:
+        if isinstance(ctx, basestring):
+            ctx = ctx.split()
+            for h in ctx:
                 if h == 'lh':
                     labels = labels + range(1000, 1036)
                 elif h == 'rh':

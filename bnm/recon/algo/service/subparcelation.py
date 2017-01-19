@@ -8,7 +8,7 @@ from sklearn.cluster import AgglomerativeClustering
 #from scipy.cluster import hierarchy
 #import bnm.recon.algo.tree as tree
 from bnm.recon.io.factory import IOUtils
-from bnm.recon.algo.service.annotation import AnnotationService
+from bnm.recon.algo.service.annotation import AnnotationService, DEFAULT_LUT
 from bnm.recon.algo.service.surface import SurfaceService
 from bnm.recon.algo.service.volume import VolumeService
 from bnm.recon.model.annotation import Annotation
@@ -133,11 +133,13 @@ class SubparcellationService(object):
         clusters=-numpy.ones((n_verts,))
         # - the cluster labels:
         clusters_labels = []
+        #clusters_areas = []
         # -a list of masks for vertices' clusters, which need to be further clustered:
         verts2cluster=[]
         verts2cluster.append(numpy.ones((n_verts,)).astype('bool'))
         # - a list of masks for vertices of too small clusters:
         too_small = []
+        #too_small_clusters_areas = []
         #Threshold for too small clusters:
         min_parc_area=MIN_PARC_AREA_RATIO*parc_area
         #Threshold for acceptance of a cluster:
@@ -181,22 +183,22 @@ class SubparcellationService(object):
                     if connectivity is not None:
                         # and its corresponding connectivity matrix, if any
                         curr_connectivity = connectivity[subcluster_mask, :][:, subcluster_mask]
-                        (n_components, components, comp_area) = \
-                            self.surface_service.connected_surface_components(curr_verts, curr_faces,
-                                                                              connectivity=curr_connectivity,
-                                                                              mask=ind_verts_con[subcluster_mask])
                     else:
-                        (n_components, components, comp_area) = \
-                            self.surface_service.connected_surface_components(curr_verts, curr_faces,
-                                                                              mask=ind_verts_con[subcluster_mask])
+                        curr_connectivity = None
+                    n_components = \
+                        self.surface_service.connected_surface_components(curr_verts, curr_faces,
+                                                                          connectivity=curr_connectivity,
+                                                                          mask=ind_verts_con[subcluster_mask])[0]
                     assert n_components == 1
                     clusters[subcluster_mask]=n_out_clusters
                     clusters_labels.append(n_out_clusters)
+                    #clusters_areas.append(subcluster_lbl_area)
                     n_out_clusters += 1
                 #else if it is too small:
                 elif subcluster_lbl_area<min_parc_area:
                     #...store it as a cluster to be assigned to another one in the end:
                     too_small.append(numpy.array(subcluster_mask))
+                    #too_small_clusters_areas.append(subcluster_lbl_area)
                     n_too_small += 1
                 #else if it is too big:
                 else:
@@ -234,16 +236,14 @@ class SubparcellationService(object):
             if connectivity is not None:
                 # and its corresponding connectivity matrix, if any
                 curr_connectivity = connectivity[curr_verts_mask, :][:, curr_verts_mask]
-                (n_components, components, comp_area) = \
-                    self.surface_service.connected_surface_components(curr_verts, curr_faces,
-                                                                      connectivity=curr_connectivity,
-                                                                      mask=ind_verts_con[curr_verts_mask])
             else:
-                (n_components, components, comp_area) = \
-                    self.surface_service.connected_surface_components(curr_verts, curr_faces,
-                                                                      mask=ind_verts_con[curr_verts_mask])
+                curr_connectivity = None
+            (n_components, _, comp_area) = \
+                self.surface_service.connected_surface_components(curr_verts, curr_faces,
+                                                                  connectivity=curr_connectivity,
+                                                                  mask=ind_verts_con[curr_verts_mask])
             assert n_components==1
-            clusters_areas.append(comp_area)
+            clusters_areas.append(comp_area[0])
         #The following code is not used anymore:
         #You can also do
         #children=model.children_
@@ -262,11 +262,11 @@ class SubparcellationService(object):
 
     #TODO: a file of sub-parcellation statistics should be also saved as txt and as npy.
     def connectivity_geodesic_subparc(self, surf_path, annot_path, con_verts_idx, out_annot_path=None,
-                                      labels=None, hemi=None, ctx=None,
+                                      labels=None, ctx=None, add_string='',
                                       parc_area=100, con_sim_aff=1.0, geod_dist_aff=1.0,
                                       structural_connectivity_constraint=True,
                                       cras_path=None, ref_vol_path=None, consim_path=None,
-                                      lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')):
+                                      lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
         This is the main function performing the sub-parcellation.
         :param surf_path: The path to the surface to be parcellated, in ras or freesurfer ras (tk-ras) coordinates
@@ -276,8 +276,8 @@ class SubparcellationService(object):
         :param out_annot_path: The path for the output annotation file to be saved
         :param labels: An optional list of the target region labels to be sub-parcellated.
             It should be given for sub-cortical surfaces, or in cases a sub-selection of cortical surfaces is desired.
-        :param hemi: Alternatively, hemi should be given as 'lh' or 'rh' in order to select the whole left or right cortex
-        :param ctx: None for subcortical surfaces (default), 'lh' or 'rh' for cortical ones
+        :param ctx: Alternatively, ctx should be given as 'lh' or 'rh' in order to select the whole left or right cortex
+        :param add_string: String to add at the start of region names, i.e., 'ctx-lh-' or 'ctx-rh-' for cortical ones
         :param parc_area: an approximate target sub-parcel surface area, referring only to area touching white matter
         :param con_sim_aff: a 0=< weight <=1.0 for the connectivity dissimilarity affinity, as clustering criterion
         :param geod_dist_aff: a 0=< weight <=1.0 for the geodesic distance affinity, as clustering criterion
@@ -299,11 +299,15 @@ class SubparcellationService(object):
         # ...and its annotation
         annotation = IOUtils.read_annotation(annot_path)
         # ...and get the corresponding labels:
-        labels_annot = self.annotation_service.annot_names_to_labels(annotation.region_names, ctx, lut_path=lut_path)
+        # TODO: in the future there should be alternative ways to define the target labels,
+        # probably directly via the annotation, not via any lut file,
+        #  so that we can further sub-parcellate a sub-parcellation, for which there is no lut file
+        labels_annot = self.annotation_service.annot_names_to_labels(annotation.region_names,
+                                                                     add_string=add_string, lut_path=lut_path)
         # Read the indexes of vertices neighboring tracts' ends voxels:
         con_verts_idx = numpy.load(con_verts_idx)
         # Set the target labels:
-        labels, n_in_labels = self.annotation_service.read_input_labels(labels=labels, hemi=hemi)
+        labels, n_in_labels = self.annotation_service.read_input_labels(labels=labels, ctx=ctx)
         if con_sim_aff > 0:
             # Load voxel connectivity dissimilarity/distance matrix:
             con = numpy.load(consim_path).astype('single')
@@ -317,8 +321,8 @@ class SubparcellationService(object):
         # Initialize the output:
         region_names = []
         region_color_table = []
-        region_mapping = numpy.array(annotation.region_mapping)
-        n_out_labels = 0
+        region_mapping = -numpy.ones(annotation.region_mapping.shape).astype('i')
+        n_out_labels = int(0)
         # For every annotation name:
         for i_label in range(len(annotation.region_names)):
             print str(i_label) + ". " + annotation.region_names[i_label]
@@ -366,15 +370,15 @@ class SubparcellationService(object):
             n_components=len(comp_area)
             print str(n_components)+" connected components in total of "\
                   +str(comp_area)+" mm2 connectivity area, respectively"
-            n_parcels=0
+            n_parcels=int(0)
             parcels=-numpy.ones(components.shape,dtype='i')
-            too_small_parcels=dict()
+            too_small_parcels=[]
             for i_comp in range(n_components):
                 i_comp_verts = components == i_comp
                 n_comp_verts=numpy.sum(i_comp_verts)
                 print "...Treating connected surface component "+str(i_comp)\
                       +" of connectivity area "+str(comp_area[i_comp])+" mm2"
-                if comp_area[i_comp]<=1.5*parc_area:
+                if comp_area[i_comp]<=MAX_PARC_AREA_RATIO*parc_area:
                     if comp_area[i_comp]>=0.1*[parc_area]:
                         parcels[i_comp_verts] = n_parcels
                         n_parcels+=1
@@ -384,7 +388,7 @@ class SubparcellationService(object):
                     else:
                         print "...Too small surface component, i.e., less than 0.1 times the target average parcel area."
                         print "...It will inherit the identity of the closest parcel in terms of euclidean distance."
-                        too_small_parcels[i_comp]=i_comp_verts
+                        too_small_parcels.append(i_comp_verts)
                 else:
                     print "...Clustering will run for surface component " + str(i_comp) \
                           + " of region " + annotation.region_names[i_label]
@@ -429,9 +433,9 @@ class SubparcellationService(object):
                           + " of region " + annotation.region_names[i_label] \
                           + " with connectivity areas " + str(clusters_areas) + ", respectively"
                     parcels[i_comp_verts] = clusters+n_parcels
-                    n_parcels+=n_clusters
+                    n_parcels+=int(n_clusters)
             parcel_labels=range(n_parcels)
-            for (i_comp,i_comp_verts) in too_small_parcels.items():
+            for i_comp_verts in too_small_parcels:
                 print "...Dealing now with too small surface components..." \
                       + " of region " + annotation.region_names[i_label]
                 comp_to_parcel_mindist=1000.0 #this is 1 meter long!
@@ -458,8 +462,8 @@ class SubparcellationService(object):
                 region_color_table.append(ctab_lbl)
             # Finally change the output indices
             # of the "con" vertices...
-            region_mapping[ind_verts] = n_out_labels + parcels
-            n_out_labels += n_parcels
+            region_mapping[ind_verts] = n_out_labels + parcels.astype('i')
+            n_out_labels += int(n_parcels)
             for i_parcel in range(n_parcels):
                 i_parc_verts=parcels==i_parcel
                 parc_area_con=self.surface_service.compute_surface_area(verts_lbl, faces_lbl,
@@ -471,8 +475,10 @@ class SubparcellationService(object):
         # Stack everything together
         region_color_table = numpy.vstack(region_color_table)
         region_names = numpy.hstack(region_names)
-        # ...and write the annotation to a file
+        # ...write the annotation to a file
         if out_annot_path is None:
             out_annot_path = os.path.splitext(annot_path)[0] + str(parc_area) + ".annot"
         print out_annot_path
         IOUtils.write_annotation(out_annot_path, Annotation(region_mapping, region_color_table, region_names))
+        #...and write or append the lut file
+        self.annotation_service.annot_to_lut(out_annot_path,lut_path=lut_path,add_string=add_string)

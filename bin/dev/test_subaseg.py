@@ -16,7 +16,7 @@ import numpy as np
 
 #Inputs:
 surf='lh.aseg'
-labels='10 11 12 17 18 26'
+labels='10'
 surf_path=os.path.join(os.environ['SURF'], surf)
 annot_path=os.path.join(os.environ['LABEL'], surf+'.annot')
 con_verts_idx = os.path.join(os.environ['SEGMENT'], surf+'-mask-idx.npy')
@@ -33,11 +33,15 @@ else:
 cras_path=CRAS_PATH
 ref_vol_path=os.path.join(os.environ['SEGMENT'], 'tdi_lbl-v3-in-t1.nii.gz')
 consim_path=os.path.join(os.environ['SEGMENT'], 'consim-vol-counts5M-v3.npy')
-
+lut_path="/Users/dionperd/Desktop/FreeSurferColorLUT.txt"
+#os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT_INS.txt')
+#
+#
 subaparc_service=subaparc.SubparcellationService()
 subaparc_service.connectivity_geodesic_subparc(surf_path, annot_path, con_verts_idx, out_annot_path,
-                                      labels=labels, hemi=None, ctx=None,
+                                      labels=labels, ctx=None, add_string='',
                                       parc_area=parc_area, con_sim_aff=con_sim_aff, geod_dist_aff=geod_dist_aff,
                                        structural_connectivity_constraint=structural_connectivity_constraint,
                                       cras_path=cras_path, ref_vol_path=ref_vol_path, consim_path=consim_path,
-                                      lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt'))
+                                      lut_path=lut_path)
+
