@@ -4,6 +4,7 @@ import os
 import numpy
 from collections import OrderedDict
 from bnm.recon.io.factory import IOUtils
+from datetime import datetime
 
 DEFAULT_LUT = 'FreeSurferColorLUT_INS_test.txt'
 
@@ -70,9 +71,22 @@ class AnnotationService(object):
             #...else, set it to 0
             add_lbl=0
         with open(lut_path, 'a') as fd:
+            if add_lbl==0:
+                #TODO: we should include an environment variable for freesurfer version, and print it here
+                fd.write('%s\n' % ("#$Id: " + lut_path + " " +str(datetime.now())))
+                fd.write('\n')
+                fd.write('%s\t%s\t%s%s%s%s\n' % ("#No.", "Label Name: ", "R   ", "G   ", "B   ", "A   "))
+            else:
+                fd.write('\n')
+            # Leave one line blank
             fd.write('\n')
-            fd.write('%s\n' % (annot_path))
-            #NOTE that the fourth and fifth columns of color_table are not used in the lut file
+            fd.write('%s\n' % ("#Patient: " + os.environ['SUBJECT']))
+            fd.write('%s\n' % ("#User: " + os.path.split(os.path.expanduser('~'))[-1]))
+            fd.write('%s\n' % ("#Annotation path: "+annot_path))
+            fd.write('%s\n' % ("#Time: " +str(datetime.now())))
+            fd.write('\n')
+            #TODO: align columns
+            #NOTE!!! that the fourth and fifth columns of color_table are not used in the lut file!!!
             for name, (r, g, b, dummy1, dummy2), lbl in \
                     zip(annotation.region_names, annotation.regions_color_table,range(len(annotation.region_names))):
                 fd.write('%d\t%s\t%d %d %d %d\n' % (lbl+add_lbl, add_string+name, r, g, b, 0))

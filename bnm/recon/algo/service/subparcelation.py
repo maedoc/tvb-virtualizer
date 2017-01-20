@@ -106,6 +106,53 @@ class SubparcellationService(object):
             numpy.save(out_consim_path, con)
         return con
 
+
+
+    def divisive_clustering(self, verts, faces, ind_verts_con, distance, connectivity=None):
+
+        #Initialize clusters' masks:
+        n_points = distance.shape[0]
+        clusters=[]
+        clusters.append(numpy.zeros((n_points,)).astype('bool'))
+        clusters.append(numpy.zeros((n_points,)).astype('bool'))
+        clusters_areas=[]
+        clusters_areas.append(0.0)
+        clusters_areas.append(0.0)
+
+        #Find two most distant points
+        [c1, c2] = numpy.where(numpy.max(distance))
+        #Assign them as first points to each cluster:
+        clusters[0][c1[0]] = True
+        clusters[1][c2[0]] = True
+
+        #Remaining points:
+        rest = numpy.ones((n_points,)).astype('bool')
+        rest[c1[0]] = False
+        rest[c2[0]] = False
+
+        tocluster = []
+        assign=[]
+        #While there are remaining points:
+        while numpy.any(rest):
+
+            #Initialize the available points for each cluster:
+            tocluster.append(numpy.array(rest))
+            tocluster.append(numpy.array(rest))
+            #And the assignment:
+            assign.append(-1)
+            assign.append(-1)
+
+            #Get the index of the smaller cluster to start with:
+            clusters_order = numpy.argsort(clusters_areas)
+            ic=clusters_order.pop(0)
+
+            while assign[ic] and numpy.any(tocluster[ic]):
+                pass
+            pass
+
+
+
+
     # This function clusters the nodes of a mesh, using hierarchical clustering,
     # an affinity matrix, and connectivity constraints
     def run_clustering(self,affinity,parc_area,verts,faces,ind_verts_con,connectivity=None, n_clusters=2):
@@ -116,7 +163,7 @@ class SubparcellationService(object):
         :param faces: the array of faces, number_of_faces x 3, integers
         :param ind_verts_con: a boolean array, defining a mask on the vertices, where true stands for those vertices
                         that are close to voxels, where white matter tracts start or end
-        :param geod_dist: geodesic distance array, number_of_verts x number_of_verts, used for assignement of too small
+        :param geod_dist: geodesic distance array, number_of_verts x number_of_verts, used for assignment of too small
                             clusters to accepted ones
         :param connectivity: an array of structural connectivity constraints, where True or 1 stands for the existing
                             direct connections among neighboring vertices (i.e., vertices of a common triangular face)
@@ -266,7 +313,8 @@ class SubparcellationService(object):
                                       parc_area=100, con_sim_aff=1.0, geod_dist_aff=1.0,
                                       structural_connectivity_constraint=True,
                                       cras_path=None, ref_vol_path=None, consim_path=None,
-                                      lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
+                                      in_lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT),
+                                      out_lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
         This is the main function performing the sub-parcellation.
         :param surf_path: The path to the surface to be parcellated, in ras or freesurfer ras (tk-ras) coordinates
@@ -290,7 +338,8 @@ class SubparcellationService(object):
                             Necessary only if the connectivity dissimilarity affinity is used.
         :param consim_path: The path to the connectivity dissimilarity affinity matrix of the connectome nodes-voxels.
                             Necessary only if the connectivity dissimilarity affinity is used.
-        :param lut_path: The path to a freesurfer-like Color LUT file
+        :param in_lut_path: The path to an input freesurfer-like Color LUT file ot use for reading target label names
+        :param out_lut_path: The path to a freesurfer-like Color LUT file, to be written/appended for the new annotation
         :return: Nothing. New annotation is saved to a file.
         """
 
@@ -303,7 +352,7 @@ class SubparcellationService(object):
         # probably directly via the annotation, not via any lut file,
         #  so that we can further sub-parcellate a sub-parcellation, for which there is no lut file
         labels_annot = self.annotation_service.annot_names_to_labels(annotation.region_names,
-                                                                     add_string=add_string, lut_path=lut_path)
+                                                                     add_string=add_string, lut_path=in_lut_path)
         # Read the indexes of vertices neighboring tracts' ends voxels:
         con_verts_idx = numpy.load(con_verts_idx)
         # Set the target labels:
@@ -481,4 +530,4 @@ class SubparcellationService(object):
         print out_annot_path
         IOUtils.write_annotation(out_annot_path, Annotation(region_mapping, region_color_table, region_names))
         #...and write or append the lut file
-        self.annotation_service.annot_to_lut(out_annot_path,lut_path=lut_path,add_string=add_string)
+        self.annotation_service.annot_to_lut(out_annot_path,lut_path=out_lut_path,add_string=add_string)

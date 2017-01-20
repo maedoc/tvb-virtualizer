@@ -33,8 +33,8 @@ else:
 cras_path=CRAS_PATH
 ref_vol_path=os.path.join(os.environ['SEGMENT'], 'tdi_lbl-v3-in-t1.nii.gz')
 consim_path=os.path.join(os.environ['SEGMENT'], 'consim-vol-counts5M-v3.npy')
-lut_path="/Users/dionperd/Desktop/FreeSurferColorLUT.txt"
-#os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT_INS.txt')
+out_lut_path="/Users/dionperd/Desktop/FreeSurferColorLUT.txt"
+in_lut_path=os.path.join(os.environ['FREESURFER_HOME'], 'FreeSurferColorLUT.txt')
 #
 #
 subaparc_service=subaparc.SubparcellationService()
@@ -43,5 +43,5 @@ subaparc_service.connectivity_geodesic_subparc(surf_path, annot_path, con_verts_
                                       parc_area=parc_area, con_sim_aff=con_sim_aff, geod_dist_aff=geod_dist_aff,
                                        structural_connectivity_constraint=structural_connectivity_constraint,
                                       cras_path=cras_path, ref_vol_path=ref_vol_path, consim_path=consim_path,
-                                      lut_path=lut_path)
+                                      in_lut_path=in_lut_path, out_lut_path=out_lut_path)
 
