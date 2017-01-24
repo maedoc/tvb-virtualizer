@@ -108,54 +108,156 @@ class SubparcellationService(object):
 
 
 
-    def divisive_clustering(self, verts, faces, ind_verts_con, distance, connectivity=None):
-
-        #Initialize clusters' masks:
+    def divisive_clustering(self, distance, connectivity=None, surface=None):
+        """
+        This function splits a set a points to two clusters using a distance matrix,
+        and optionally a structural connectivity constraint.
+        It takes care to produce as evenly sized clusters by assigning in turn points to one after the other,
+        as long as there are points that are closer to the respective cluster than the other.
+        Cluster size is computed either as surface area, or number of points.
+        :param distance: a distance (affinity) matrix of n_points x n_points, to be used for clustering
+        :param connectivity: an optional structural connectivity constraint matrix of 1s (True) and 0s (False),
+                            for the directly (dis)connected (neighboring) points, respectively
+        :param surface: an optional dictionary with keys "verts", "faces", "mask", to be used for computing the area
+                        of each cluster as its size. Alternatively, cluster size equals the number of points in it.
+        :return: clusters: a vector assigning all points to 0 (cluster 1) or 1 (cluster 2)
+        """
+        #Initialize clusters' indexes to -1, signifying points still remaining to be clustered:
         n_points = distance.shape[0]
-        clusters=[]
-        clusters.append(numpy.zeros((n_points,)).astype('bool'))
-        clusters.append(numpy.zeros((n_points,)).astype('bool'))
-        clusters_areas=[]
-        clusters_areas.append(0.0)
-        clusters_areas.append(0.0)
-
-        #Find two most distant points
+        clusters=-numpy.ones((n_points,)).astype('i')
+        #Cluster areas'list
+        clusters_size=[0.0,0.0]
+        #Find the two most distant points for deterministic initialization:
         [c1, c2] = numpy.where(numpy.max(distance))
         #Assign them as first points to each cluster:
-        clusters[0][c1[0]] = True
-        clusters[1][c2[0]] = True
-
-        #Remaining points:
-        rest = numpy.ones((n_points,)).astype('bool')
-        rest[c1[0]] = False
-        rest[c2[0]] = False
-
-        tocluster = []
-        assign=[]
+        clusters[c1] = 0
+        clusters[c2] = 1
         #While there are remaining points:
-        while numpy.any(rest):
-
-            #Initialize the available points for each cluster:
-            tocluster.append(numpy.array(rest))
-            tocluster.append(numpy.array(rest))
-            #And the assignment:
-            assign.append(-1)
-            assign.append(-1)
-
+        n_remaining=n_points-2
+        while n_remaining>0:
             #Get the index of the smaller cluster to start with:
-            clusters_order = numpy.argsort(clusters_areas)
-            ic=clusters_order.pop(0)
+            ics = numpy.argsort(clusters_size)
+            #Calculate the average distance of all points to the bigger cluster minus the one to the smaller cluster...
+            #...and sort them in decreasing order
+            points_left=clusters==-1
+            mean_dist = numpy.mean( distance[points_left,:][:,clusters==ics[1]], axis=1) - \
+                   numpy.mean( distance[points_left,:][:,clusters==ics[0]], axis=1)
+            sort_dist = numpy.sort(mean_dist)[::-1]
+            #The desirable sign for the clustering criterion
+            sign = 1
+            #Keep looping while True
+            loop=True
+            #Element to pop from the sort_dist list, either 0 for first, or -1 for last element
+            pop=0
+            #Index of the current cluster
+            ic=ics[0]
+            #Flag for having dealt with current cluster
+            cluster_done=False
+            n_assigned=[0,0]
+            #While loop=True and there are still elements in the sort_dist list:
+            while loop and len(sort_dist)>0:
+                #Get either the first (for the smallest cluster) or the last (for the bigger cluster) element:
+                curr_dist = sort_dist.pop([pop])
+                #If the distance is positive (for the smallest cluster) or negative (for the bigger cluster)...
+                if curr_dist*sign>=0.0:
+                    #...get the points that are equal to that distance...
+                    curr_points, = numpy.where(mean_dist==sort_dist)
+                    #...if there is a connectivity constraint...
+                    if connectivity is not None:
+                        #...loop through those points...
+                        for cur_pnt in curr_points:
+                            # ...to check if they are connected with any of the  cluster points...
+                            if numpy.sum(connectivity[clusters==ic,:][:,cur_pnt])>0.0:
+                                #...and assign them to the current cluster if yes...
+                                clusters[cur_pnt] = ic
+                                #...and signal that at least one point has been assigned...
+                                cluster_done=True
+                                n_assigned[ic]+=1
+                    else:
+                        # ...and assign them to the current cluster...
+                        clusters[curr_points]=ic
+                        # ...and signal that at least one point has been assigned...
+                        cluster_done = True
+                        n_assigned[ic]+=len[curr_points]
+                else:
+                    #if the distance is negative (for the smallest cluster) or positive (for the biggest cluster)...
+                    #... there are no available points to assign to this cluster...
+                    cluster_done = True
+                #If we are done with this cluster...
+                if cluster_done==True:
+                    #...compute its new area if there were any new points assigned...
+                    if n_assigned[ic]>0:
+                        if surface is not None:
+                            clusters_size[ic] = self.surface_service.compute_surface_area(surface['verts'], surface['faces'],
+                                                                        numpy.logical_and(clusters==ic,surface['mask']))
+                        else:
+                            clusters_size[ic] = numpy.sum(clusters==ic)
+                    #...if this was the first (smallest) cluster, move to the next one...
+                    if ic==ics[0]:
+                        #...change the sign...
+                        sign=-1
+                        #...start popping from the end of the list...
+                        pop=-1
+                        #...change the index of the cluster...
+                        ic=ics[1]
+                        #...and reset the cluster_done flag...
+                        cluster_done=False
+                    else:
+                        #...else, we are done with looping
+                        loop=False
+                #...else, we just continue by popping the next element of the list, for the same cluster...
+            #In the rare case that there was no assignment to any of the two clusters,
+            # although there are still available points (this might happen only if there are connectivity constraints)
+            #TODO: through an exception if this happens without the respective connectivity constraints,
+            #i.e., wihtout having points that are closer to one cluster, but not connected to it.
+            if numpy.all(n_assigned==0):
+                if connectivity is None:
+                    print "ERROR: 0 assignement although there are no connectivity constraints"
+                    return clusters
+                #...for each cluster
+                for ic in ics:
+                    #Calculate the sum of connectivity of each of the cluster points to each one of the remaining points,
+                    remaining_points, = numpy.where(clusters==-1)
+                    sum_connectivity=numpy.sum(connectivity[clusters==ic,:][:,remaining_points],axis=0)
+                    #...and assign the maximally connected point to the cluster, if it is connected (>0)
+                    max_connectivity=numpy.argmax(sum_connectivity)
+                    if sum_connectivity[max_connectivity]>0:
+                        clusters[remaining_points[max_connectivity]]=ic
+                        n_assigned[ic]=1
+            #If there is still no assignment, meaning that these points are fully disconnected, through an error:
+            if numpy.all(n_assigned == 0):
+                print "ERROR: fully disconnected points"
+                return clusters
+            #Update the stopping criterion
+            n_remaining = numpy.sum(clusters == -1)
+        return clusters
 
-            while assign[ic] and numpy.any(tocluster[ic]):
-                pass
-            pass
 
+    def agglomerative_clustering(self, distance, n_clusters=2, connectivity=None):
+        """
+        This function uses agglomerative hierarchical clustering to cluster points according to the distance matrix,
+        and optionally a structural connectivity constraint.
+        :param distance: a distance (affinity) matrix of n_points x n_points, to be used for clustering
+        :param n_clusters: desired number of clusters
+        :param connectivity: an optional structural connectivity constraint matrix of 1s (True) and 0s (False),
+                            for the directly (dis)connected (neighboring) points, respectively
+        :return: a vector assigning all points to 0 (cluster 1) or 1 (cluster 2)
+        """
+        # Define the model to be clustered...:
+        model = AgglomerativeClustering(affinity="precomputed", connectivity=connectivity,
+                                        n_clusters=n_clusters, linkage='average')
+        # and fit to return only n_clusters:
+        model.fit(distance)
+        # Get the cluster labels [0,n_clusters-1] for each point
+        clusters = model.labels_
+        return clusters
 
 
 
     # This function clusters the nodes of a mesh, using hierarchical clustering,
     # an affinity matrix, and connectivity constraints
-    def run_clustering(self,affinity,parc_area,verts,faces,ind_verts_con,connectivity=None, n_clusters=2):
+    def run_clustering(self,affinity,parc_area,verts,faces,ind_verts_con,clustering_mode='divisive',
+                                                                                    connectivity=None, n_clusters=2):
         """
         :param affinity: a distance array, number_of_verts x number_of_verts as clustering criterion
         :param parc_area: the target average parcel area
@@ -165,6 +267,7 @@ class SubparcellationService(object):
                         that are close to voxels, where white matter tracts start or end
         :param geod_dist: geodesic distance array, number_of_verts x number_of_verts, used for assignment of too small
                             clusters to accepted ones
+        :param clustering_mode: 'agglomerative'or 'divisive' hierarchical clustering
         :param connectivity: an array of structural connectivity constraints, where True or 1 stands for the existing
                             direct connections among neighboring vertices (i.e., vertices of a common triangular face)
         :return: clusters: an array of one integer index>=0, coding for participation to a cluster/parcel
@@ -206,15 +309,18 @@ class SubparcellationService(object):
             # (approximate number of target clusters - current number of output clusters) /
             # (number of remaining clusters to be further clustered in the queue)
             # minimum should be 2
-            curr_n_clusters = \
+            if clustering_mode == 'agglomerative':
+                curr_n_clusters = \
                   numpy.max([2,numpy.round(1.0 * (n_clusters - n_out_clusters) / numpy.max([len(verts2cluster),1]))]).astype('i')
-            # define the current model to be clustered now...:
-            model = AgglomerativeClustering(affinity="precomputed", connectivity=curr_connectivity,
-                                                n_clusters=curr_n_clusters, linkage='average')
-            # and fit to return only n_clusters (default behavior n_clusters=2):
-            model.fit(curr_affinity)
-            #Get the cluster labels [0,curr_n_clusters-1] for each vertex of curr_verts
-            curr_clusters=model.labels_
+                curr_clusters=self.agglomerative_clustering(curr_affinity, n_clusters=curr_n_clusters,
+                                                            connectivity=curr_connectivity)
+            elif clustering_mode == 'divisive':
+                (curr_verts, curr_faces) = self.surface_service.extract_subsurf(verts, faces, curr_verts_mask)
+                surface=dict()
+                surface['verts']=curr_verts
+                surface['faces'] = curr_faces
+                surface['mask'] = ind_verts_con[curr_verts_mask]
+                curr_clusters=self.divisive_clustering(curr_affinity, connectivity=curr_connectivity, surface=surface)
             #and loop through the respective labels...
             for i_cluster in range(curr_n_clusters):
                 # ...compute a boolean mask of the vertices of each label:
@@ -312,6 +418,7 @@ class SubparcellationService(object):
                                       labels=None, ctx=None, add_string='',
                                       parc_area=100, con_sim_aff=1.0, geod_dist_aff=1.0,
                                       structural_connectivity_constraint=True,
+                                      clustering_mode='divisive',
                                       cras_path=None, ref_vol_path=None, consim_path=None,
                                       in_lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT),
                                       out_lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
@@ -332,6 +439,7 @@ class SubparcellationService(object):
             (The final affinity matrix will be formed as a weighted sum (linear combination) of the two)
         :param structural_connectivity_constraint: True or False, for inclusion of a structural connectivity constraint,
             optionally constraining the resulting sub-parcels to be fully connected (having no disconnected components)
+        :param clustering_mode: 'agglomerative'or 'divisive' hierarchical clustering
         :param cras_path: The path to the file where the freesurfer cras point is saved.
                          Necessary if the surface is in freesurfer's (tk-ras) ras coordinates.
         :param ref_vol_path: The path to the tdi_lbl volume, labeling the connectome nodes-voxels, as integers>=1.
@@ -476,7 +584,8 @@ class SubparcellationService(object):
                           + str(parc_area)+" mm2 connectivity area..."
                     (clusters, n_clusters, clusters_labels, clusters_areas)=self.run_clustering(affinity,parc_area,
                                                                      verts_comp, faces_comp,ind_verts_con[i_comp_verts],
-                                                                     connectivity=connectivity, n_clusters=n_clusters)
+                                                                     clustering_mode=clustering_mode,
+                                                                       connectivity=connectivity, n_clusters=n_clusters)
                     print "..." + str(n_clusters) + \
                           ' parcels finally created for component ' + str(i_comp) \
                           + " of region " + annotation.region_names[i_label] \
