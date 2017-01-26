@@ -58,7 +58,7 @@ def simple_label_config(aparc_fname, out_fname):
 
  #-------------------------Surfaces from/to volumes----------------------------
 
-def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path,
+def sample_vol_on_surf(surf_path, vol_path, annot_path, out_surf_path, cras_path,
                          add_string='',vertex_neighbourhood=1, add_lbl=[],
                            lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
     surfaceService.sample_vol_on_surf(surf_path, vol_path, annot_path, out_surf_path, cras_path,
@@ -76,7 +76,7 @@ def connectivity_geodesic_subparc(self, surf_path, annot_path, con_verts_idx, ou
                                       cras_path=None, ref_vol_path=None, consim_path=None,
                                       in_lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT),
                                       out_lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
-    subparcelatioService.connectivity_geodesic_subparc(self, surf_path, annot_path, con_verts_idx,
+    subparcelatioService.connectivity_geodesic_subparc(surf_path, annot_path, con_verts_idx,
                                     out_annot_path=out_annot_path, labels=labels, ctx=ctx, add_string=add_string,
                                       parc_area=parc_area, con_sim_aff=con_sim_aff, geod_dist_aff=geod_dist_aff,
                                       structural_connectivity_constraint=structural_connectivity_constraint,

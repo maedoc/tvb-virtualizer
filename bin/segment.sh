@@ -218,12 +218,12 @@ python -m $SNAPSHOT --snapshot_name $vol-mask 2vols $MRI/T1.nii.gz ./$vol-mask.n
 #Give an empty list for add_lbl, if you want cerebral white matter to be masked out
 for h in lh rh
 do
-    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.white','./$vol-mask.nii.gz','$LABEL/$h.aparc.annot','./$h.white-mask','$CRAS_PATH',add_string='ctx-'+'$h'+'-',vertex_neighbourhood='$SURF_VN, add_lbl=[2,41], lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
+    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.white','./$vol-mask.nii.gz','$LABEL/$h.aparc.annot','./$h.white-mask','$CRAS_PATH',add_string='ctx-'+'$h'+'-',vertex_neighbourhood=int('$SURF_VN'), add_lbl=[2,41], lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
 done
 #Sub-cortical:
 for h in lh rh
 do
-    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.aseg','./$vol-mask.nii.gz','$LABEL/$h.aseg.annot','./$h.aseg-mask','$CRAS_PATH',vertex_neighbourhood=$SURF_VN,add_lbl=[], lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
+    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.aseg','./$vol-mask.nii.gz','$LABEL/$h.aseg.annot','./$h.aseg-mask','$CRAS_PATH',vertex_neighbourhood=int('$SURF_VN'),lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
 done
 
 #Quality control snapshots:

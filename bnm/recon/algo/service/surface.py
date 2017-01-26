@@ -267,7 +267,7 @@ class SurfaceService(object):
 
 
     def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path,
-                           add_string='',vertex_neighbourhood=1, add_lbl=[],
+                           add_string='', vertex_neighbourhood=1, add_lbl=[],
                            lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
         Sample a volume of a specific label on a surface, by keeping only those surface vertices, the nearest voxel of
@@ -281,6 +281,7 @@ class SurfaceService(object):
         annotation = IOUtils.read_annotation(annot_path)
         labels = self.annotation_service.annot_names_to_labels(annotation.region_names,
                                                                add_string=add_string, lut_path=lut_path)
+        region_mapping_indexes = numpy.unique(annotation.region_mapping)
 
         volume_parser = VolumeIO()
         volume = volume_parser.read(vol_path)
@@ -292,21 +293,18 @@ class SurfaceService(object):
 
         # Initialize the output mask:
         verts_out_mask = numpy.repeat([False], surface.vertices.shape[0])
+        for label_index in xrange(len(region_mapping_indexes)):
 
-        for label_index in xrange(len(labels)):
-            if isinstance(add_string, basestring):
-                self.logger.info("add_string%s", add_string, annotation.region_names[label_index])
-            else:
-                self.logger.info("%s", annotation.region_names[label_index])
-
-            # Add any additional labels
-            all_labels = [labels[label_index]] + add_lbl
+            self.logger.info("%s", add_string + annotation.region_names[label_index])
 
             # Get the indexes of the vertices corresponding to this label:
-            verts_indices_of_label, = numpy.where(annotation.region_mapping[:] == label_index)
+            verts_indices_of_label, = numpy.where(annotation.region_mapping[:] == region_mapping_indexes[label_index])
             verts_indices_of_label_size = verts_indices_of_label.size
             if verts_indices_of_label_size == 0:
                 continue
+
+            # Add any additional labels
+            all_labels = [labels[label_index]] + add_lbl
 
             # get the vertices for current label and add cras to take them to scanner ras
             verts_of_label = surface.vertices[verts_indices_of_label, :]
@@ -345,33 +343,33 @@ class SurfaceService(object):
                     if numpy.any(numpy.in1d(surf_vxls, all_labels)):  # surf_vxls==lbl if only one target label
                         verts_out_mask[verts_indices_of_label[vertex_index]] = True
 
-            # Vertex indexes and vertices to keep:
-            verts_out_indices, = numpy.where(verts_out_mask)
-            verts_out = surface.vertices[verts_out_indices]
+        # Vertex indexes and vertices to keep:
+        verts_out_indices, = numpy.where(verts_out_mask)
+        verts_out = surface.vertices[verts_out_indices]
 
-            # TODO maybe: make sure that all voxels of this label correspond to at least one vertex.
-            # Create a similar mask for faces by picking only triangles of which all 3 vertices are included
-            face_out_mask = numpy.c_[
-                verts_out_mask[surface.triangles[:, 0]], verts_out_mask[surface.triangles[:, 1]], verts_out_mask[
-                    surface.triangles[:, 2]]].all(axis=1)
-            faces_out = surface.triangles[face_out_mask]
+        # TODO maybe: make sure that all voxels of this label correspond to at least one vertex.
+        # Create a similar mask for faces by picking only triangles of which all 3 vertices are included
+        face_out_mask = numpy.c_[
+            verts_out_mask[surface.triangles[:, 0]], verts_out_mask[surface.triangles[:, 1]], verts_out_mask[
+                surface.triangles[:, 2]]].all(axis=1)
+        faces_out = surface.triangles[face_out_mask]
 
-            # The old vertices' indexes of faces have to be transformed to the new vrtx_out_inds:
-            for iF in xrange(faces_out.shape[0]):
-                for vertex_index in xrange(3):
-                    faces_out[iF, vertex_index], = numpy.where(faces_out[iF, vertex_index] == verts_out_indices)
+        # The old vertices' indexes of faces have to be transformed to the new vrtx_out_inds:
+        for iF in xrange(faces_out.shape[0]):
+            for vertex_index in xrange(3):
+                faces_out[iF, vertex_index], = numpy.where(faces_out[iF, vertex_index] == verts_out_indices)
 
-            surface.vertices = verts_out
-            surface.triangles = faces_out
+        surface.vertices = verts_out
+        surface.triangles = faces_out
 
-            # Write the output surfaces and annotations to files. Also write files with the indexes of vertices to keep.
-            IOUtils.write_surface(out_surf_path, surface)
+        # Write the output surfaces and annotations to files. Also write files with the indexes of vertices to keep.
+        IOUtils.write_surface(out_surf_path, surface)
 
-            annotation.set_region_mapping(annotation.get_region_mapping_by_indices([verts_out_indices]))
-            IOUtils.write_annotation(out_surf_path + ".annot", annotation)
+        annotation.set_region_mapping(annotation.get_region_mapping_by_indices([verts_out_indices]))
+        IOUtils.write_annotation(out_surf_path + ".annot", annotation)
 
-            numpy.save(out_surf_path + "-idx.npy", verts_out_indices)
-            numpy.savetxt(out_surf_path + "-idx.txt", verts_out_indices, fmt='%d')
+        numpy.save(out_surf_path + "-idx.npy", verts_out_indices)
+        numpy.savetxt(out_surf_path + "-idx.txt", verts_out_indices, fmt='%d')
 
 
     # TODO: maybe create a new "connectome" service and transfer this function there
