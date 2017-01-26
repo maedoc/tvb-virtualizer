@@ -266,8 +266,8 @@ class SurfaceService(object):
             return grid, n_grid
 
 
-    def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path, add_string='',
-                           vertex_neighbourhood=1, add_lbl=[],
+    def sample_vol_on_surf(self, surf_path, vol_path, annot_path, out_surf_path, cras_path,
+                           add_string='',vertex_neighbourhood=1, add_lbl=[],
                            lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
         Sample a volume of a specific label on a surface, by keeping only those surface vertices, the nearest voxel of
@@ -294,8 +294,8 @@ class SurfaceService(object):
         verts_out_mask = numpy.repeat([False], surface.vertices.shape[0])
 
         for label_index in xrange(len(labels)):
-            if isinstance(ctx, basestring):
-                self.logger.info("ctx-%s-%s", ctx, annotation.region_names[label_index])
+            if isinstance(add_string, basestring):
+                self.logger.info("add_string%s", add_string, annotation.region_names[label_index])
             else:
                 self.logger.info("%s", annotation.region_names[label_index])
 

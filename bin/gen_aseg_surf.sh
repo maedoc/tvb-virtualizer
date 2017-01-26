@@ -37,7 +37,7 @@ done
 for h in lh rh
 do
     aseglist=ASEG_LIST_$h
-    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.aseg_surf_conc_annot('$ASEG_SURFS/aseg','$SURF/$h.aseg','$LABEL/$h.aseg.annot','${!aseglist}',lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
+    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.aseg_surf_conc_annot('$ASEG_SURFS/aseg','$SURF/$h.aseg','$LABEL/$h.aseg.annot','${!aseglist}',lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
 done
 
 
