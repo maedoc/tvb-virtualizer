@@ -239,7 +239,7 @@ do
 done
 
 #If connectivity similarity is one of the criteria for parcellation
-if [[ $SUBAPARC_MODE == *"con"* ]]
+if [ $CON_SIM_AFF > 0.0 ]
 then
 
     #Sample the connectome volume to T1 space
@@ -247,19 +247,16 @@ then
     then
         flirt -applyxfm -in $DMR/tdi_lbl-v$VOX.nii.gz -ref $MRI/T1.nii.gz -init $DMR/d2t.mat -out ./tdi_lbl-v$VOX-in-t1.nii.gz -interp nearestneighbour
     else
-        mri_vol2vol --mov $DMR/tdi_ends-v$VOX.nii.gz --targ $MRI/T1.mgz --o ./tdi_ends-v$VOX-in-t1.mgz --reg $DMR/d2t.reg --nearest
-        mri_convert ./tdi_ends-v$VOX-in-t1.mgz ./tdi_ends-v$VOX-in-t1.nii.gz --out_orientation ras
+        mri_vol2vol --mov $DMR/tdi_lbl-v$VOX.nii.gz --targ $MRI/T1.mgz --o ./tdi_lbl-v$VOX-in-t1.mgz --reg $DMR/d2t.reg --nearest
+        mri_convert ./tdi_lbl-v$VOX-in-t1.mgz ./tdi_lbl-v$VOX-in-t1.nii.gz --out_orientation ras
     fi
 
     #Quality control snapshot depending on whether VOX resolution is 1, and on the existence of tdi_ends-v1 or not
-    if [ -e ./tdi_ends-v1-in-t1.nii.gz ]
+    if [ -e $TDI/tdi_ends-v1-in-t1.nii.gz ]
     then
-        if [ $VOX != 1 ]
-            python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 3vols $MRI/T1.nii.gz ./tdi_lbl-v$VOX-in-T1nii.gz ./tdi_ends-v1-in-T1.nii.gz
-        else
-            python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 3vols $MRI/T1.nii.gz ./tdi_ends-v1-in-T1.nii.gz ./tdi_lbl-v$VOX-in-T1nii.gz
+        python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 3vols $MRI/T1.nii.gz $TDI/tdi_ends-v1-in-t1.nii.gz ./tdi_lbl-v$VOX-in-t1.nii.gz
     else
-        python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 2vols $MRI/T1.nii.gz $./tdi_lbl-v$VOX-in-T1nii.gz
+        python -m $SNAPSHOT --snapshot_name tdilbl-in-T1 2vols $MRI/T1.nii.gz ./tdi_lbl-v$VOX-in-t1.nii.gz
     fi
     ref_vol_path=./tdi_lbl-v$VOX-in-t1.nii.gz
 
