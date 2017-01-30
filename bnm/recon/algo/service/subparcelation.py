@@ -5,6 +5,7 @@ import numpy
 import scipy
 from scipy.spatial.distance import pdist, cdist, squareform
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.manifold import SpectralEmbedding
 #from scipy.cluster import hierarchy
 #import bnm.recon.algo.tree as tree
 from bnm.recon.io.factory import IOUtils
@@ -127,11 +128,27 @@ class SubparcellationService(object):
         clusters=-numpy.ones((n_points,)).astype('i')
         #Cluster areas'list
         clusters_size=[0.0,0.0]
-        #Find the two most distant points for deterministic initialization:
-        [c1, c2] = numpy.where(numpy.max(distance))
-        #Assign them as first points to each cluster:
-        clusters[c1] = 0
-        clusters[c2] = 1
+        #Deterministic initialization: find two points that maximize their mutual distance,
+        #and are, optionally, well connected:
+        #...Find the maximum distance...
+        max_dist = numpy.max(distance)
+        #...and all pairs of points that of that distance:
+        (c1,c2) = numpy.where(distance==max_dist)
+        if connectivity == None:
+            #...assign the first pair of points as first points to each cluster:
+            clusters[c1[0]] = 0
+            clusters[c2[0]] = 1
+        else:
+            connectivity=connectivity.todense()
+            #...compute the total connectivity of each pair of points to all other points:
+            tot_con=[]
+            for ic in range(len(c1)):
+                tot_con.append(numpy.sum(connectivity[c1[ic],:][:,c2[ic]]))
+            #...find the first pair that maximizes total connectivity as well...
+            con_max_id = numpy.argmax(tot_con)
+            #...and assign it as first points to each cluster:
+            clusters[c1[con_max_id]] = 0
+            clusters[c2[con_max_id]] = 1
         #While there are remaining points:
         n_remaining=n_points-2
         while n_remaining>0:
@@ -257,7 +274,7 @@ class SubparcellationService(object):
     # This function clusters the nodes of a mesh, using hierarchical clustering,
     # an affinity matrix, and connectivity constraints
     def run_clustering(self,affinity,parc_area,verts,faces,ind_verts_con,clustering_mode='divisive',
-                                                                                    connectivity=None, n_clusters=2):
+                                                                                    connectivity=None):
         """
         :param affinity: a distance array, number_of_verts x number_of_verts as clustering criterion
         :param parc_area: the target average parcel area
@@ -296,7 +313,12 @@ class SubparcellationService(object):
         max_parc_area = MAX_PARC_AREA_RATIO * parc_area
         #While there are still clusters to further cluster:
         #NOTE: all masks refer to the original vertices array and are of length n_verts!
+        iter=0
         while len(verts2cluster)>0:
+            iter+=1
+            curr_accept=0
+            curr_too_small=0
+            curr_too_big=0
             # get the first cluster out of the queue
             curr_verts_mask = verts2cluster.pop(0)
             # as well as the corresponding affinity matrix
@@ -309,9 +331,13 @@ class SubparcellationService(object):
             # (approximate number of target clusters - current number of output clusters) /
             # (number of remaining clusters to be further clustered in the queue)
             # minimum should be 2
+            curr_area = self.surface_service.compute_surface_area(verts, faces,
+                                                                  numpy.logical_and(ind_verts_con, curr_verts_mask))
             if clustering_mode == 'agglomerative':
-                curr_n_clusters = \
-                  numpy.max([2,numpy.round(1.0 * (n_clusters - n_out_clusters) / numpy.max([len(verts2cluster),1]))]).astype('i')
+
+                curr_n_clusters = numpy.round(curr_area/parc_area).astype('i')
+                print "     Iteration " + str(iter) + "...aiming at clustering a white tract area of " \
+                      +str(curr_area) +" mm2 in "+ str(curr_n_clusters) + "  clusters..."
                 curr_clusters=self.agglomerative_clustering(curr_affinity, n_clusters=curr_n_clusters,
                                                             connectivity=curr_connectivity)
             elif clustering_mode == 'divisive':
@@ -320,6 +346,8 @@ class SubparcellationService(object):
                 surface['verts']=curr_verts
                 surface['faces'] = curr_faces
                 surface['mask'] = ind_verts_con[curr_verts_mask]
+                print "     Iteration " + str(iter) + "...aiming at clustering a white tract area of " \
+                      +str(curr_area) +" mm2 in 2 clusters..."
                 curr_clusters=self.divisive_clustering(curr_affinity, connectivity=curr_connectivity, surface=surface)
             #and loop through the respective labels...
             for i_cluster in range(curr_n_clusters):
@@ -347,19 +375,26 @@ class SubparcellationService(object):
                     clusters_labels.append(n_out_clusters)
                     #clusters_areas.append(subcluster_lbl_area)
                     n_out_clusters += 1
+                    curr_accept+=1
                 #else if it is too small:
                 elif subcluster_lbl_area<min_parc_area:
                     #...store it as a cluster to be assigned to another one in the end:
                     too_small.append(numpy.array(subcluster_mask))
                     #too_small_clusters_areas.append(subcluster_lbl_area)
                     n_too_small += 1
+                    curr_too_small += 1
                 #else if it is too big:
                 else:
                     #...add it to the queue for further clustering:
                     verts2cluster.append(numpy.array(subcluster_mask))
+                    curr_too_big += 1
+            print " ...returned " + str(curr_accept) + " accepted, " \
+                      +  str(curr_too_small) + " too small, and " + str(curr_too_big) + " too big clusters"
         #If any too small clusters, prepare the distance matrix:
         if n_too_small > 0:
+            print " ...Assigning now " + str(n_too_small) + " too small clusters to the closest clusters in affinity space..."
             if connectivity is not None:
+                print "...subject to structural connectivity constraints..."
                 connectivity = connectivity.todense()
                 connectivity[connectivity == 0] = 100.0
             #...and loop over them:
@@ -383,6 +418,7 @@ class SubparcellationService(object):
                 #Having looped over all clusters, assign now the "too small cluster" to the winning cluster:
                 clusters[too_small[i_small_cluster]] = assign_to_cluster
         clusters_areas=[]
+        print " ...Finally, checking that all clusters are fully connected and calculating final white tract areas..."
         for i_cluster in clusters_labels:
             curr_verts_mask=clusters==i_cluster
             (curr_verts, curr_faces)=self.surface_service.extract_subsurf(verts,faces,curr_verts_mask)
@@ -578,14 +614,13 @@ class SubparcellationService(object):
                         # add it to the affinity metric with the correct weight
                         affinity += geod_dist_aff*self.surface_service.compute_geodesic_dist_affinity(
                             dist[i_comp_verts, :][:, i_comp_verts].todense(), norm='max').astype('single')
-                    #Calculate an approximate number of desired clusters:
-                    n_clusters=numpy.round(comp_area[i_comp]/parc_area).astype('i')
+                    n_clusters = numpy.round(comp_area[i_comp] / parc_area).astype('i')
                     print "...Running clustering, aiming at approximately "+str(n_clusters)+" clusters of " \
                           + str(parc_area)+" mm2 connectivity area..."
                     (clusters, n_clusters, clusters_labels, clusters_areas)=self.run_clustering(affinity,parc_area,
                                                                      verts_comp, faces_comp,ind_verts_con[i_comp_verts],
                                                                      clustering_mode=clustering_mode,
-                                                                       connectivity=connectivity, n_clusters=n_clusters)
+                                                                       connectivity=connectivity)
                     print "..." + str(n_clusters) + \
                           ' parcels finally created for component ' + str(i_comp) \
                           + " of region " + annotation.region_names[i_label] \
