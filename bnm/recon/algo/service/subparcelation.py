@@ -143,7 +143,7 @@ class SubparcellationService(object):
             #...compute the total connectivity of each pair of points to all other points:
             tot_con=[]
             for ic in range(len(c1)):
-                tot_con.append(numpy.sum(connectivity[c1[ic],:][:,c2[ic]]))
+                tot_con.append(numpy.sum(connectivity[c1[ic],:]+connectivity[c2[ic],:]))
             #...find the first pair that maximizes total connectivity as well...
             con_max_id = numpy.argmax(tot_con)
             #...and assign it as first points to each cluster:
@@ -159,7 +159,7 @@ class SubparcellationService(object):
             points_left=clusters==-1
             mean_dist = numpy.mean( distance[points_left,:][:,clusters==ics[1]], axis=1) - \
                    numpy.mean( distance[points_left,:][:,clusters==ics[0]], axis=1)
-            sort_dist = numpy.sort(mean_dist)[::-1]
+            sort_dist = numpy.sort(mean_dist)[::-1].tolist()
             #The desirable sign for the clustering criterion
             sign = 1
             #Keep looping while True
@@ -174,11 +174,11 @@ class SubparcellationService(object):
             #While loop=True and there are still elements in the sort_dist list:
             while loop and len(sort_dist)>0:
                 #Get either the first (for the smallest cluster) or the last (for the bigger cluster) element:
-                curr_dist = sort_dist.pop([pop])
+                curr_dist = sort_dist.pop(pop)
                 #If the distance is positive (for the smallest cluster) or negative (for the bigger cluster)...
                 if curr_dist*sign>=0.0:
                     #...get the points that are equal to that distance...
-                    curr_points, = numpy.where(mean_dist==sort_dist)
+                    curr_points, = numpy.where(mean_dist==curr_dist)
                     #...if there is a connectivity constraint...
                     if connectivity is not None:
                         #...loop through those points...
@@ -395,8 +395,8 @@ class SubparcellationService(object):
             print " ...Assigning now " + str(n_too_small) + " too small clusters to the closest clusters in affinity space..."
             if connectivity is not None:
                 print "...subject to structural connectivity constraints..."
-                connectivity = connectivity.todense()
-                connectivity[connectivity == 0] = 100.0
+                connectivity_temp = connectivity.todense()
+                connectivity_temp[connectivity == 0] = 100.0
             #...and loop over them:
             for i_small_cluster in range(n_too_small):
                 #...initialize a very long distance as minimum distance:
@@ -410,13 +410,14 @@ class SubparcellationService(object):
                     temp_dist = numpy.mean(affinity[too_small[i_small_cluster], :][:, clusters == i_cluster])
                     if connectivity is not None:
                         # ...making sure that the connectivity constraint is met
-                        temp_dist += numpy.min(connectivity[too_small[i_small_cluster], :][:, clusters == i_cluster])
+                        temp_dist += numpy.min(numpy.sum(connectivity[c1[ic],:]+connectivity[:,c2[ic]])[too_small[i_small_cluster], :][:, clusters == i_cluster])
                     #...if it is the new minimum distance, perform the corresponding assignments:
                     if temp_dist < mindist:
                         mindist = temp_dist
                         assign_to_cluster = i_cluster
                 #Having looped over all clusters, assign now the "too small cluster" to the winning cluster:
                 clusters[too_small[i_small_cluster]] = assign_to_cluster
+            del connectivity_temp
         clusters_areas=[]
         print " ...Finally, checking that all clusters are fully connected and calculating final white tract areas..."
         for i_cluster in clusters_labels:
