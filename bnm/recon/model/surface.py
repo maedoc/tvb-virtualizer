@@ -3,7 +3,7 @@
 import numpy
 from bnm.recon.model.constants import *
 from trimesh import Trimesh, intersections
-
+#from bnm.recon.algo.service.surface import  SurfaceService
 
 class Surface(object):
     """
@@ -12,8 +12,8 @@ class Surface(object):
     Has also few methods to read from this mesh (e.g. a contour cut).
     """
 
-    def __init__(self, vertices, triangles, center_ras, generic_metadata, vertices_metadata=None,
-                 vertices_coord_system=None, triangles_metadata=None):
+    def __init__(self, vertices, triangles, center_ras=[0,0,0], vertices_coord_system=None, area_mask=None,
+                                            generic_metadata=None, vertices_metadata=None, triangles_metadata=None):
 
         self.vertices = vertices  # array of (x,y,z) tuples
         self.triangles = triangles  # array of (v1, v2, v3) indices in vertices array
@@ -24,6 +24,11 @@ class Surface(object):
         self.triangles_metadata = triangles_metadata
 
         self.vertices_coord_system = vertices_coord_system
+
+        if area_mask is None:
+            self.area_mask = numpy.ones((numpy.array(self.vertices).shape[0],),dtype='bool')
+        else:
+            self.area_mask = area_mask
 
     def get_main_metadata(self):
         if self.vertices_metadata is not None:
@@ -64,6 +69,15 @@ class Surface(object):
             y_array[s] = contours[s][:, X_Y_INDEX[projection][1]]
 
         return x_array, y_array
+
+    # def compute_area(self):
+    #     if numpy.all(self.area_mask):
+    #         vertices=self.vertices
+    #         triangles=self.triangles
+    #     else:
+    #         surface_service = SurfaceService()
+    #         (vertices,triangles) = surface_service.extract_subsurf(self,self.area_mask,output="verts_triangls")[:2]
+    #     return numpy.sum(surface_service.tri_area(vertices[triangles]))
 
     def compute_normals(self):
         """

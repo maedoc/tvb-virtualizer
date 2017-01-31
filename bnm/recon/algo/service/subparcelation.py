@@ -119,8 +119,7 @@ class SubparcellationService(object):
         :param distance: a distance (affinity) matrix of n_points x n_points, to be used for clustering
         :param connectivity: an optional structural connectivity constraint matrix of 1s (True) and 0s (False),
                             for the directly (dis)connected (neighboring) points, respectively
-        :param surface: an optional dictionary with keys "verts", "faces", "mask", to be used for computing the area
-                        of each cluster as its size. Alternatively, cluster size equals the number of points in it.
+        :param surface: an optional surface object
         :return: clusters: a vector assigning all points to 0 (cluster 1) or 1 (cluster 2)
         """
         #Initialize clusters' indexes to -1, signifying points still remaining to be clustered:
@@ -179,34 +178,52 @@ class SubparcellationService(object):
                 if curr_dist*sign>=0.0:
                     #...get the points that are equal to that distance...
                     curr_points, = numpy.where(mean_dist==curr_dist)
-                    #...if there is a connectivity constraint...
-                    if connectivity is not None:
-                        #...loop through those points...
-                        for cur_pnt in curr_points:
-                            # ...to check if they are connected with any of the  cluster points...
-                            if numpy.sum(connectivity[clusters==ic,:][:,cur_pnt])>0.0:
-                                #...and assign them to the current cluster if yes...
-                                clusters[cur_pnt] = ic
-                                #...and signal that at least one point has been assigned...
-                                cluster_done=True
-                                n_assigned[ic]+=1
-                    else:
-                        # ...and assign them to the current cluster...
-                        clusters[curr_points]=ic
-                        # ...and signal that at least one point has been assigned...
-                        cluster_done = True
-                        n_assigned[ic]+=len[curr_points]
+                    # ...and assign them to the current cluster...
+                    clusters[curr_points] = ic
+                    # ...signaling that at least one point has been assigned...
+                    cluster_done = True
+                    n_assigned[ic] += len(curr_points)
+                    #...if the surface is in the input and structural constraints are present...
+                    if (surface is not None) and (connectivity is not None):
+                        #Find how many connnected components are now in this cluster:
+                        (n_components, components, comp_areas) = \
+                            self.surface_service.connected_surface_components(surface=surface,
+                                                                              connectivity=connectivity,
+                                                                              verts_mask=clusters==ic)
+
+                        #If there are more than one components,
+                        if n_components>1:
+                            #we need to remove all but the main and larger component:
+                            #...find the component labels,
+                            comp_labels = numpy.unique(components)
+                            #...except for the masked ones (-1), i.e., those that do not belong to this cluster
+                            comp_labels=comp_labels[comp_labels>-1].tolist()
+                            #...find the main and larger component:
+                            comp_max = numpy.argmax(comp_areas)
+                            #...and remove it from the list of components to remove
+                            comp_labels.remove(comp_max)
+                            #...find the points of the components to remove
+                            remove_points = numpy.where(numpy.in1d(components,comp_labels))
+                            #...remove them from this cluster...
+                            clusters[remove_points] = -1
+                            #...reduce accordingly the assignment counter
+                            n_assigned[ic] -= len(remove_points)
+                            #...if we removed exactly the points we have just added and no changes
+                            # has been made to the cluster
+                            if numpy.all(numpy.sort(curr_points)==numpy.sort(remove_points)):
+                                #...signal so...
+                                cluster_done = False
                 else:
                     #if the distance is negative (for the smallest cluster) or positive (for the biggest cluster)...
                     #... there are no available points to assign to this cluster...
                     cluster_done = True
                 #If we are done with this cluster...
                 if cluster_done==True:
-                    #...compute its new area if there were any new points assigned...
-                    if n_assigned[ic]>0:
+                    #...compute its new area if there were any new points assigned or removed...
+                    if n_assigned[ic] != 0:
                         if surface is not None:
-                            clusters_size[ic] = self.surface_service.compute_surface_area(surface['verts'], surface['faces'],
-                                                                        numpy.logical_and(clusters==ic,surface['mask']))
+                            clusters_size[ic] = self.surface_service.compute_surface_area(surface,
+                                                                      numpy.logical_and(surface.area_mask,clusters==ic))
                         else:
                             clusters_size[ic] = numpy.sum(clusters==ic)
                     #...if this was the first (smallest) cluster, move to the next one...
@@ -273,15 +290,11 @@ class SubparcellationService(object):
 
     # This function clusters the nodes of a mesh, using hierarchical clustering,
     # an affinity matrix, and connectivity constraints
-    def run_clustering(self,affinity,parc_area,verts,faces,ind_verts_con,clustering_mode='divisive',
-                                                                                    connectivity=None):
+    def run_clustering(self,affinity,parc_area,surface,clustering_mode='divisive', connectivity=None):
         """
         :param affinity: a distance array, number_of_verts x number_of_verts as clustering criterion
         :param parc_area: the target average parcel area
-        :param verts: the array of vertices' coordinates, number_of_verts x 3
-        :param faces: the array of faces, number_of_faces x 3, integers
-        :param ind_verts_con: a boolean array, defining a mask on the vertices, where true stands for those vertices
-                        that are close to voxels, where white matter tracts start or end
+        :param surface: a surface object
         :param geod_dist: geodesic distance array, number_of_verts x number_of_verts, used for assignment of too small
                             clusters to accepted ones
         :param clustering_mode: 'agglomerative'or 'divisive' hierarchical clustering
@@ -290,7 +303,7 @@ class SubparcellationService(object):
         :return: clusters: an array of one integer index>=0, coding for participation to a cluster/parcel
         """
         #Total number of vertices to cluster:
-        n_verts = verts.shape[0]
+        n_verts = surface.vertices.shape[0]
         #Initialize
         # -the number of resulting clusters:
         n_out_clusters = 0
@@ -331,45 +344,33 @@ class SubparcellationService(object):
             # (approximate number of target clusters - current number of output clusters) /
             # (number of remaining clusters to be further clustered in the queue)
             # minimum should be 2
-            curr_area = self.surface_service.compute_surface_area(verts, faces,
-                                                                  numpy.logical_and(ind_verts_con, curr_verts_mask))
+            curr_area = self.surface_service.compute_surface_area(surface,
+                                                         area_mask=numpy.logical_and(surface.area_mask,curr_verts_mask))
             if clustering_mode == 'agglomerative':
-
                 curr_n_clusters = numpy.round(curr_area/parc_area).astype('i')
                 print "     Iteration " + str(iter) + "...aiming at clustering a white tract area of " \
                       +str(curr_area) +" mm2 in "+ str(curr_n_clusters) + "  clusters..."
                 curr_clusters=self.agglomerative_clustering(curr_affinity, n_clusters=curr_n_clusters,
                                                             connectivity=curr_connectivity)
             elif clustering_mode == 'divisive':
-                (curr_verts, curr_faces) = self.surface_service.extract_subsurf(verts, faces, curr_verts_mask)
-                surface=dict()
-                surface['verts']=curr_verts
-                surface['faces'] = curr_faces
-                surface['mask'] = ind_verts_con[curr_verts_mask]
                 print "     Iteration " + str(iter) + "...aiming at clustering a white tract area of " \
                       +str(curr_area) +" mm2 in 2 clusters..."
-                curr_clusters=self.divisive_clustering(curr_affinity, connectivity=curr_connectivity, surface=surface)
+                curr_clusters=self.divisive_clustering(curr_affinity, connectivity=curr_connectivity,
+                                                surface=self.surface_service.extract_subsurf(surface, curr_verts_mask))
             #and loop through the respective labels...
             for i_cluster in range(curr_n_clusters):
                 # ...compute a boolean mask of the vertices of each label:
                 subcluster_mask=numpy.array(curr_verts_mask)
                 subcluster_mask[curr_verts_mask == True] = curr_clusters==i_cluster
                 #...and calculate the area of that parcel that touches white matter tracts:
-                subcluster_lbl_area = self.surface_service.compute_surface_area(verts, faces,
-                                                                                numpy.logical_and(ind_verts_con,subcluster_mask))
+                subcluster_lbl_area = self.surface_service.compute_surface_area(surface,
+                                                                  numpy.logical_and(surface.area_mask,subcluster_mask))
                 #If subcluster_lbl_area is between the min and max areas allowed:
                 if subcluster_lbl_area>min_parc_area and subcluster_lbl_area<max_parc_area:
-                    #...store it as a new accepted cluster/parcel:
-                    (curr_verts, curr_faces) = self.surface_service.extract_subsurf(verts, faces, subcluster_mask)
-                    if connectivity is not None:
-                        # and its corresponding connectivity matrix, if any
-                        curr_connectivity = connectivity[subcluster_mask, :][:, subcluster_mask]
-                    else:
-                        curr_connectivity = None
+                    #...make sure that the parcel is fully connected:
                     n_components = \
-                        self.surface_service.connected_surface_components(curr_verts, curr_faces,
-                                                                          connectivity=curr_connectivity,
-                                                                          mask=ind_verts_con[subcluster_mask])[0]
+                        self.surface_service.connected_surface_components(connectivity=connectivity,
+                                                                          verts_mask=subcluster_mask)[0]
                     assert n_components == 1
                     clusters[subcluster_mask]=n_out_clusters
                     clusters_labels.append(n_out_clusters)
@@ -399,8 +400,8 @@ class SubparcellationService(object):
                 connectivity_temp[connectivity == 0] = 100.0
             #...and loop over them:
             for i_small_cluster in range(n_too_small):
-                #...initialize a very long distance as minimum distance:
-                mindist = 1000.0  # this is 1 meter long!
+                #...initialize an infintely long distance as minimum distance:
+                mindist = +numpy.inf
                 #...and the assignement to a cluster:
                 assign_to_cluster = -1
                 #...loop over the existing clusters so far:
@@ -410,7 +411,8 @@ class SubparcellationService(object):
                     temp_dist = numpy.mean(affinity[too_small[i_small_cluster], :][:, clusters == i_cluster])
                     if connectivity is not None:
                         # ...making sure that the connectivity constraint is met
-                        temp_dist += numpy.min(numpy.sum(connectivity[c1[ic],:]+connectivity[:,c2[ic]])[too_small[i_small_cluster], :][:, clusters == i_cluster])
+                        temp_dist += \
+                            numpy.min(numpy.sum(connectivity[too_small[i_small_cluster], :][:, clusters == i_cluster]))
                     #...if it is the new minimum distance, perform the corresponding assignments:
                     if temp_dist < mindist:
                         mindist = temp_dist
@@ -421,17 +423,9 @@ class SubparcellationService(object):
         clusters_areas=[]
         print " ...Finally, checking that all clusters are fully connected and calculating final white tract areas..."
         for i_cluster in clusters_labels:
-            curr_verts_mask=clusters==i_cluster
-            (curr_verts, curr_faces)=self.surface_service.extract_subsurf(verts,faces,curr_verts_mask)
-            if connectivity is not None:
-                # and its corresponding connectivity matrix, if any
-                curr_connectivity = connectivity[curr_verts_mask, :][:, curr_verts_mask]
-            else:
-                curr_connectivity = None
             (n_components, _, comp_area) = \
-                self.surface_service.connected_surface_components(curr_verts, curr_faces,
-                                                                  connectivity=curr_connectivity,
-                                                                  mask=ind_verts_con[curr_verts_mask])
+                self.surface_service.connected_surface_components(surface=surface, connectivity=connectivity,
+                                                                  verts_mask=clusters==i_cluster)
             assert n_components==1
             clusters_areas.append(comp_area[0])
         #The following code is not used anymore:
@@ -538,14 +532,14 @@ class SubparcellationService(object):
                 print "Added "+annotation.region_names[i_label]+" as it stands..."
                 continue
             # Get the vertices and faces of this label:
-            (verts_lbl, faces_lbl) = self.surface_service.extract_subsurf(surface.vertices, surface.triangles, ind_verts_mask)
+            label_surface = self.surface_service.extract_subsurf(surface, ind_verts_mask)
             # Compute distances among directly connected vertices
-            dist = self.surface_service.vertex_connectivity(verts_lbl, faces_lbl, mode="sparse",
+            dist = self.surface_service.vertex_connectivity(label_surface, mode="sparse",
                                                             metric='euclidean', symmetric=True ).astype('single')
             # Mask of label vertices that are neighbors of tract end voxels ("con"):
-            ind_verts_con = numpy.in1d(ind_verts, con_verts_idx)
+            label_surface.area_mask = numpy.in1d(ind_verts, con_verts_idx)
             # Calculate total area on_out_labels of "con" surface:
-            lbl_area = self.surface_service.compute_surface_area(verts_lbl, faces_lbl, ind_verts_con)
+            lbl_area = self.surface_service.compute_surface_area(label_surface)
             print annotation.region_names[i_label]+" total connectivity area = " + str(lbl_area) + " mm2"
             # If no further parcellation is needed
             if lbl_area < 1.5*parc_area:
@@ -560,7 +554,7 @@ class SubparcellationService(object):
                 continue
             # Get all different (dis)connected components
             n_components, components, comp_area = \
-                self.surface_service.connected_surface_components(verts_lbl,faces_lbl, connectivity=dist,mask=ind_verts_con)
+                self.surface_service.connected_surface_components(surface=label_surface, connectivity=dist)
             n_components=len(comp_area)
             print str(n_components)+" connected components in total of "\
                   +str(comp_area)+" mm2 connectivity area, respectively"
@@ -587,7 +581,7 @@ class SubparcellationService(object):
                     print "...Clustering will run for surface component " + str(i_comp) \
                           + " of region " + annotation.region_names[i_label]
                     # Extract the sub-surface of this component
-                    (verts_comp, faces_comp) = self.surface_service.extract_subsurf(verts_lbl, faces_lbl, i_comp_verts)
+                    component_surface = self.surface_service.extract_subsurf(label_surface, i_comp_verts)
                     if structural_connectivity_constraint:
                         print "...Forming the structural connectivity constraint matrix..."
                         connectivity = dist[i_comp_verts, :][:, i_comp_verts].astype('single')
@@ -597,7 +591,7 @@ class SubparcellationService(object):
                     if con_sim_aff>0:
                         print "...Computing the connectivity dissimilarity affinity matrix..."
                         affinity=\
-                          self.surface_service.compute_consim_affinity(verts_comp, vox, voxxzy, con, cras).astype('single')
+                          self.surface_service.compute_consim_affinity(component_surface.vertices, vox, voxxzy, con, cras).astype('single')
                         # Convert cosine distance to cosine
                         affinity = 1 - affinity
                         # invert cosine similarity to arccos distance
@@ -619,9 +613,8 @@ class SubparcellationService(object):
                     print "...Running clustering, aiming at approximately "+str(n_clusters)+" clusters of " \
                           + str(parc_area)+" mm2 connectivity area..."
                     (clusters, n_clusters, clusters_labels, clusters_areas)=self.run_clustering(affinity,parc_area,
-                                                                     verts_comp, faces_comp,ind_verts_con[i_comp_verts],
-                                                                     clustering_mode=clustering_mode,
-                                                                       connectivity=connectivity)
+                                                                    component_surface, clustering_mode=clustering_mode,
+                                                                    connectivity=connectivity)
                     print "..." + str(n_clusters) + \
                           ' parcels finally created for component ' + str(i_comp) \
                           + " of region " + annotation.region_names[i_label] \
@@ -636,7 +629,8 @@ class SubparcellationService(object):
                 assign_to_parcel=-1
                 for ip in parcel_labels:
                     temp_dist=\
-                        numpy.min(cdist(verts_lbl[i_comp_verts, :], verts_lbl[parcels==ip, :], 'euclidean'),axis=None)
+                        numpy.min(cdist(label_surface.vertices[i_comp_verts, :], label_surface.vertices[parcels==ip, :],
+                                        'euclidean'),axis=None)
                     if temp_dist<comp_to_parcel_mindist:
                         comp_to_parcel_mindist=temp_dist
                         assign_to_parcel=ip
@@ -660,10 +654,10 @@ class SubparcellationService(object):
             n_out_labels += int(n_parcels)
             for i_parcel in range(n_parcels):
                 i_parc_verts=parcels==i_parcel
-                parc_area_con=self.surface_service.compute_surface_area(verts_lbl, faces_lbl,
-                                                          mask=numpy.logical_and(i_parc_verts,ind_verts_con))
+                parc_area_con=self.surface_service.compute_surface_area(label_surface,
+                                                  area_mask=numpy.logical_and(i_parc_verts,label_surface.area_mask))
                 print '...parcel '+names_lbl[i_parcel]+ ' of connectivity area ' + str(parc_area_con) + ' mm2'
-                parc_area_tot = self.surface_service.compute_surface_area(verts_lbl,faces_lbl,mask=i_parc_verts)
+                parc_area_tot = self.surface_service.compute_surface_area(label_surface,area_mask=i_parc_verts)
                 print "...and of total area " + str(parc_area_tot)  + ' mm2'
         print "Write output annotation file"
         # Stack everything together

@@ -15,6 +15,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components, shortest_path
 from sklearn.metrics.pairwise import paired_distances
 from scipy.spatial.distance import cdist
+from copy import deepcopy
 
 class SurfaceService(object):
     logger = get_logger(__name__)
@@ -63,10 +64,29 @@ class SurfaceService(object):
         :return: the merge result surface and region mapping.
         """
 
-        out_surface = Surface([], [], [], None)
+        out_surface = Surface([], [])
         out_surface.vertices = numpy.r_[lh_surface.vertices, rh_surface.vertices]
         out_surface.triangles = numpy.r_[lh_surface.triangles, rh_surface.triangles + lh_surface.vertices.max()]
         out_region_mapping = numpy.r_[left_region_mapping, right_region_mapping + lh_surface.triangles.max()]
+        out_surface.area_mask = numpy.r_[lh_surface.area_mask, rh_surface.area_mask]
+        if numpy.all(lh_surface.center_ras==rh_surface.center_ras):
+            out_surface.center_ras=lh_surface.center_ras
+        else:
+            print "Error! The left and right surfaces have different centers in RAS coordinates!"
+            return 0
+        if lh_surface.vertices_coord_system==rh_surface.vertices_coord_system:
+            out_surface.vertices_coord_system=lh_surface.vertices_coord_system
+        elif lh_surface.vertices_coord_system is None:
+                print "Warning: Left surface coordinate system is None. Setting output coordinate system according " +\
+                  "to the right surface, equal to " + str(rh_surface.vertices_coord_system)
+                out_surface.vertices_coord_system = rh_surface.vertices_coord_system
+        elif rh_surface.vertices_coord_system is None:
+            print "Warning: Right surface coordinate system is None. Setting output coordinate system according " + \
+                  "to the left surface, equal to " + str(lh_surface.vertices_coord_system)
+            out_surface.vertices_coord_system=lh_surface.vertices_coord_system
+        else:
+            print "Error! The left and right surfaces have different -non None- coordinate systems!"
+            return 0
         return out_surface, out_region_mapping
 
     def compute_gdist_mat(self, surf_name='pial', max_distance=40.0):
@@ -104,57 +124,68 @@ class SurfaceService(object):
         # Convert them to normalized distances and return them
         return geodist
 
-    # TODO: instead of verts and faces we should use surface. Denis: not sure about this!..
-    def extract_subsurf(self, verts, faces, verts_mask):
+    def extract_subsurf(self, surface, verts_mask, output='surface'):
         """
         Extracts a sub-surface that contains only the masked vertices and the corresponding faces.
         An important step is to replace old vertices indexes of faces to the new ones.
-        :param verts_mask: vertices to keep mask.
-        :return: vertices and faces of the sub-surface.
+        :param: surface: input surface object
+        :param: verts_mask: mask of the sub-surface to be extracted
+        :return: output surface object
         """
 
-        verts_out = verts[verts_mask, :]
-        face_mask = numpy.c_[verts_mask[faces[:, 0]], verts_mask[faces[:, 1]], verts_mask[faces[:, 2]]].all(axis=1)
-        faces_out = faces[face_mask]
+        verts_out = surface.vertices[verts_mask]
+        triangles_mask = numpy.c_[verts_mask[surface.triangles[:, 0]],
+                                  verts_mask[surface.triangles[:, 1]],
+                                  verts_mask[surface.triangles[:, 2]]].all(axis=1)
+        triangles_out = numpy.array(surface.triangles[triangles_mask, :])
         verts_out_inds, = numpy.where(verts_mask)
-
-        for face_idx in xrange(faces_out.shape[0]):
+        for triang_idx in xrange(triangles_out.shape[0]):
             for vertex_idx in xrange(3):
-                faces_out[face_idx, vertex_idx], = numpy.where(faces_out[face_idx, vertex_idx] == verts_out_inds)
+                triangles_out[triang_idx, vertex_idx], = \
+                    numpy.where(triangles_out[triang_idx, vertex_idx] == verts_out_inds)
+        if output=='surface':
+            out_surface = deepcopy(surface)
+            out_surface.vertices = verts_out
+            out_surface.triangles = triangles_out
+            out_surface.area_mask = surface.area_mask[verts_out_inds]
+            return surface
+        else:
+            return (verts_out,triangles_out,surface.area_mask[verts_out_inds])
 
-        return verts_out, faces_out
-
-    # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
-    def compute_surface_area(self, verts, faces, mask=None):
+    def compute_surface_area(self, surface, area_mask=None):
         """
             This function computes the surface area, after optionally applying a mask to choose a sub-surface
-            :param verts: vertices' coordinates array (number of vertices x 3)
-            :param faces: faces' array, integers>=0 (number of faces x 3)
-            :param mask: optional boolean mask (number of vertices x )
+            :param: surface: input surface object
+            :param area_mask: optional boolean mask (number of vertices x ) to overwrite the surface.area_mask
             :return: (sub)surface area, float
             """
-        if mask is not None:
-            # Apply the optional mask in order to extract the sub-surface (vertices and relevant triangles)
-            (verts, faces) = self.extract_subsurf(verts, faces, mask)
-        return numpy.sum(self.tri_area(verts[faces]))
+        if area_mask is None:
+            area_mask=surface.area_mask
+        # Apply the mask in order to extract the sub-surface (vertices and relevant triangles)
+        (vertices, triangles) = self.extract_subsurf(surface, area_mask,output='verts_triangls')[:2]
+        return numpy.sum(self.tri_area(vertices[triangles]))
 
-    # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
-    def vertex_connectivity(self, verts, faces, mode="sparse", metric=None, symmetric=False):
+    def vertex_connectivity(self, surface, mode="sparse", metric=None, symmetric=False, verts_mask=None):
         """
         It computes a sparse matrix of the connectivity among the vertices of a surface.
-        :param verts: vertices' coordinates array (number of vertices x 3)
-        :param faces: faces' array, integers>=0 (number of faces x 3)
+        :param surface: input surface object
         :param mode: "sparse" by default or "2D"
         :param metric: None by default, could be "euclidean"
         :param symmetric: True for symmetric matrix output
+        :param verts_mask: a mask to apply the method to a a sub-surface of the original surface
         :return: the computed matrix.
         """
+        if verts_mask is not None:
+            (vertices, triangles) = self.extract_subsurf(surface,verts_mask,output='verts_triangls')[:2]
+        else:
+            vertices = surface.vertices
+            triangles = surface.triangles
         # Get all pairs of vertex indexes (i.e., edges) that appear in each face (triangle)
-        edges = numpy.r_[faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]]
+        edges = numpy.r_[triangles[:, [0, 1]], triangles[:, [1, 2]], triangles[:, [2, 0]]]
         # Remove repetitions
         edges = numpy.vstack(set(map(tuple, edges)))
         # Mark all existing pairs to 1
-        n_v = verts.shape[0]
+        n_v = vertices.shape[0]
         n_e = edges.shape[0]
         #For symmetric output...
         if symmetric:
@@ -171,7 +202,7 @@ class SurfaceService(object):
                 # Create non-sparse matrix
                 con = con.todense()
         else:
-            d = paired_distances(verts[edges[:, 0]], verts[edges[:, 1]], metric)
+            d = paired_distances(vertices[edges[:, 0]], vertices[edges[:, 1]], metric)
             # For symmetric output...
             if symmetric:
                 # double also d...
@@ -183,34 +214,47 @@ class SurfaceService(object):
         return con
 
     # TODO: use surface instead of verts and faces?? Denis: not sure about this!..
-    def connected_surface_components(self, verts, faces, connectivity=None, mask=None):
+    def connected_surface_components(self, surface=None, connectivity=None, verts_mask=None):
         """
         This function returns all the different disconnected components of a surface, their number and their areas,
-        after applying an optional boolean mask to exclude some subsurface from the area calculation.
+        after applying an optional boolean mask to exclude some subsurface from the whole computation.
         There should be at least one component returned, if the whole surface is connected.
-        :param verts: vertices' coordinates array (number of vertices x 3)
-        :param faces: faces' array, integers>=0 (number of faces x 3)
+        :param surface: input surface object
         :param connectivity: optionally an array or sparse matrix of structural connectivity constraints,
                             where True or 1 or entry>0 stands for the existing direct connections
                             among neighboring vertices (i.e., vertices of a common triangular face)
-        :param mask: optional boolean mask (number of vertices x )
+        :param verts_mask: optional boolean mask (number of vertices x ) for vertices to include to the input surface
         :return:
         """
-        #Create the connectivity matrix, if not in the input:
-        if connectivity is None:
-           connectivity=self.vertex_connectivity(verts, faces)
+        if (surface is None) and connectivity is None:
+            print "Error: neither a surface, nor a connectivity matrix in the input!"
+            return 0
+        elif connectivity is None:
+            n_verts=surface.vertices.shape[0]
+            # Create the connectivity matrix, if not in the input:
+            connectivity = self.vertex_connectivity(surface, verts_mask=verts_mask)
+            if verts_mask is None:
+                verts_mask = numpy.ones((n_verts,), dtype=bool)
+        else:
+            n_verts = connectivity.shape[0]
+            if verts_mask is None:
+                verts_mask = numpy.ones((n_verts,), dtype=bool)
+            else:
+                connectivity = connectivity[verts_mask, :][:, verts_mask]
         # Find all connected components of this surface
-        (n_components, components) = \
+        (n_components, components_masked) = \
             connected_components(connectivity, directed=False, connection='weak', return_labels=True)
-        # Check out if there is a mask for the vertices to be included in the area calculation
-        if mask is None:
-            mask = numpy.ones(components.shape, dtype=bool)
         comp_area = []
-        # For each component...
-        for ic in range(n_components):
-            i_comp_verts = components == ic
-            # ...compute the surface area, after applying any specified mask
-            comp_area.append(self.compute_surface_area(verts, faces, mask=numpy.logical_and(i_comp_verts,mask)))
+        if surface is not None:
+            # For each component...
+            for ic in range(n_components):
+                i_comp_verts = components_masked == ic
+                # ...compute the surface area, after applying any specified mask
+                comp_area.append(self.compute_surface_area(surface,
+                                                           mask=numpy.logical_and(i_comp_verts, surface.area_mask)))
+        #Prepare final components' labels output:
+        components = -numpy.ones((n_verts,)).astype('i')
+        components[verts_mask]=components_masked
         return n_components, components, comp_area
 
 
