@@ -58,36 +58,36 @@ class SurfaceService(object):
         for surf_name in glob.glob(surfs_glob):
             self.convert_fs_to_brain_visa(surf_name)
 
-    def merge_lh_rh(self, lh_surface, rh_surface, left_region_mapping, right_region_mapping):
+    def merge_surfaces(self, surfaces, region_mappings=[]):
         """
-        Merge left and right hemisphere surfaces, and their region mappings.
+        Merge several surfaces, and their region mappings.
         :return: the merge result surface and region mapping.
         """
-
+        n_surfaces = len(surfaces)
         out_surface = Surface([], [])
-        out_surface.vertices = numpy.r_[lh_surface.vertices, rh_surface.vertices]
-        out_surface.triangles = numpy.r_[lh_surface.triangles, rh_surface.triangles + lh_surface.vertices.max()]
-        out_region_mapping = numpy.r_[left_region_mapping, right_region_mapping + lh_surface.triangles.max()]
-        out_surface.area_mask = numpy.r_[lh_surface.area_mask, rh_surface.area_mask]
-        if numpy.all(lh_surface.center_ras==rh_surface.center_ras):
-            out_surface.center_ras=lh_surface.center_ras
-        else:
-            print "Error! The left and right surfaces have different centers in RAS coordinates!"
-            return 0
-        if lh_surface.vertices_coord_system==rh_surface.vertices_coord_system:
-            out_surface.vertices_coord_system=lh_surface.vertices_coord_system
-        elif lh_surface.vertices_coord_system is None:
-                print "Warning: Left surface coordinate system is None. Setting output coordinate system according " +\
-                  "to the right surface, equal to " + str(rh_surface.vertices_coord_system)
-                out_surface.vertices_coord_system = rh_surface.vertices_coord_system
-        elif rh_surface.vertices_coord_system is None:
-            print "Warning: Right surface coordinate system is None. Setting output coordinate system according " + \
-                  "to the left surface, equal to " + str(lh_surface.vertices_coord_system)
-            out_surface.vertices_coord_system=lh_surface.vertices_coord_system
-        else:
-            print "Error! The left and right surfaces have different -non None- coordinate systems!"
-            return 0
+        out_region_mapping=[]
+        if len(region_mappings) == n_surfaces:
+            reg_map=True
+        for i_srf in range(n_surfaces):
+            if reg_map:
+                out_region_mapping = numpy.r_[region_mappings, region_mappings[i_srf] + out_surface.vertices.shape[0]]
+            out_surface.add_vertices_and_triangles(surfaces[i_srf].vertices,
+                                                   surfaces[i_srf].triangles,
+                                                   surfaces[i_srf].area_mask)
+            if out_surface.center_ras==[]:
+                out_surface.center_ras = surfaces[i_srf].center_ras
+            elif out_surface.center_ras != surfaces[i_srf].center_ras:
+                print "Error! At least two surfaces have different -non empty- centers in RAS coordinates!"
+                return 0
+            #TODO: think about how to better merge these fields
+            for attribute in ["vertices_coord_system", "generic_metadata", "vertices_metadata", "triangles_metadata"]:
+                out_value = getattr(out_surface,attribute)
+                value= getattr(surfaces[i_srf],attribute)
+                setattr(out_surface,attribute,out_value.append(value))
+        #out_surface.stack_vertices_and_triangles()
         return out_surface, out_region_mapping
+
+
 
     def compute_gdist_mat(self, surf_name='pial', max_distance=40.0):
         max_distance = float(max_distance)  # in case passed from sys.argv
@@ -144,11 +144,12 @@ class SurfaceService(object):
                 triangles_out[triang_idx, vertex_idx], = \
                     numpy.where(triangles_out[triang_idx, vertex_idx] == verts_out_inds)
         if output=='surface':
-            out_surface = deepcopy(surface)
-            out_surface.vertices = verts_out
-            out_surface.triangles = triangles_out
-            out_surface.area_mask = surface.area_mask[verts_out_inds]
-            return surface
+            out_surface = Surface(verts_out,triangles_out,area_mask=surface.area_mask[verts_out_inds],
+                                  center_ras=surface.center_ras, vertices_coord_system=surface.vertices_coord_system,
+                                  generic_metadata=surface.generic_metadata,
+                                  vertices_metadata=surface.vertices_metadata,
+                                  triangles_metadata=surface.triangles_metadata)
+            return out_surface
         else:
             return (verts_out,triangles_out,surface.area_mask[verts_out_inds])
 
@@ -261,17 +262,19 @@ class SurfaceService(object):
     def aseg_surf_conc_annot(self, surf_path, out_surf_path, annot_path, label_indices,
                              lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT)):
         """
-        Concatenate surfaces of specific labels to create a single annotated surface.
+        Concatenate surfaces of one specific label of interest each, to create a single annotated surface.
         """
 
         label_names, color_table = self.annotation_service.lut_to_annot_names_ctab(lut_path=lut_path,
                                                                                    labels=label_indices)
         label_indices = numpy.array(label_indices.split()).astype('i')
 
-        out_surface = Surface([], [], [], None)
+        #                  verts tri area_mask cras
+        surfaces=[]
+        region_mappings=[]
         out_annotation = Annotation([], None, [])
         label_number = -1
-        verts_number = 0
+        #verts_number = 0
 
         for label_index in label_indices:
             this_surf_path = surf_path + "-%06d" % int(label_index)
@@ -280,17 +283,19 @@ class SurfaceService(object):
                 ind_l, = numpy.where(label_indices == label_index)
                 out_annotation.add_region_names_and_colors(label_names[ind_l], color_table[ind_l, :])
                 label_number += 1
-                surface = IOUtils.read_surface(this_surf_path, False)
-                out_surface.set_main_metadata(surface.get_main_metadata())
-                faces = surface.triangles + verts_number  # Update vertices indexes
-                verts_number += surface.vertices.shape[0]
-                out_surface.add_vertices_and_triangles(surface.vertices, faces)
-                out_annotation.add_region_mapping(
-                    label_number * numpy.ones((surface.vertices.shape[0],), dtype='int64'))
-
+                surfaces.append(IOUtils.read_surface(this_surf_path, False))
+                # out_surface.set_main_metadata(surface.get_main_metadata())
+                # faces = surface.triangles + verts_number  # Update vertices indexes
+                # verts_number += surface.vertices.shape[0]
+                # out_surface.add_vertices_and_triangles(surface.vertices, faces, surface.area_mask)
+                #out_annotation.add_region_mapping(
+                #    label_number * numpy.ones((surface.vertices.shape[0],), dtype='int64'))
+                region_mappings.append(numpy.zeros((surfaces[:-1].vertices.shape[0],)))
+        (out_surface,out_region_mapping) = self.merge_surfaces(surfaces,region_mappings)
+        out_annotation.set_region_mapping(out_region_mapping)
         out_annotation.regions_color_table = numpy.squeeze(numpy.array(out_annotation.regions_color_table).astype('i'))
-        out_surface.stack_vertices_and_triangles()
-        out_annotation.stack_region_mapping()
+        #out_surface.stack_vertices_and_triangles()
+        #out_annotation.stack_region_mapping()
 
         IOUtils.write_surface(out_surf_path, out_surface)
         IOUtils.write_annotation(annot_path, out_annotation)

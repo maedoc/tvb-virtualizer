@@ -26,6 +26,7 @@ class Annotation(object):
 
     def add_region_mapping(self, new_region_mapping):
         self.region_mapping.append(new_region_mapping)
+        self.stack_region_mapping()
 
     def stack_region_mapping(self):
         self.region_mapping = numpy.hstack(self.region_mapping)

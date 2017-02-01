@@ -12,7 +12,7 @@ class Surface(object):
     Has also few methods to read from this mesh (e.g. a contour cut).
     """
 
-    def __init__(self, vertices, triangles, center_ras=[0,0,0], vertices_coord_system=None, area_mask=None,
+    def __init__(self, vertices, triangles, area_mask=None, center_ras=[], vertices_coord_system=None,
                                             generic_metadata=None, vertices_metadata=None, triangles_metadata=None):
 
         self.vertices = vertices  # array of (x,y,z) tuples
@@ -26,7 +26,7 @@ class Surface(object):
         self.vertices_coord_system = vertices_coord_system
 
         if area_mask is None:
-            self.area_mask = numpy.ones((numpy.array(self.vertices).shape[0],),dtype='bool')
+            self.area_mask = numpy.ones((self.vertices.shape[0],),dtype='bool')
         else:
             self.area_mask = area_mask
 
@@ -41,13 +41,19 @@ class Surface(object):
         else:
             self.generic_metadata = new_metadata
 
-    def add_vertices_and_triangles(self, new_vertices, new_triangles):
+    def add_vertices_and_triangles(self, new_vertices, new_triangles, new_area_mask=None):
+        n_verts = self.vertices.shape[0]
         self.vertices.append(new_vertices)
-        self.triangles.append(new_triangles)
+        self.triangles.append(new_triangles+n_verts)
+        if new_area_mask==None:
+            new_area_mask=numpy.ones((new_vertices.shape[0],), dtype='bool')
+        self.area_mask.append(new_area_mask)
+        self.stack_vertices_and_triangles()
 
     def stack_vertices_and_triangles(self):
         self.vertices = numpy.vstack(self.vertices)
         self.triangles = numpy.vstack(self.triangles)
+        self.area_mask = numpy.hstack(self.area_mask)
 
     def _get_plane_origin(self, ras):
         plane_origin = numpy.subtract(ras, self.center_ras)

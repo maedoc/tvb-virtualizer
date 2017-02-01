@@ -67,8 +67,10 @@ class GiftiSurfaceIO(ABCSurfaceIO):
             vol_geom_center_ras[1] = float(vertices_metadata[CENTER_RAS_GIFTI_SURF[1]])
             vol_geom_center_ras[2] = float(vertices_metadata[CENTER_RAS_GIFTI_SURF[2]])
 
-        return Surface(vertices, triangles, vol_geom_center_ras, image_metadata, vertices_metadata,
-                       vertices_coord_system, triangles_metadata)
+        return Surface(vertices, triangles, area_mask=None,
+                       center_ras=vol_geom_center_ras, vertices_coord_system=vertices_coord_system,
+                       generic_metadata=image_metadata, vertices_metadata=vertices_metadata,
+                       triangles_metadata=triangles_metadata)
 
     def write(self, surface_obj, file_path):
         image_metadata = GiftiMetaData().from_dict(surface_obj.generic_metadata)
@@ -138,7 +140,7 @@ class FreesurferIO(ABCSurfaceIO):
                 self.logger.warning("Could not read the ras centering point from surface %s header. "
                                     "The cras will be %s", surface_path, cras)
 
-        return Surface(vertices, triangles, cras, metadata)
+        return Surface(vertices, triangles, area_mask=None, center_ras=cras, generic_metadata=metadata)
 
     def write(self, surface, surface_path):
         write_geometry(filepath=surface_path, coords=surface.vertices, faces=surface.triangles,
@@ -192,4 +194,4 @@ class H5SurfaceIO(ABCSurfaceIO):
         vertices = h5_file['/vertices'][()]
         triangles = h5_file['/triangles'][()]
         h5_file.close()
-        return Surface(vertices, triangles, [], None)
+        return Surface(vertices, triangles)

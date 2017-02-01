@@ -15,7 +15,7 @@ import nibabel
 import numpy as np
 
 #Inputs:
-clustering_mode='divisive'
+clustering_mode='agglomerative'
 surf='lh.aseg'
 labels='10'
 surf_path=os.path.join(os.environ['SURF'], surf)

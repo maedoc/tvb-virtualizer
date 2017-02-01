@@ -13,6 +13,10 @@ class AnnotationService(object):
     def default_lut(self):
         return DEFAULT_LUT
 
+
+    #TODO: an annotation merging function, similar to the one for merging surfaces
+
+
     def read_lut(self, lut_path=os.path.join(os.environ['FREESURFER_HOME'], DEFAULT_LUT),
                  key_mode='label'):
         f = open(lut_path, "r")
