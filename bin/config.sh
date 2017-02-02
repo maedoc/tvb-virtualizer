@@ -3,8 +3,8 @@
 #Configuration common for all processing streams:
 
 #The path to the pipeline code
-CODE=/Users/dionperd/VirtualVEP/software/bnm-recon-tools/bin
-#CODE=/Users/dionperd/CBR/software/git/bnm-recon-tools/bin
+#CODE=/Users/dionperd/VirtualVEP/software/bnm-recon-tools/bin
+CODE=/Users/dionperd/CBR/software/git/bnm-recon-tools/bin
 export CODE
 echo CODE=$CODE
 
@@ -26,8 +26,8 @@ echo SUBJECT=$SUBJECT
 
 #Maybe make a copy of freesurfer subjects’ directory for each subject
 # copy target to avoid modifying it
-CURRENT_SUBJECTS_DIR=/Users/dionperd/VEP/$SUBJECT
-#CURRENT_SUBJECTS_DIR=/Users/dionperd/CBR/VEP/$SUBJECT
+#CURRENT_SUBJECTS_DIR=/Users/dionperd/VEP/$SUBJECT
+CURRENT_SUBJECTS_DIR=/Users/dionperd/CBR/VEP/$SUBJECT
 if [ ! -d $CURRENT_SUBJECTS_DIR ]
 then
     mkdir CURRENT_SUBJECTS_DIR
@@ -198,7 +198,7 @@ echo T1_VOX2RASTKR_PATH=$T1_VOX2RASTKR_PATH
 #SEGMENTATION:
 
 #Sub-parcellation area in mm2
-SUBAPARC_AREA=100
+SUBAPARC_AREA=200
 export SUBAPARC_AREA
 echo SUBAPARC_AREA=$SUBAPARC_AREA
 
@@ -288,11 +288,16 @@ ASEG_LIST_rh="47 49 50 51 52 53 54 58"
 export ASEG_LIST_rh
 echo ASEG_LIST_rh=$ASEG_LIST_rh
 
-#Sub-parcellation mode:
-#Any combination of "con", "geod", "adj"
-SUBAPARC_MODE='con+geod+adj'
-export SUBAPARC_MODE
-echo SUBAPARC_MODE=$SUBAPARC_MODE
+#Sub-parcellation modes:
+STRUCTURAL_CONNECTIVITY_CONSTRAINT=True
+export STRUCTURAL_CONNECTIVITY_CONSTRAINT
+echo STRUCTURAL_CONNECTIVITY_CONSTRAINT=$STRUCTURAL_CONNECTIVITY_CONSTRAINT
+CON_SIM_AFF=1.0
+export CON_SIM_AFF
+echo CON_SIM_AFF=$CON_SIM_AFF
+GEOD_DIST_AFF=1.0
+export GEOD_DIST_AFF
+echo GEOD_DIST_AFF=$GEOD_DIST_AFF
 
 #DOWNSAMPLING:
 

@@ -4,7 +4,7 @@ import os
 import numpy
 import scipy.ndimage
 from bnm.recon.logger import get_logger
-from bnm.recon.algo.service.annotation import AnnotationService
+from bnm.recon.algo.service.annotation import AnnotationService, DEFAULT_LUT
 from bnm.recon.io.factory import IOUtils
 from bnm.recon.model.volume import Volume
 from bnm.recon.model.constants import NPY_EXTENSION
@@ -15,14 +15,14 @@ class VolumeService(object):
     def __init__(self):
         self.annotation_service = AnnotationService()
 
-    def vol_to_ext_surf_vol(self, in_vol_path, labels=None, hemi=None, out_vol_path=None, labels_surf=None,
+    def vol_to_ext_surf_vol(self, in_vol_path, labels=None, ctx=None, out_vol_path=None, labels_surf=None,
                             labels_inner='0'):
         """
         Separate the voxels of the outer surface of a structure, from the inner ones. Default behavior: surface voxels
         retain their label, inner voxels get the label 0, and the input file is overwritten by the output.
         """
 
-        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, hemi=hemi)
+        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, ctx=ctx)
         # Set the labels for the surfaces
         if labels_surf is None:
             labels_surf = labels
@@ -68,9 +68,11 @@ class VolumeService(object):
             # and for each voxel
             for voxel_index in xrange(label_volxels_i.size):
                 # indexes of this voxel:
-                current_voxel_i, current_voxel_j, current_voxel_k = label_volxels_i[voxel_index], label_voxels_j[voxel_index], label_voxels_k[voxel_index]
+                current_voxel_i, current_voxel_j, current_voxel_k = \
+                    label_volxels_i[voxel_index], label_voxels_j[voxel_index], label_voxels_k[voxel_index]
                 # Create the neighbors' grid sharing a face
-                ijk_grid = border_grid + numpy.tile(numpy.array([current_voxel_i, current_voxel_j, current_voxel_k]), (n_border, 1))
+                ijk_grid = border_grid + \
+                           numpy.tile(numpy.array([current_voxel_i, current_voxel_j, current_voxel_k]), (n_border, 1))
                 # Remove voxels outside the image
                 indices_inside_image = numpy.all([(ijk_grid[:, 0] >= 0), (ijk_grid[:, 0] < volume.dimensions[0]),
                                                (ijk_grid[:, 1] >= 0), (ijk_grid[:, 1] < volume.dimensions[1]),
@@ -105,7 +107,8 @@ class VolumeService(object):
         numpy.save(filepath + "-idx.npy", out_ijk)
         numpy.savetxt(filepath + "-idx.txt", out_ijk, fmt='%d')
 
-    def mask_to_vol(self, in_vol_path, mask_vol_path, out_vol_path=None, labels=None, hemi=None, vol2mask_path=None, vn=1, th=0.999, labels_mask=None, labels_nomask='0'):
+    def mask_to_vol(self, in_vol_path, mask_vol_path, out_vol_path=None, labels=None, ctx=None, vol2mask_path=None,
+                    vn=1, th=0.999, labels_mask=None, labels_nomask='0'):
         """
         Identify the voxels that are neighbors within a voxel distance vn, to a mask volume, with a mask threshold of th
         Default behavior: we assume a binarized mask and set th=0.999, no neighbors search, only looking at the exact
@@ -113,7 +116,7 @@ class VolumeService(object):
         """
 
         # Set the target labels:
-        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, hemi=hemi)
+        labels, number_of_labels = self.annotation_service.read_input_labels(labels=labels, ctx=ctx)
         # Set the labels for the selected voxels
         if labels_mask is None:
             labels_mask = labels
@@ -176,7 +179,8 @@ class VolumeService(object):
             label_voxels_i, label_voxels_j, label_voxels_k = numpy.where(volume.data == current_label)
 
             for voxel_index in xrange(label_voxels_i.size):
-                current_voxel_i, current_voxel_j, current_voxel_k = label_voxels_i[voxel_index], label_voxels_j[voxel_index], label_voxels_k[voxel_index]
+                current_voxel_i, current_voxel_j, current_voxel_k = \
+                    label_voxels_i[voxel_index], label_voxels_j[voxel_index], label_voxels_k[voxel_index]
                 # TODO if necessary: deal with voxels at the edge of the image, such as brain stem ones...
                 #     if any([(i==0), (i==mask_shape[0]-1),(j==0), (j==mask_shape[0]-1),(k==0), (k==mask_shape[0]-1)]):
                 #               mask_shape[i,j,k]=0
@@ -336,3 +340,23 @@ class VolumeService(object):
         node_volume.data[node_volume.data > 0] = numpy.r_[1:(connectivity.shape[0] + 1)]
 
         IOUtils.write_volume(node_volume_path, node_volume)
+
+
+    def con_vox_in_ras(self,ref_vol_path):
+        """
+        This function reads a tdi_lbl volume and returns the voxels that correspond to connectome nodes,
+        and their coordinates in ras space, simply by applying the affine transform of the volume
+        :param ref_vol_path: the path to the tdi_lbl volume
+        :return: vox and voxxyz,
+                i.e., the labels (integers>=1) and the coordinates of the connnectome nodes-voxels, respectively
+        """
+        # Read the reference tdi_lbl volume:
+        vollbl = IOUtils.read_volume(ref_vol_path)
+        vox = vollbl.data.astype('i')
+        # Get only the voxels that correspond to connectome nodes:
+        voxijk, = numpy.where(vox.flatten() > 0)
+        voxijk = numpy.unravel_index(voxijk, vollbl.dimensions)
+        vox = vox[voxijk[0], voxijk[1], voxijk[2]]
+        # ...and their coordinates in ras xyz space
+        voxxzy = vollbl.affine_matrix.dot(numpy.c_[voxijk[0], voxijk[1], voxijk[2], numpy.ones(vox.shape[0])].T)[:3].T
+        return vox, voxxzy

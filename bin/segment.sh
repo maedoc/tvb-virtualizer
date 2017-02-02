@@ -155,7 +155,7 @@ then
     #Get the voxels that lie at the external surface (or border) of the target volume structures:
 
     #Using my python code:
-    #python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.vol_to_ext_surf_vol('$MRI/$vol.nii.gz',labels='$ASEG_LIST',hemi='lh rh',out_vol_path='./$vol-surf.nii.gz',labels_surf=None,labels_inner='0')"
+    #python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.vol_to_ext_surf_vol('$MRI/$vol.nii.gz',labels='$ASEG_LIST',ctx='lh rh',out_vol_path='./$vol-surf.nii.gz',labels_surf=None,labels_inner='0')"
     #flirt -applyxfm -in ./$vol-surf.nii -ref $DMR/b0.nii.gz -out ./$vol-surf-in-d.nii.gz -init $DMR/t2d.mat -interp nearestneighbour
 
     #Using freesurfer:
@@ -200,7 +200,7 @@ fi
 
 #Apply the mask to the parcellation volume now to get the parcellation volume of the regions that white matter touches. i.e., that survive the mask constructed above:
 #Using my python code:
-#python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.mask_to_vol('$mask_this_vol.nii.gz','./mask-$SEGMENT_METHOD.nii.gz','./$vol-mask.nii.gz',labels='$ASEG_LIST',hemi='lh rh',vol2mask_path=None,vn=$VOL_VN,th=1,labels_mask=None,labels_nomask='0')"
+#python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.mask_to_vol('$mask_this_vol.nii.gz','./mask-$SEGMENT_METHOD.nii.gz','./$vol-mask.nii.gz',labels='$ASEG_LIST',ctx='lh rh',vol2mask_path=None,vn=$VOL_VN,th=1,labels_mask=None,labels_nomask='0')"
 
 #Using freesurfer:
 mris_calc $mask_this_vol.nii.gz masked ./mask-$SEGMENT_METHOD.nii.gz
@@ -218,12 +218,12 @@ python -m $SNAPSHOT --snapshot_name $vol-mask 2vols $MRI/T1.nii.gz ./$vol-mask.n
 #Give an empty list for add_lbl, if you want cerebral white matter to be masked out
 for h in lh rh
 do
-python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.white','./$vol-mask.nii.gz','$LABEL/$h.aparc.annot','./$h.white-mask','$CRAS_PATH',ctx='$h',vn=$SURF_VN,add_lbl=[2,41])"
+    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.white','./$vol-mask.nii.gz','$LABEL/$h.aparc.annot','./$h.white-mask','$CRAS_PATH',add_string='ctx-'+'$h'+'-',vertex_neighbourhood=int('$SURF_VN'), add_lbl=[2,41], lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
 done
 #Sub-cortical:
 for h in lh rh
 do
-python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.aseg','./$vol-mask.nii.gz','$LABEL/$h.aseg.annot','./$h.aseg-mask','$CRAS_PATH',ctx=None,vn=$SURF_VN,add_lbl=[])"
+    python -c "import bnm.recon.algo.reconutils; bnm.recon.algo.reconutils.sample_vol_on_surf('$SURF/$h.aseg','./$vol-mask.nii.gz','$LABEL/$h.aseg.annot','./$h.aseg-mask','$CRAS_PATH',vertex_neighbourhood=int('$SURF_VN'),lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
 done
 
 #Quality control snapshots:
@@ -239,7 +239,7 @@ do
 done
 
 #If connectivity similarity is one of the criteria for parcellation
-if [[ $SUBAPARC_MODE == *"con"* ]]
+if [ $CON_SIM_AFF > 0.0 ]
 then
 
     #Sample the connectome volume to T1 space
@@ -247,19 +247,16 @@ then
     then
         flirt -applyxfm -in $DMR/tdi_lbl-v$VOX.nii.gz -ref $MRI/T1.nii.gz -init $DMR/d2t.mat -out ./tdi_lbl-v$VOX-in-t1.nii.gz -interp nearestneighbour
     else
-        mri_vol2vol --mov $DMR/tdi_ends-v$VOX.nii.gz --targ $MRI/T1.mgz --o ./tdi_ends-v$VOX-in-t1.mgz --reg $DMR/d2t.reg --nearest
-        mri_convert ./tdi_ends-v$VOX-in-t1.mgz ./tdi_ends-v$VOX-in-t1.nii.gz --out_orientation ras
+        mri_vol2vol --mov $DMR/tdi_lbl-v$VOX.nii.gz --targ $MRI/T1.mgz --o ./tdi_lbl-v$VOX-in-t1.mgz --reg $DMR/d2t.reg --nearest
+        mri_convert ./tdi_lbl-v$VOX-in-t1.mgz ./tdi_lbl-v$VOX-in-t1.nii.gz --out_orientation ras
     fi
 
     #Quality control snapshot depending on whether VOX resolution is 1, and on the existence of tdi_ends-v1 or not
-    if [ -e ./tdi_ends-v1-in-t1.nii.gz ]
+    if [ -e $TDI/tdi_ends-v1-in-t1.nii.gz ]
     then
-        if [ $VOX != 1 ]
-            python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 3vols $MRI/T1.nii.gz ./tdi_lbl-v$VOX-in-T1nii.gz ./tdi_ends-v1-in-T1.nii.gz
-        else
-            python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 3vols $MRI/T1.nii.gz ./tdi_ends-v1-in-T1.nii.gz ./tdi_lbl-v$VOX-in-T1nii.gz
+        python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 3vols $MRI/T1.nii.gz $TDI/tdi_ends-v1-in-t1.nii.gz ./tdi_lbl-v$VOX-in-t1.nii.gz
     else
-        python -m $SNAPSHOT --snapshot_name tdilbl-tdi-in-T1 2vols $MRI/T1.nii.gz $./tdi_lbl-v$VOX-in-T1nii.gz
+        python -m $SNAPSHOT --snapshot_name tdilbl-in-T1 2vols $MRI/T1.nii.gz ./tdi_lbl-v$VOX-in-t1.nii.gz
     fi
     ref_vol_path=./tdi_lbl-v$VOX-in-t1.nii.gz
 
@@ -276,7 +273,7 @@ fi
 
 for h in lh rh
 do
-    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.white', '$LABEL/$h.aparc.annot', './$h.white-mask-idx.npy', out_annot_path='$LABEL/$h.aparc$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels=None, hemi='$h', ctx='$h', mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
+    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.white', '$LABEL/$h.aparc.annot', './$h.white-mask-idx.npy', out_annot_path='$LABEL/$h.aparc$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels=None, ctx='$h', add_string='ctx-'+'$h'+'-', mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
 
     #Quality control snapshot
     python -m $SNAPSHOT --snapshot_name subaparc-aparc$SUBAPARC_AREA-$SUBAPARC_MODE-$h surf_annot $SURF/$h.inflated $LABEL/$h.aparc$SUBAPARC_AREA-$SUBAPARC_MODE.annot
@@ -285,7 +282,7 @@ done
 for h in lh rh
 do
     aseglist=ASEG_LIST_$h
-    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.aseg', '$LABEL/$h.aseg.annot', './$aseg-mask-idx.npy', out_annot_path='$LABEL/$h.aseg$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels='${!aseglist}', hemi=None, ctx=None, mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT.txt')"
+    python -c "import bnm.recon.algo.reconutils; import os; bnm.recon.algo.reconutils.connectivity_geodesic_subparc('$SURF/$h.aseg', '$LABEL/$h.aseg.annot', './$aseg-mask-idx.npy', out_annot_path='$LABEL/$h.aseg$SUBAPARC_AREA-$SUBAPARC_MODE.annot', parc_area=int('$SUBAPARC_AREA'), labels='${!aseglist}', ctx=None, add_string=None, mode='$SUBAPARC_MODE', cras_path='$CRAS_PATH', ref_vol_path='$ref_vol_path', consim_path='$out_consim_path', lut_path='$FREESURFER_HOME/FreeSurferColorLUT_INS.txt')"
 
     #Quality control snapshot
     python -m $SNAPSHOT --snapshot_name subaparc-aseg$SUBAPARC_AREA-$SUBAPARC_MODE-$h surf_annot $SURF/$h.aseg $LABEL/$h.aseg$SUBAPARC_AREA-$SUBAPARC_MODE.annot

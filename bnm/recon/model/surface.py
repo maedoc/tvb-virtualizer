@@ -3,7 +3,7 @@
 import numpy
 from bnm.recon.model.constants import *
 from trimesh import Trimesh, intersections
-
+#from bnm.recon.algo.service.surface import  SurfaceService
 
 class Surface(object):
     """
@@ -12,8 +12,8 @@ class Surface(object):
     Has also few methods to read from this mesh (e.g. a contour cut).
     """
 
-    def __init__(self, vertices, triangles, center_ras, generic_metadata, vertices_metadata=None,
-                 vertices_coord_system=None, triangles_metadata=None):
+    def __init__(self, vertices, triangles, area_mask=None, center_ras=[], vertices_coord_system=None,
+                                            generic_metadata=None, vertices_metadata=None, triangles_metadata=None):
 
         self.vertices = vertices  # array of (x,y,z) tuples
         self.triangles = triangles  # array of (v1, v2, v3) indices in vertices array
@@ -24,6 +24,11 @@ class Surface(object):
         self.triangles_metadata = triangles_metadata
 
         self.vertices_coord_system = vertices_coord_system
+
+        if area_mask is None:
+            self.area_mask = numpy.ones((self.vertices.shape[0],),dtype='bool')
+        else:
+            self.area_mask = area_mask
 
     def get_main_metadata(self):
         if self.vertices_metadata is not None:
@@ -36,13 +41,19 @@ class Surface(object):
         else:
             self.generic_metadata = new_metadata
 
-    def add_vertices_and_triangles(self, new_vertices, new_triangles):
+    def add_vertices_and_triangles(self, new_vertices, new_triangles, new_area_mask=None):
+        n_verts = self.vertices.shape[0]
         self.vertices.append(new_vertices)
-        self.triangles.append(new_triangles)
+        self.triangles.append(new_triangles+n_verts)
+        if new_area_mask==None:
+            new_area_mask=numpy.ones((new_vertices.shape[0],), dtype='bool')
+        self.area_mask.append(new_area_mask)
+        self.stack_vertices_and_triangles()
 
     def stack_vertices_and_triangles(self):
         self.vertices = numpy.vstack(self.vertices)
         self.triangles = numpy.vstack(self.triangles)
+        self.area_mask = numpy.hstack(self.area_mask)
 
     def _get_plane_origin(self, ras):
         plane_origin = numpy.subtract(ras, self.center_ras)
@@ -64,6 +75,15 @@ class Surface(object):
             y_array[s] = contours[s][:, X_Y_INDEX[projection][1]]
 
         return x_array, y_array
+
+    # def compute_area(self):
+    #     if numpy.all(self.area_mask):
+    #         vertices=self.vertices
+    #         triangles=self.triangles
+    #     else:
+    #         surface_service = SurfaceService()
+    #         (vertices,triangles) = surface_service.extract_subsurf(self,self.area_mask,output="verts_triangls")[:2]
+    #     return numpy.sum(surface_service.tri_area(vertices[triangles]))
 
     def compute_normals(self):
         """
