@@ -23,17 +23,22 @@ apt-get update
 apt-get install -y cmake tcsh libeigen3-dev liblapack-dev libblas-dev libssl-dev fsl-complete
 
 # setup work partition
-parted /dev/sdc mklabel msdos
-parted /dev/sdc mkpart primary 512 100%
-mkfs.xfs /dev/sdc1
-
-prefix_base=$(dirname $PREFIX)
-mkdir $prefix_base
-echo "/dev/sdc1 $prefix_base xfs noatime,nobarrier 0 0" >> /etc/fstab
-mount $prefix_base
-mkdir $PREFIX
-chown -R ubuntu:ubuntu $prefix_base
-
+if [[ -d $PREFIX ]]
+then
+    echo "$PREFIX setup, skipping."
+else
+    parted /dev/sdc mklabel msdos
+    parted /dev/sdc mkpart primary 512 100%
+    mkfs.xfs /dev/sdc1
+    
+    prefix_base=$(dirname $PREFIX)
+    mkdir $prefix_base
+    echo "/dev/sdc1 $prefix_base xfs noatime,nobarrier 0 0" >> /etc/fstab
+    mount $prefix_base
+    mkdir $PREFIX
+    chown -R ubuntu:ubuntu $prefix_base
+fi
+    
 # setup /work/env/lib as system wide library location
 echo /work/env/lib > /etc/ld.so.conf.d/work.conf
 ldconfig
