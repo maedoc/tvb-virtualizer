@@ -101,4 +101,4 @@ EOF
         echo TODO $PREFIX/bin/python setup.py develop
     fi
 
-popd $PREFIX/src
+popd # $PREFIX/src
