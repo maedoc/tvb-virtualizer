@@ -4,6 +4,7 @@ CLI information for mtrix.
 
 """
 
+import enum
 from .core import BaseCLI, BaseEnv, BaseFlags
 
 
@@ -30,7 +31,8 @@ class BaseMtrixCLI(BaseCLI):
     """
 
     class Flags(BaseMtrixFlags):
-        pass
+        nthreads = "-nthreads"
+        force = "-force"
 
     class Env(BaseMtrixEnv):
         pass
@@ -41,6 +43,11 @@ class fttgen(BaseMtrixCLI):
     The 5ttgen command from the mtrix package.
 
     """
+    class Algorithm(enum.Enum):
+        """The algorithm to be used to derive the 5TT image."""
+        fsl = 'fsl'
+        freesurfer = 'freesurfer'
+
     exe = '5ttgen'
 
 
@@ -65,6 +72,14 @@ class dwi2fod(BaseMtrixCLI):
     The dwi2fod command from the mtrix package.
 
     """
+    class Flags(BaseMtrixCLI.Flags):
+        mask = '-mask'
+
+    class Algorithm(enum.Enum):
+        """The algorithm to use for FOD estimation"""
+        csd = 'csd'
+        msmt_csd = 'msmt_csd'
+
     exe = 'dwi2fod'
 
 
@@ -81,6 +96,14 @@ class dwi2response(BaseMtrixCLI):
     The dwi2response command from the mtrix package.
 
     """
+
+    class Algorithm(enum.Enum):
+        fa = 'fa'
+        manual = 'manual'
+        msmt_5tt = 'msmt_5tt'
+        tax = 'tax'
+        tournier = 'tournier'
+
     exe = 'dwi2response'
 
 
@@ -140,6 +163,19 @@ class tck2connectome(BaseMtrixCLI):
     The tck2connectome command from the mtrix package.
 
     """
+
+    class Flags(BaseMtrixCLI.Flags):
+        assignment_radial_search = "-assignment_radial_search"
+        assignment_end_voxels = "-assignment_end_voxels"
+        scale_length = "-scale_length"
+        stat_edge = "-stat_edge"
+
+    class stat_edge(enum.Enum):
+        sum = "sum"
+        mean = "mean"
+        min = "min"
+        max = "max"
+
     exe = 'tck2connectome'
 
 
@@ -148,6 +184,15 @@ class tckgen(BaseMtrixCLI):
     The tckgen command from the mtrix package.
 
     """
+
+    class Flags(BaseMtrixCLI.Flags):
+        number = "-number"
+        unidirectional = "-unidirectional"
+        maxlength = "-maxlength"
+        step = "-step"
+        act = "-act"
+        seed_gmwmi = "-seed_gmwmi"
+
     exe = 'tckgen'
 
 
@@ -156,6 +201,13 @@ class tckmap(BaseMtrixCLI):
     The tckmap command from the mtrix package.
 
     """
+
+    class Flags(BaseMtrixCLI.Flags):
+        vox = "-vox"
+        ends_only = "-ends_only"
+        template = "-template"
+
+
     exe = 'tckmap'
 
 
@@ -164,6 +216,12 @@ class tcksift(BaseMtrixCLI):
     The tcksift command from the mtrix package.
 
     """
+
+    class Flags(BaseMtrixCLI.Flags):
+        term_number = "-term_number"
+        act = "-act"
+
+
     exe = 'tcksift'
 
 
