@@ -45,7 +45,7 @@ class Runner(metaclass=abc.ABCMeta):
     def fname(self, fname: str): pass
 
     @abc.abstractmethod
-    def run(self, args): pass
+    def run(self, args, capture_output: bool): pass
 
 
 class SimpleRunner(Runner):
@@ -110,10 +110,18 @@ class SimpleRunner(Runner):
             str_args.append(val)
         return str_args
 
-    def run(self, args, **kwargs):
+    def run(self, args, capture_output=False, **kwargs):
         str_args = self.stringify_args(args)
         for i, arg in enumerate(str_args):
             self.logger.debug('args[%d]: %r', i, arg)
         tic = time.time()
-        subprocess.check_call(str_args, **kwargs)
+
+        if not capture_output:
+            subprocess.check_call(str_args, **kwargs)
+            output = None
+        else:
+            output = subprocess.check_output(str_args, stderr=subprocess.STDOUT, universal_newlines=True, **kwargs)
+
         self.logger.debug('elapsed %.2fs' % (time.time() - tic, ))
+        return output
+

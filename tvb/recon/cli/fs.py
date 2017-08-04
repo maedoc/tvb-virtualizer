@@ -204,6 +204,14 @@ class mris_decimate(BaseFsCLI):
     exe = 'mris_decimate'
 
 
+class mris_info(BaseFsCLI):
+    """
+    The mris_info command from the fs package
+
+    """
+    exe = 'mris_info'
+
+
 class mris_smooth(BaseFsCLI):
     """
     The mris_smooth command from the fs package.
@@ -276,17 +284,17 @@ def convert(in_, out,
 
 # TODO in/out typed Union[Volume, VolFile] 
 def binarize(in_file: str, out_file: str,
-             min_val: Union[int, float, NoneType]=None,
+             min_val: Union[int, float, None]=None,
              erode: int=0,
              dilate: int=0,
-             mask_file: Union[str, NoneType]=None,
+             mask_file: Union[str, None]=None,
             ):
     "Binarize image, possibly with dilation or erosion."
     cmd = mri_binarize
     args = [
         cmd.exe,
         cmd.Flags.in_file, in_file,
-        cmd.Flags.out_file, out_file,
+        cmd.Flags.out_file, out_file]
      
     if min_val is not None:
         args += [cmd.Flags.min_val, str(min_val)]
@@ -298,3 +306,10 @@ def binarize(in_file: str, out_file: str,
         args += [cmd.Flags.mask_file, mask_file]
     return args
         
+
+def mris_convert_run(in_: os.PathLike, out: os.PathLike):
+    return [mris_convert.exe, in_, out]
+
+
+def mris_info_run(in_: os.PathLike):
+    return [mris_info.exe, in_]

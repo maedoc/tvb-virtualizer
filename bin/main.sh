@@ -13,6 +13,9 @@ sh $CODE/reconALL.sh
 source $CODE/postreconALL.sh
 #<-It returns all surfaces and volumes...
 
+# Generate surfaces for subcortical structures
+$CODE/aseg2srf -s ${SUBJECT}
+
 
 #Now, for Steps 2 we split to three parallel streams:
 
