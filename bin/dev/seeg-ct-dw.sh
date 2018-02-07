@@ -136,6 +136,7 @@ python -c "import tvb.recon.algo.reconutils; tvb.recon.algo.reconutils.label_wit
 source snapshot.sh 2vols CT-reo.nii.gz CT-lab-mask.nii.gz
 
 # find contact positions
+# and load CT-lab-mask.nii.gz
 python<<EOF
 import nibabel, numpy as np, bnm.recon.algo.reconutils
 nii = nibabel.load('CT-lab-mask.nii.gz')

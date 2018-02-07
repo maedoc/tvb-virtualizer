@@ -9,6 +9,7 @@ root=$1
 nthreads=8
 
 echo "running on data root $root"
+# sleep for 1 second
 sleep 1
 
 # paths
@@ -22,6 +23,7 @@ pushd $root
 t1=$root/T1w
 dmr=$t1/Diffusion
 
+# create TVB directory and pushd on it
 mkdir TVB && pushd TVB
 
 # prep diffusion

@@ -1,5 +1,32 @@
 # -*- coding: utf-8 -*-
+# Tools for building full brain network models from standard structural MR scans.
+# Web-UI helpful to run brain-simulations. To use it, you also need do download
+# TheVirtualBrain-Scientific Package (for simulators). See content of the
+# documentation-folder for more details. See also http://www.thevirtualbrain.org
+#
+# (c) 2012-2017, Baycrest Centre for Geriatric Care ("Baycrest") and others
+#
+# This program is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License along with this
+# program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
+#
+#
 
+# imports
 import os
 import importlib
 from collections import OrderedDict
@@ -29,19 +56,23 @@ _expected_color_lut_labels = [0, 1, 2, 10, 11, 1000, 1001, 2000, 2001]
 
 
 class IOTests(BaseTest):
+    """ iotests class."""
 
     def setUp(self):
+        """set up contain the subject and annot path to label"""
         super().setUp()
         self.subject = 'freesurfer_fsaverage'
         self.annot_path = 'label'
 
     def test_parse_annotation(self):
+        """ testing the annotation using get_date_file"""
         file_path = get_data_file(
             self.subject, self.annot_path, "lh.aparc.annot")
         annot = IOUtils.read_annotation(file_path)
         self.assertEqual(_expected_region_names, annot.region_names)
 
     def test_parse_not_existent_annotation(self):
+        """ testing the annotation if not esistent create one using file_path"""
         file_path = "not_existent_annotation.annot"
         annotation_io = IOUtils.annotation_io_factory(file_path)
         self.assertRaises(IOError, annotation_io.read, file_path)
@@ -52,11 +83,13 @@ class IOTests(BaseTest):
         self.assertRaises(ValueError, annotation_io.read, file_path)
 
     def test_parse_h5_annotation(self):
+        """ test h5 annotation using two get_data_file head2, RegionMapping.h5.'"""
         h5_path = get_data_file('head2', 'RegionMapping.h5')
         annotation = IOUtils.read_annotation(h5_path)
         self.assertEqual(annotation.region_mapping.size, 16)
 
     def test_write_annotation(self):
+        """ writing the new annotation using file_path and output path to temp_file_path"""
         file_path = get_data_file(
             self.subject, self.annot_path, "lh.aparc.annot")
         annotation = IOUtils.read_annotation(file_path)
@@ -67,6 +100,7 @@ class IOTests(BaseTest):
 
 
 class ServiceTests(BaseTest):
+    """Service test class """
 
     def setUp(self):
         super().setUp()
