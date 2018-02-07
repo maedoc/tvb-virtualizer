@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+# imports
 import os
 import sys
 import warnings
@@ -7,6 +10,9 @@ from tvb.recon.algo.service.subparcellation import SubparcellationService
 from tvb.recon.algo.service.sensor import SensorService
 from tvb.recon.algo.service.annotation import AnnotationService, DEFAULT_LUT
 
+# try importing gdist if exists because its a 3rd party library
+# if not it will echo(print) Geodesic distance module unavailable; please pip install gdist
+# means it does no exists try pip install gdist to install it.
 try:
     import gdist
 except ImportError:
@@ -31,15 +37,18 @@ def gen_head_model():
 
 
 def convert_fs_to_brain_visa(fs_surf):
+    "converts surface service to brain visa"
     surfaceService.convert_fs_to_brain_visa(fs_surf)
 
 
 def compute_gdist_mat(surf_name='pial', max_distance=40.0):
+    "calculate gdist using surface name and maximum distance"
     surfaceService.compute_gdist_mat(surf_name, max_distance)
 
 
 def aseg_surf_conc_annot(surf_path, out_surf_path, annot_path, labels,
                          lut_path=os.path.join(FREESURFER_HOME, 'FreeSurferColorLUT.txt')):
+    "assign surface annotation using surface path and labels"
     surfaceService.aseg_surf_conc_annot(
         surf_path, out_surf_path, annot_path, labels, lut_path)
 

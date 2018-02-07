@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 """
 Generates suitable resolution head surf and EEG/MEG sensors descriptions.
 
 """
 
+# imports
 import os
 import os.path
 import numpy
@@ -30,6 +33,8 @@ def mask_mesh(v, f, mask):
 
 
 def write_off(fname, v, f, overwrite=False):
+    """Check if file name exists with overwrite off
+       if it dos'nt create one and write a echo (print)"""
     if not os.path.exists(fname) or overwrite:
         nv = v.shape[0]
         nf = f.shape[0]
@@ -83,6 +88,7 @@ def xyz2rgb(vl):
 
 
 def sens_xyz_ori(v, f, l):
+    "Sens XYZ origin to vertex normal by using numpy"
     surface = Surface(v, f, [], None)
     vn = surface.vertex_normals()
     pos = numpy.zeros((n_sens, 6))
