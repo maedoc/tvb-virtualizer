@@ -39,7 +39,7 @@ $ su apt-get install -y git
 ```
 
 ```sh
-git clone https://github.com/the-virtual-brain/tvb-recon.git
+git clone https://github.com/username/tvb-recon.git
 ```
 
 
