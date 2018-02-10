@@ -32,15 +32,28 @@ _For more examples and usage, please refer to the [Wiki][wiki]._
 
 For Developers.
 
-install git
+Install git
 
 ```sh
 $ su apt-get install -y git
 ```
-
+Fork it
 ```sh
-git clone https://github.com/username/tvb-recon.git
+git clone https://github.com/the-virtual-brain/tvb-recon.git
 ```
+Create your feature branch
+```sh
+git checkout -b feature/fooBar
+```
+Commit your changes
+```sh
+git commit -am 'Add some comments'
+```
+Push to the branch
+```sh
+git push origin feature/fooBar
+```
+Create a new Pull Request.
 
 
 ## Meta
@@ -51,13 +64,6 @@ Distributed under the GNU General Public License v3.0 license. See ``LICENSE`` f
 
 [https://github.com/the-virtual-brain/tvb-recon](https://github.com/the-virtual-brain/)
 
-## Contributing
-
-1. Fork it (<https://github.com/the-virtual-brain/tvb-recon/fork>)
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some comments'`)
-4. Push to the branch (`git push origin feature/fooBar`)
-5. Create a new Pull Request
 
 <!-- Markdown link & img dfn's -->
 
