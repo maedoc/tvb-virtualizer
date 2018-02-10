@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # tvb-recon documentation build configuration file, created by
-# sphinx-quickstart on Sat Feb 10 00:34:46 2018.
+# sphinx-quickstart on Sat Feb 10 08:30:20 2018.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -32,12 +32,11 @@
 # ones.
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.todo',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['.templates']
+templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -50,8 +49,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'tvb-recon'
-copyright = u'2018, umar haruna abdullahi'
-author = u'umar haruna abdullahi'
+copyright = u'2018, the virtual brain'
+author = u'TVB_TEAM'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -72,13 +71,13 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
+todo_include_todos = False
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -97,7 +96,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['.static']
+html_static_path = ['_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -164,7 +163,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'tvb-recon', u'tvb-recon Documentation',
-     author, 'tvb-recon', 'One line description of project.',
+     author, 'tvb-recon', 'Tools for building full brain network models from standard structural MR scans.',
      'Miscellaneous'),
 ]
 

@@ -1,5 +1,5 @@
 .. tvb-recon documentation master file, created by
-   sphinx-quickstart on Sat Feb 10 00:34:46 2018.
+   sphinx-quickstart on Sat Feb 10 08:30:20 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 

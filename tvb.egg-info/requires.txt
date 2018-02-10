@@ -1,0 +1,11 @@
+numpy
+scipy
+scikit-learn
+matplotlib
+trimesh
+anytree
+Pegasus
+h5py
+pytest
+Cython
+gdist
