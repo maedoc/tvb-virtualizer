@@ -6,7 +6,7 @@
 
 This package (tvb-recon) is one of the most powerfull tvb-framework library.
 
-![](header.png)
+![](TVB_logo.svg)
 
 ## Installation
 
