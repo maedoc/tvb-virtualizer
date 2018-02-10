@@ -13,13 +13,13 @@ This package (tvb-recon) is one of the most powerfull tvb-framework library.
 OS X & Linux:
 
 ```sh
-git clone https://github.com/the-virtual-brain/tvb-recon.git
+$ git clone https://github.com/the-virtual-brain/tvb-recon.git
 ```
 
 Windows:
 
 ```sh
-git clone https://github.com/the-virtual-brain/tvb-recon.git
+c:\\ git clone https://github.com/the-virtual-brain/tvb-recon.git
 ```
 
 ## Usage example
@@ -39,19 +39,19 @@ $ su apt-get install -y git
 ```
 Fork it
 ```sh
-git clone https://github.com/the-virtual-brain/tvb-recon.git
+$ git clone https://github.com/the-virtual-brain/tvb-recon.git
 ```
 Create your feature branch
 ```sh
-git checkout -b feature/fooBar
+$ git checkout -b feature/fooBar
 ```
 Commit your changes
 ```sh
-git commit -am 'Add some comments'
+$ git commit -am 'Add some comments'
 ```
 Push to the branch
 ```sh
-git push origin feature/fooBar
+$ git push origin feature/fooBar
 ```
 Create a new Pull Request.
 
