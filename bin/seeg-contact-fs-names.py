@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+# imports
 import os
 import sys
 import argparse
@@ -10,6 +12,8 @@ import subprocess
 
 
 def load_aa_ras(aa_path):
+    """Loading a aa_ras using aa_path on temfile while viewing any temporary
+       file with exists with .nii.gz and reading it using nearest"""
     with tempfile.NamedTemporaryFile(suffix='.nii.gz') as tf:
         # TODO use cli wrapped commands
         subprocess.check_call([
@@ -21,6 +25,7 @@ def load_aa_ras(aa_path):
 
 
 def load_contacts(contact_path):
+    """opening contact_path and reading them using three path x,y,z."""
     contacts = []
     with open(contact_path, 'r') as fd:
         for line in fd.readlines():
@@ -30,6 +35,7 @@ def load_contacts(contact_path):
 
 
 def contact_fs_names(aa_img, contacts, lut):
+    """ Adding names to name,x,y,z to i,j,k to yield name and aa_name."""
     inv_aff = np.linalg.inv(aa_img.affine)
     aa_dat = aa_img.get_data()
     for name, x, y, z in contacts:
@@ -40,6 +46,8 @@ def contact_fs_names(aa_img, contacts, lut):
     
 
 def build_fs_label_name_map(lut_path):
+    """ Reading file using lut_path and stripping lines to
+        see if # exists on line one."""
     lut = {}
     with open(lut_path, 'r') as fd:
         for line in fd.readlines():
@@ -50,12 +58,14 @@ def build_fs_label_name_map(lut_path):
 
 
 def write_results(results, output_tsv):
+    """ Writing results to output_tsv file."""
     with open(output_tsv, 'w') as fd:
         for name, aa_name in results:
             fd.write('%s\t%s\n' % (name, aa_name))
 
 
 def build_argparser():
+    """building using argparse terminal interface libarary."""
     parser = argparse.ArgumentParser()
     parser.add_argument("label_volume", help="nibabel-loadable label volume to analyze")
     parser.add_argument("contacts", help="file produced by seeg-ct.sh describing contact positions")
@@ -66,6 +76,9 @@ def build_argparser():
    
     
 def main():
+    """ main library contains build_argparser() whith will echo
+            all parser.add_argument() helps, print log.info() details and os path to
+            FreeSurferColorLUT.txt."""
     parser = build_argparser()
     parse = parser.parse_args()
     print(parse)

@@ -1,0 +1,297 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Installing the Application &#8212; tvb-recon 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installing-the-application">
+<span id="installing-tvb"></span><h1>Installing the Application<a class="headerlink" href="#installing-the-application" title="Permalink to this headline">¶</a></h1>
+<p>To download <a href="#id3"><span class="problematic" id="id4">|TVB|</span></a> check out the <a class="reference external" href="http://www.thevirtualbrain.org">download site</a></p>
+<p>The TVB software package can be used in 3 different configurations:</p>
+<ul>
+<li><p class="first">on a single machine (personal usage).
+This machine will need to meet the <a class="reference internal" href="#application-requirements">Application requirements</a> for both the visualization and the computation/storage part.
+Any operation launched will use resources from current machine (graphic card, CPU, disk and RAM).</p>
+</li>
+<li><p class="first">in a client/server configuration, where TVB is installed on a server and made accessible to an unlimited number of users.</p>
+<p>This configuration is recommended when you have a powerful server to be used as back-end, where TVB is running and simulation or analysis operations are to be executed.
+The server machine will not require powerful graphics, as visualization will not be done here at all. Only the computation requirements from above will need to be met by the server.</p>
+<p>The visualization can be accessed from a personal computers by a browser (via HTTP).
+A network connection needs to exist between the server where TVB is running and the computer doing the visualization and access.
+<cite>http://${SERVER-IP}:8080</cite> is the default URL.</p>
+</li>
+<li><p class="first">using a cluster (similar with server installation, but with parallelization support).
+Please note that for cluster installations, OAR is expected to be configured separately from TVB and accessible to the user for which the TVB software is launched.</p>
+</li>
+</ul>
+<p>To install <a href="#id5"><span class="problematic" id="id6">|TVB|</span></a> unzip the package and it will create a folder TVB_Distribution.</p>
+<p><a href="#id7"><span class="problematic" id="id8">|TVB|</span></a> developers might need to install TVB <span class="xref std std-ref">differently</span>.</p>
+<div class="section" id="tvb-s-interfaces">
+<h2><a href="#id9"><span class="problematic" id="id10">|TVB|</span></a>’s interfaces<a class="headerlink" href="#tvb-s-interfaces" title="Permalink to this headline">¶</a></h2>
+<p><a href="#id11"><span class="problematic" id="id12">|TVB|</span></a> has a web application GUI interface that can be accessed remotely.
+See the <span class="xref std std-ref">GUI guide</span> for how to use it.</p>
+<p>It also has several flavors of scripting interfaces. These are powerful programmatic interfaces.
+Unlike the GUI they are not meant be used remotely and their leaning curve is steeper.
+See the <span class="xref std std-ref">console interface</span> for usage.</p>
+</div>
+<div class="section" id="launching-the-application">
+<h2>Launching the application<a class="headerlink" href="#launching-the-application" title="Permalink to this headline">¶</a></h2>
+<p>In the TVB_Distribution folder you should find a sub-folder <cite>bin</cite> with a number of scripts:</p>
+<ul class="simple">
+<li>tvb_start</li>
+<li>tvb_clean</li>
+<li>tvb_stop</li>
+<li>contributor_setup</li>
+<li>distribution</li>
+<li>ipython_notebook</li>
+</ul>
+<p>On Linux these scripts will have the <cite>.sh</cite> termination, on Mac the <cite>.command</cite> termination and on Windows the <cite>.bat</cite> termination.
+We will omit the termination in this manual. For example if you are using Windows and tvb_start is mentioned
+in this document then tvb_start.bat is meant. The examples below are for Linux.</p>
+<p>These scripts will start and control <a href="#id13"><span class="problematic" id="id14">|TVB|</span></a>.</p>
+<div class="section" id="launching-the-gui">
+<h3>Launching the GUI<a class="headerlink" href="#launching-the-gui" title="Permalink to this headline">¶</a></h3>
+<p>For Mac users the <cite>TVB_Distribution</cite> folder contains an application file <cite>tvb.app</cite>.
+To start <a href="#id15"><span class="problematic" id="id16">|TVB|</span></a> in your web browser double click <cite>tvb.app</cite>.
+Please be patient, as depending on your computer resources, the startup process might take about 1-2 minutes.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="manuals/UserGuide/screenshots/install_mac_error.png"><img alt="manuals/UserGuide/screenshots/install_mac_error.png" src="manuals/UserGuide/screenshots/install_mac_error.png" style="width: 300px;" /></a>
+<p class="caption"><span class="caption-text">Access error when launching TVB on Mac</span></p>
+</div>
+<p>On the latest versions of MacOS, you should allow from <cite>Settings –&gt; Security and Privacy</cite> the newly downloaded
+executable to run.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="manuals/UserGuide/screenshots/install_mac_access.png"><img alt="manuals/UserGuide/screenshots/install_mac_access.png" src="manuals/UserGuide/screenshots/install_mac_access.png" style="width: 700px;" /></a>
+<p class="caption"><span class="caption-text">Give access to TVB on Mac</span></p>
+</div>
+<p>For Linux and Windows users, to start <a href="#id17"><span class="problematic" id="id18">|TVB|</span></a> in your web-browser, run the <cite>tvb_start</cite> script in <cite>TVB_Distribution/bin</cite>.
+On all platforms you can also double click the script’s icon.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> TVB_Distribution/bin
+$ ./tvb_start.sh
+</pre></div>
+</div>
+<p>To make sure that no processes will remain open after you use the application,
+you should always close <a href="#id19"><span class="problematic" id="id20">|TVB|</span></a> by running the <cite>tvb_stop</cite> script.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ./tvb_stop.sh
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The first time you configure TVB, it will write a file <em>.tvb.configuration</em> in your <cite>user home folder</cite>.
+In case you run into problems when this write is about to happen, you can set environment variable <cite>TVB_USER_HOME</cite>
+to a value more appropriate for your environment (for example pointing towards TVB_Distribution unzipped location).
+Specify a value for the environment variable <cite>TVB_USER_HOME</cite> in  <cite>distribution</cite> command file to have it ready for
+multiple TVB runs.</p>
+</div>
+</div>
+<div class="section" id="launching-scripting-interfaces">
+<h3>Launching scripting interfaces<a class="headerlink" href="#launching-scripting-interfaces" title="Permalink to this headline">¶</a></h3>
+<p>There are more scripting interface flavors. They differ in what shell is used and in how many <a href="#id21"><span class="problematic" id="id22">|TVB|</span></a> services they use.
+In the COMMAND_PROFILE interfaces you can use the data management facilities of <a href="#id23"><span class="problematic" id="id24">|TVB|</span></a>.
+In the LIBRARY_PROFILE you use <a href="#id25"><span class="problematic" id="id26">|TVB|</span></a> as you would use a library and it will not manage data for you.</p>
+<p>The most user friendly interface is the ipython notebook one. It is a LIBRARY_PROFILE interface.
+It’s shell is the browser based ipython notebook.
+To launch it run the <cite>ipython_notebook</cite> script from the <cite>TVB_Distribution/bin/</cite> folder.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> TVB_Distribution/bin
+$ ./ipython_notebook.sh
+</pre></div>
+</div>
+<p>The <cite>distribution</cite> script is used from a terminal to control the <a href="#id27"><span class="problematic" id="id28">|TVB|</span></a> distribution.
+Run <cite>distribution -h</cite> too get help with this command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ./distribution.sh -h
+</pre></div>
+</div>
+<p>To access the console interface, run in a terminal <cite>distribution start COMMAND_PROFILE</cite> or <cite>distribution start LIBRARY_PROFILE</cite>.
+A Python shell will appear. See the <span class="xref std std-ref">console</span>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ./distribution.sh start COMMAND_PROFILE
+</pre></div>
+</div>
+<p>If you want a plain python text ui shell add the <cite>-headless</cite> flag to the above commands: <cite>distribution start COMMAND_PROFILE -headless</cite>
+This is helpful if <a href="#id29"><span class="problematic" id="id30">|TVB|</span></a> is installed on a headless server (no GUI).</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ./distribution.sh start COMMAND_PROFILE -headless
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="configuring-tvb">
+<h2>Configuring TVB<a class="headerlink" href="#configuring-tvb" title="Permalink to this headline">¶</a></h2>
+<p>One of the first actions you will have to perform after starting <a href="#id31"><span class="problematic" id="id32">|TVB|</span></a> is to configure it.
+If you are installing <a href="#id33"><span class="problematic" id="id34">|TVB|</span></a> for personal usage then the default configuration is sensible and you may accept it without detailed knowledge.</p>
+<p>The default configuration will place <a href="#id35"><span class="problematic" id="id36">|TVB|</span></a> projects in a folder named TVB. This folder will be created in the users home folder.</p>
+<ul class="simple">
+<li>Linux: <code class="docutils literal"><span class="pre">/home/johndoe/TVB/</span></code></li>
+<li>Windows &gt;= 7: <code class="docutils literal"><span class="pre">c:\Users\johndoe\TVB</span></code></li>
+<li>Mac : <code class="docutils literal"><span class="pre">/Users/johndoe/TVB</span></code></li>
+</ul>
+<p>However for a client server or cluster setup you will need to take some more time to configure TVB.
+See the <span class="xref std std-ref">configuring_TVB</span> section for details.</p>
+</div>
+<div class="section" id="uninstalling-tvb">
+<h2>Uninstalling TVB<a class="headerlink" href="#uninstalling-tvb" title="Permalink to this headline">¶</a></h2>
+<p>To uninstall, stop <a href="#id37"><span class="problematic" id="id38">|TVB|</span></a>, then simply delete the distribution folder, <cite>TVB_Distribution/</cite> :</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ./tvb_stop.sh
+$ rm -r TVB_Distribution/
+</pre></div>
+</div>
+<p>This will not remove user data.</p>
+</div>
+<div class="section" id="upgrading-the-application">
+<h2>Upgrading the Application<a class="headerlink" href="#upgrading-the-application" title="Permalink to this headline">¶</a></h2>
+<p>To upgrade to a new version, uninstall the current version then install the new distribution.</p>
+<p>Do <strong>not remove</strong> your <a href="#id39"><span class="problematic" id="id40">|TVB|</span></a> projects stored in home_folder/TVB !
+The first run after update will migrate your projects to the new version.</p>
+</div>
+<div class="section" id="removing-user-data">
+<h2>Removing user data<a class="headerlink" href="#removing-user-data" title="Permalink to this headline">¶</a></h2>
+<p>To purge all user data stored by <a href="#id41"><span class="problematic" id="id42">|TVB|</span></a> on your machine run the <cite>tvb_clean</cite>.
+It will reset your TVB database and delete <strong>all</strong> data stored by <a href="#id43"><span class="problematic" id="id44">|TVB|</span></a>. Be careful!
+Use this to get to a clean state, as if <a href="#id45"><span class="problematic" id="id46">|TVB|</span></a> had just been installed and never used.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You <strong>do not</strong> have to do this to uninstall or update <a href="#id47"><span class="problematic" id="id48">|TVB|</span></a> !</p>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="c1"># This will delete all TVB projects and configuration !</span>
+$ ./tvb_clean.sh
+</pre></div>
+</div>
+<p>The above operation will not touch <cite>TVB_Distribution</cite>, which represents your downloaded <a href="#id49"><span class="problematic" id="id50">|TVB|</span></a> app,
+but only TVB generated user data, as result of using the GUI interface, mainly.</p>
+</div>
+<div class="section" id="finding-tvb-demo-data">
+<h2>Finding TVB Demo Data<a class="headerlink" href="#finding-tvb-demo-data" title="Permalink to this headline">¶</a></h2>
+<p>We keep <a href="#id51"><span class="problematic" id="id52">|TVB|</span></a> demo data versioned on Github: <a class="reference external" href="https://github.com/the-virtual-brain/tvb-data">https://github.com/the-virtual-brain/tvb-data</a>.
+There you can find a Default TVB Project, structural Connectivity, Surfaces, Mappings, Sensors, etc.</p>
+<p><a href="#id53"><span class="problematic" id="id54">|TVB|</span></a> application comes with a subset of this demo-data,
+which can be found inside <cite>TVB_Distribution</cite> under the following path:</p>
+<ul class="simple">
+<li>On Windows <cite>TVB_Distribution/tvb_data/Lib/site-packages/tvb_data/</cite></li>
+<li>On Linux <cite>TVB_Distribution/tvb_data/lib/python2.7/site-packages/tvb_data/</cite></li>
+<li>On Mac <cite>TVB_Distribution/tvb.app/Contents/Resources/lib/python2.7/tvb_data/</cite></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Everything under <cite>TVB_Distribution</cite> is not to be removed or edited.</p>
+</div>
+<p>The files under <cite>TVB_Distribution/…./tvb_data</cite> and the git repository <cite>tvb_data</cite>,
+can be used together with the GUI and/or the script interfaces, or taken as reference by you,
+when creating TVB compatible dataset.</p>
+</div>
+<div class="section" id="supported-operating-systems">
+<h2>Supported operating systems<a class="headerlink" href="#supported-operating-systems" title="Permalink to this headline">¶</a></h2>
+<p>The current <a href="#id55"><span class="problematic" id="id56">|TVB|</span></a> package was tested on :</p>
+<ul class="simple">
+<li>Debian Jessie and Stretch, and Fedora 26.
+Other Linux flavors might also work as long as you have installed a glibc version of 2.14 or higher.</li>
+<li>Mac OS X 10.12 Sierra.</li>
+<li>Windows 10.</li>
+</ul>
+</div>
+<div class="section" id="application-requirements">
+<h2>Application requirements<a class="headerlink" href="#application-requirements" title="Permalink to this headline">¶</a></h2>
+<p>As <a href="#id57"><span class="problematic" id="id58">|TVB|</span></a> redefines what’s possible in neuroscience utilizing off-the-shelf computer hardware, a few requirements are essential when using the software.</p>
+<p>Requirements for front-end visualization:</p>
+<ul class="simple">
+<li><strong>High definition monitor</strong> -
+Your monitor should be capable of displaying at least 1600 x 1000 pixels. Some views might be truncated if TVB is run on smaller monitors.</li>
+<li><strong>WebGL compatible browser</strong> -
+We’ve tested the software on the latest versions of Mozilla Firefox, Apple Safari and Google Chrome.
+Using a different, less capable browser might result in some features not working or the user interface looking awkward at times.</li>
+<li><strong>WebGL-compatible graphics card</strong> -
+The graphic card has to support OpenGL version 2.0 or higher. The operating system needs to have a proper card driver as well to expose the graphic card towards WebGL.
+This requirement only affects PCs, not (somewhat recent) Macs.</li>
+</ul>
+<p>Requirements for computation/storage power, dependent on the number of parallel simulations that will be executed concurrently:</p>
+<ul class="simple">
+<li><strong>CPU power</strong> -
+1 CPU core is needed for one simulation. When launching more simulations than the number of available cores, a serialization is recommended.
+This can be done by setting the “maximum number of parallel threads” (in TVB settings) to the same value as the number of cores.</li>
+<li><strong>Memory</strong> -
+For a single simulation 8GB of RAM should be sufficient for region level simulations, but 16GB are recommended, especially if you are to run complex simulations.
+Surface level simulations are much more memory intensive scaling with the number of vertices.</li>
+<li><strong>Disk space</strong> is also important, as simulating only 10 ms on surface level may occupy around 300MB of disk space. A minimum of 50GB of space per user is a rough approximation.</li>
+<li>Optional <strong>MatLab or Octave</strong> -
+A special feature in TVB is utilizing functions from the Brain Connectivity Toolbox.
+This feature thus requires a MatLab or Octave package on your computer (installed, activated and added to your OS’ global PATH variable).
+The Brain Connectivity Toolbox doesn’t need to be installed or enabled separately in any way, as TVB will temporarily append it to your MatLab/Octave path.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, the virtual brain.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/manuals/UserGuide/UserGuide-Installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -7,8 +8,9 @@ import logging
 import nibabel as nb
 import numpy as np
 
-
 def label_volume_centers(label_volume):
+    """Generate tuples (label, x, y, z) """
+
     log = logging.getLogger('label_volume_centers')
     vol = label_volume.get_data()
     aff = label_volume.affine
@@ -22,6 +24,8 @@ def label_volume_centers(label_volume):
     
 
 def build_fs_label_name_map(lut_path):
+    """ Reading file using lut_path and stripping lines to
+        see if # exists on line one."""
     lut = {}
     with open(lut_path, 'r') as fd:
         for line in fd.readlines():
@@ -32,6 +36,7 @@ def build_fs_label_name_map(lut_path):
 
 
 def write_results(centers, output_tsv, label_map=None):
+    """ Writing results to output_tsv file."""
     with open(output_tsv, 'w') as fd:
         for val, (x, y, z) in centers:
             val_ = label_map[val] if label_map else val
@@ -39,6 +44,7 @@ def write_results(centers, output_tsv, label_map=None):
         
 
 def build_argparser():
+    """building using argparse terminal interface library."""
     parser = argparse.ArgumentParser()
     parser.add_argument("label_volume", help="nibabel-loadable label volume to analyze")
     parser.add_argument("output_tsv", help="tab-separated file to write")
@@ -49,6 +55,9 @@ def build_argparser():
    
     
 def main():
+    """ main library contains build_argparser() whith will echo
+        all parser.add_argument() helps, print log.info() details and os path to
+        FreeSurferColorLUT.txt."""
     parser = build_argparser()
     parse = parser.parse_args()
     print(parse)

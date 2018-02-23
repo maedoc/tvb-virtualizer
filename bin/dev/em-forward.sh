@@ -25,7 +25,8 @@ do
     time mris_decimate -d 0.1 ${surf} ${surf}-low
 done
 
-#Quality control:
+# Using python to
+# quality control:
 python<<EOF
 import os
 subj = os.environ['SUBJECT']
