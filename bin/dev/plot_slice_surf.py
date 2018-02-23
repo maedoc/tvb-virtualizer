@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 """
 Plot a slice of the T1.mgz with vertices from the pial surfaces.
 
