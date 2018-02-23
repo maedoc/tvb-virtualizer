@@ -10,8 +10,7 @@ import nibabel as nb
 import numpy as np
 
 def label_volume_centers(label_volume):
-    """Crete a volume center and insert numpy to calculate it
-       while debugging it. """
+    """Generate tuples (label, x, y, z) """
 
     log = logging.getLogger('label_volume_centers')
     vol = label_volume.get_data()
