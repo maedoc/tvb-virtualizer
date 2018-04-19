@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import numpy
 from tvb.recon.logger import get_logger
 from tvb.recon.model.annotation import Annotation
+from six.moves import range
 
 
 class MappingService(object):

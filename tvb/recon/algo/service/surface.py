@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 import glob
 import os
 import gdist
@@ -17,6 +19,8 @@ from sklearn.metrics.pairwise import paired_distances
 from scipy.spatial.distance import cdist
 from copy import deepcopy
 from .annotation import default_lut_path  # TODO into fs module
+from six.moves import map
+from six.moves import range
 
 
 class SurfaceService(object):
@@ -481,8 +485,8 @@ class SurfaceService(object):
         v2n = numpy.argmin(cdist(verts, voxxzy, 'euclidean'), axis=1)
         # Assign to each vertex the integer identity of the nearest voxel node.
         v2n = vox[v2n]
-        print("...surface component's vertices correspond to " +
-              str(numpy.size(numpy.unique(v2n))) + " distinct voxel nodes")
+        print(("...surface component's vertices correspond to " +
+              str(numpy.size(numpy.unique(v2n))) + " distinct voxel nodes"))
         affinity = con[v2n - 1, :][:, v2n - 1]
         return affinity
 

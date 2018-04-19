@@ -4,6 +4,7 @@ CLI information for mtrix.
 
 """
 
+from __future__ import absolute_import
 import enum
 from .core import BaseCLI, BaseEnv, BaseFlags
 

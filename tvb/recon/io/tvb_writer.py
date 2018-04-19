@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import zipfile
 from tvb.recon.io.generic import GenericIO, StringIO
 

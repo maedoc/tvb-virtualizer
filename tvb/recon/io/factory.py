@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
 from tvb.recon.io.annotation import H5AnnotationIO, AnnotationIO
 from tvb.recon.io.surface import GiftiSurfaceIO, FreesurferIO, H5SurfaceIO, ZipSurfaceIO

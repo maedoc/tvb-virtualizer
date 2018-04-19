@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from tvb.recon.io.generic import GenericIO
 from tvb.recon.tests.base import get_data_file
 

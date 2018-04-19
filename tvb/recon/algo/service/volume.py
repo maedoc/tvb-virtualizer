@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import numpy
 import scipy.ndimage
@@ -8,6 +10,7 @@ from tvb.recon.algo.service.annotation import AnnotationService, DEFAULT_LUT
 from tvb.recon.io.factory import IOUtils
 from tvb.recon.model.volume import Volume
 from tvb.recon.model.constants import NPY_EXTENSION
+from six.moves import range
 
 
 class VolumeService(object):
@@ -421,10 +424,10 @@ class VolumeService(object):
                         not_matched.add(val)
                     volume.data[i][j][k] = mapping_dict.get(val, -1)
 
-        print("Now values are in interval [%d - %d]" % (volume.data.min(), volume.data.max()))
+        print(("Now values are in interval [%d - %d]" % (volume.data.min(), volume.data.max())))
 
         if not_matched:
-            print("Not matched regions will be considered background: %s" % not_matched)
+            print(("Not matched regions will be considered background: %s" % not_matched))
         assert (volume.data.min() >= -1 and volume.data.max() < conn_regs_nr)
 
         return volume

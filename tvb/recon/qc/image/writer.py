@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
 import numpy
 import matplotlib
+from six.moves import range
 matplotlib.use('Agg')
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D

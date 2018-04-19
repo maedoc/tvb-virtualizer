@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 from Pegasus.DAX3 import File, Job, Link
 from tvb.recon.dax.mappings import AsegFiles, AsegGenJobNames, Inputs, T1Files, T1JobNames
+from six.moves import map
 
 
 class AsegGeneration(object):
@@ -29,7 +31,7 @@ class AsegGeneration(object):
         job6.uses(rh_aseg_annot, link=Link.OUTPUT, transfer=True, register=True)
         dax.addJob(job6)
 
-        lbl_list = map(int, self.lh_labels.strip('"').split() + self.rh_labels.strip('"').split())
+        lbl_list = list(map(int, self.lh_labels.strip('"').split() + self.rh_labels.strip('"').split()))
         for aseg_label in lbl_list:
             aparc_aseg_mgz = File(T1Files.APARC_ASEG_MGZ.value)
             norm_mgz = File(T1Files.NORM_MGZ.value)
@@ -79,7 +81,7 @@ class AsegGeneration(object):
 
             dax.depends(job_rename, job4)
 
-            if aseg_label in map(int, self.lh_labels.strip('"').split()):
+            if aseg_label in list(map(int, self.lh_labels.strip('"').split())):
                 job5.uses(aseg_lbl, link=Link.INPUT)
             else:
                 job6.uses(aseg_lbl, link=Link.INPUT)

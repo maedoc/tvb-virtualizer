@@ -4,6 +4,7 @@ Created on Fri Dec 16 16:48:03 2016
 
 @author: dionperd
 """
+from __future__ import absolute_import
 from anytree import Node
 import numpy
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import tempfile
 from zipfile import ZipFile
 
@@ -14,6 +15,8 @@ from nibabel.gifti import GiftiDataArray
 from nibabel.gifti import GiftiImage
 from nibabel.gifti import GiftiMetaData
 from nibabel.gifti import giftiio
+from six.moves import range
+from six.moves import zip
 
 
 class ABCSurfaceIO(object):

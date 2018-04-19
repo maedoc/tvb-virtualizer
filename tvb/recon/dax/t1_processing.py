@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from Pegasus.DAX3 import File, Job, Link
 from tvb.recon.dax.mappings import T1JobNames, Inputs, T1Files
 from tvb.recon.dax.qc_snapshots import QCSnapshots

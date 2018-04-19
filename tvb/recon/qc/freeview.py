@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
 import sys
 import numpy
@@ -7,6 +8,7 @@ from tvb.recon.io.generic import GenericIO
 from tvb.recon.logger import get_logger
 from tvb.recon.model.constants import SNAPSHOT_NAME, SNAPSHOT_EXTENSION, SNAPSHOTS_DIRECTORY_ENVIRON_VAR, \
     SNAPSHOT_NUMBER_ENVIRON_VAR
+from six.moves import map
 
 
 class FreeViewController(object):

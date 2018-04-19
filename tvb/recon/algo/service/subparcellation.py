@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import numpy
 import scipy
@@ -10,6 +12,7 @@ from ...algo.service.annotation import AnnotationService, DEFAULT_LUT
 from ...algo.service.surface import SurfaceService
 from ...algo.service.volume import VolumeService
 from ...model.annotation import Annotation
+from six.moves import range
 
 
 # TODO should be parameters to relevant methods

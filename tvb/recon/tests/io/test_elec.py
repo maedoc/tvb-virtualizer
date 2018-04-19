@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
 from tvb.recon.io.elec import ElectrodeParser
 

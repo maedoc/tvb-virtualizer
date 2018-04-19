@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 
 # TODO: in the current form, the Tracts are not aligned with the surfaces exported for TVB
@@ -6,7 +8,7 @@ import sys
 if len(sys.argv) < 3:
     print("Loads NiPy module to transform .tck file to .trk file")
     print("Dependencies: nipype, dipy, nibabel")
-    print("Usage:", sys.argv[0], "<base_image> <input_file>")
+    print(("Usage:", sys.argv[0], "<base_image> <input_file>"))
     print("""base_image - file with resolution of template (T1.nii.gz)
              input_file - MRTrix track file (.tck)""")
     print("Output: TrackVis track vile (.trk)")

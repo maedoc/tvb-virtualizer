@@ -6,6 +6,8 @@ Generates suitable resolution head surf and EEG/MEG sensors descriptions.
 """
 
 # imports
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import os.path
 import numpy
@@ -14,6 +16,7 @@ from tvb.recon.model.surface import Surface
 from pyqtgraph import mkQApp
 import pyqtgraph.opengl
 from nibabel.freesurfer import read_geometry
+from six.moves import range
 
 
 def mask_mesh(v, f, mask):

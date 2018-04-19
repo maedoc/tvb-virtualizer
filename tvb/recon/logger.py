@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # imports
+from __future__ import absolute_import
 import os
 import logging
 import logging.config

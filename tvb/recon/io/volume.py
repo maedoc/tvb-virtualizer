@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import nibabel
 import h5py
 from tvb.recon.logger import get_logger

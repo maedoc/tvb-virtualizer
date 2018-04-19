@@ -8,6 +8,7 @@ Simple CLI runner.
 
 """
 
+from __future__ import absolute_import
 import os
 import time
 import subprocess

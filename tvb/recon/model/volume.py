@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import numpy
 import numpy.linalg
 from tvb.recon.model.constants import *
 from nibabel.affines import apply_affine
+from six.moves import range
 
 
 class Volume(object):

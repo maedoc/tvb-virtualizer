@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import argparse
 import os
 import numpy
@@ -8,6 +9,7 @@ from tvb.recon.io.generic import GenericIO
 from tvb.recon.logger import get_logger
 from tvb.recon.model.constants import SNAPSHOTS_DIRECTORY_ENVIRON_VAR, SNAPSHOT_NUMBER_ENVIRON_VAR
 from tvb.recon.qc.image.processor import ImageProcessor
+from six.moves import range
 
 
 def parse_arguments():

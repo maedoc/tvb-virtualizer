@@ -2,6 +2,9 @@
 # XXX MNE probably has such a parser anyway
 
 
+from __future__ import absolute_import
+from six.moves import range
+from six.moves import zip
 class ElectrodeParser(object):
 
     def parse_asa_electrode_file(self, fname):
@@ -25,7 +28,7 @@ class ElectrodeParser(object):
                 else:
                     raise Exception('unknown header line: %r' % (line,))
             # parse positions
-            for line, _ in zip(lines, range(contents['number_positions'])):
+            for line, _ in zip(lines, list(range(contents['number_positions']))):
                 contents['positions'].append(
                     [float(coord) for coord in line.strip().split()])
             # parse labels

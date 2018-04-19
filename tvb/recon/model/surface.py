@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import numpy
 from tvb.recon.model.constants import *
 from trimesh import Trimesh, intersections
+from six.moves import range
 #from tvb.recon.algo.service.surface import  SurfaceService
 
 

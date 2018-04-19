@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from Pegasus.DAX3 import ADAG, Job, Link, File
 
 

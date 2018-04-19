@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
 import tempfile
 from zipfile import ZipFile
 
 import numpy
 from tvb.recon.model.constants import CC_POINT_FILE
+from six.moves import map
 
 try:
     from io import StringIO

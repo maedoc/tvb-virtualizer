@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
 import numpy
 from collections import OrderedDict
 from tvb.recon.io.factory import IOUtils
 from datetime import datetime
+from six.moves import range
+from six.moves import zip
 
 DEFAULT_LUT = 'FreeSurferColorLUT_INS_test.txt'
 

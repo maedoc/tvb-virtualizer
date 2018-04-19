@@ -4,6 +4,7 @@ CLI information for fsl.
 
 """
 
+from __future__ import absolute_import
 import enum
 import typing
 from .core import BaseCLI

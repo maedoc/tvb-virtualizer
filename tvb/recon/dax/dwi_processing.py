@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from Pegasus.DAX3 import File, Job, Link
 from tvb.recon.dax.mappings import Inputs, DWIFiles, DWIJobNames
 from tvb.recon.dax.qc_snapshots import QCSnapshots
@@ -25,7 +27,7 @@ class DWIProcessing(object):
                     # TODO: is mrconvert interactive for reversed aquisition data? Should we use the next lines?
                     # mrchoose 0 mrconvert $DATA/DWI ./dwi_raw.mif -force
                     # mrchoose 1 mrconvert $DATA/DWI ./dwi_raw_re.mif -force
-                    print "Not implemented!"
+                    print("Not implemented!")
                 else:
                     dwi_conv_output = File(DWIFiles.DWI_RAW_MIF.value)
                     job1 = Job(DWIJobNames.MRCONVERT.value, node_label="Convert DWI to MIF")
