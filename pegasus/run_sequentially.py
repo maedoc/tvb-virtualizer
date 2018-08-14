@@ -222,6 +222,6 @@ if __name__ == "__main__":
             else:
                 print("Checked at %s and %s file was not generated yet!" % (
                     str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())), MONITORED_FILE))
-                time.sleep(1800)
+                time.sleep(900)
 
         print("The run has finished for job with id: %s" % current_job_id)
