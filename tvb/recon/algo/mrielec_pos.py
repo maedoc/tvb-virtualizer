@@ -80,43 +80,6 @@ def extract_seeg_contacts_from_mrielec(mrielec, mrielec_seeg, dilate=5, erode=1)
     binarize_dil_erod(mrielec, mrielec_seeg, max_voxel, dilate, erode)
 
 
-def coregister_elec_pom_and_mri(seeg_pom_vol, mrielec, seeg_pom_xyz, elec_folder=None, dilate=0, erode=0):
-
-    # Binarize mrielec to get only the seeg contacts
-    mrielec_seeg = "mrielec_seeg.nii.gz"
-    if not os.path.isfile(mrielec_seeg):
-        extract_seeg_contacts_from_mrielec(mrielec, mrielec_seeg, dilate, erode)
-
-    # Binarize the pom seeg contacts
-    seeg_pom_vol_bin = seeg_pom_vol.split(".")[0] + "_bin.nii.gz"
-    binarize_dil_erod(seeg_pom_vol, seeg_pom_vol_bin, 1, dilate, erode)
-
-    if not(os.path.isdir(elec_folder)):
-        elec_folder = os.path.abspath(seeg_pom_vol)
-
-    # Co-register seeg pom and mrielec contacts
-    pom_to_mrielec = "pom_to_mrielec.mat"
-    pom_in_mrielec_seeg = "pom_in_mrielec_seeg.nii.gz"
-    if not os.path.isfile(pom_to_mrielec):
-        # This takes time. It should be independent step and check before repeating
-        regopts = "-dof 12 -searchrz -180 180 -searchry -180 180  -searchrx -180 180"
-        execute_command("flirt " + regopts +
-                        " -in " + seeg_pom_vol_bin +
-                        # " -inweight " + elec_nii_pom_dil +
-                        " -ref " + mrielec_seeg +
-                        # " -refweight " + mrielec_dil +
-                        " -omat " + pom_to_mrielec +
-                        " -out " + pom_in_mrielec_seeg)
-
-    # Generate the new seeg labels and coords file in the mrielec space, as well as a volume for visual checking
-    seeg_pom_xyz_in_mrielec = "seeg_pom_xyz_in_mrielec.xyz"
-    pom_vol_in_mrielec = "seeg_pom_in_mrielec_vol.nii.gz"
-    if not os.path.isfile(seeg_pom_xyz_in_mrielec):
-        transform(seeg_pom_xyz, seeg_pom_vol, mrielec, seeg_pom_xyz_in_mrielec, pom_vol_in_mrielec, pom_to_mrielec)
-
-    return seeg_pom_xyz_in_mrielec, pom_vol_in_mrielec
-
-
 # Transform the coordinates and create output contact files (labels + coords) and a volume for visual checking
 def transform(seeg_xyz_in, input_vol, ref_vol, seeg_xyz_ref, seeg_vol_ref, transform_mat, aff_transform=None):
     labels, coords = sensor_service.read_seeg_labels_coords_file(seeg_xyz_in)
@@ -140,7 +103,6 @@ def transform(seeg_xyz_in, input_vol, ref_vol, seeg_xyz_ref, seeg_vol_ref, trans
                                                 skip_missing=False, dist=1)
 
 
-# Tested it for TVB3 and it seems to work fine for dilate = erode = 0
 # I have tested combinations 10, 2 and 5, 1 with similar (within 1 voxel) results.
 def main_mrielec_pos(patient, POM_TO_MRIELEC_TRNSFRM=False, dilate=0, erode=0):
 
@@ -152,7 +114,7 @@ def main_mrielec_pos(patient, POM_TO_MRIELEC_TRNSFRM=False, dilate=0, erode=0):
     # patient = "TVB3"
 
     #Inputs:
-    t1 = os.path.join(results_root, patient, "tvb", "T1.nii.gz")
+    t1 = os.path.join(data_root, patient, "output/tvb", "T1.nii.gz") # os.path.join(results_root, patient, "tvb", "T1.nii.gz")
     mrielec = os.path.join(data_root, patient, "raw/mri", "MRIelectrode.nii.gz")
     pomfile = os.path.join(data_root, patient, "raw", "Electrodes.pom")
 
@@ -161,21 +123,14 @@ def main_mrielec_pos(patient, POM_TO_MRIELEC_TRNSFRM=False, dilate=0, erode=0):
     if not os.path.isdir(elec_folder):
         os.mkdir(elec_folder)
     seeg_pom_xyz = os.path.join(elec_folder, "seeg_pom_xyz.txt")
-    seeg_pom_vol = os.path.join(elec_folder, "seeg_pom_vol.nii.gz")
+    seeg_pom_vol = os.path.join(elec_folder, "seeg_pom.nii.gz")
     mrielec_to_t1 = os.path.join(elec_folder, "mrielec_to_t1.mat") # ELEC_to_T1 or mrielec_to_t1
     mrielec_in_t1 = os.path.join(elec_folder, "mrielec_in_t1.nii.gz") # ELEC_in_T1 or mrielec_in_t1
     seeg_xyz = os.path.join(elec_folder, "seeg_xyz.txt")
     seeg_in_t1 = os.path.join(elec_folder, "seeg_in_t1.nii.gz")
 
 
-    # This is a 2 to 4 step/job process:
-
-    # A. Preprocessing job. Not necessary if something like seeg_pom.xyz was alraedy given in the input
-    # Read the seeg contacts' names and positions from pom file and save then in text and nifti volume files:
-    if not os.path.isfile(seeg_pom_vol):
-        names, coords_list = read_write_pom_files(pomfile, seeg_pom_xyz, mrielec, seeg_pom_vol)
-
-    # B. Optional job in case we haven't computed already the MRIelec_in_t1 transformation matrix
+    # A. Optional job in case we haven't computed already the MRIelec_in_t1 transformation matrix
     #    (This must be already part of the workflow...)
     # This takes time. It should be independent step and check before repeating
     if not os.path.isfile(mrielec_to_t1):
@@ -189,9 +144,17 @@ def main_mrielec_pos(patient, POM_TO_MRIELEC_TRNSFRM=False, dilate=0, erode=0):
                         " -omat " + mrielec_to_t1 +
                         " -out " + mrielec_in_t1)
 
-    # C. Optional job in case the pom coordinates are not in the same space as the MRIelectrode volume
-    # Find the affine transformation pomfile -> MRIelectrodes
+
     if POM_TO_MRIELEC_TRNSFRM:
+
+        #B. Preprocessing job. Not necessary if something like seeg_pom.xyz was alraedy given in the input
+        # Read the seeg contacts' names and positions from pom file and save then in text and nifti volume files:
+        if not os.path.isfile(seeg_pom_vol):
+            names, coords_list = read_write_pom_files(pomfile, seeg_pom_xyz, mrielec_in_t1, seeg_pom_vol)
+
+        # C. Optional job in case the pom coordinates are not in the same space as the MRIelectrode volume
+        # Find the affine transformation pomfile -> MRIelectrodes
+
         # Alternative manual way (deprecated):
         # This is how Viktor Sip did it. It requires manually specifying the point coordinates below.
         # coords_from = np.array([
@@ -216,13 +179,25 @@ def main_mrielec_pos(patient, POM_TO_MRIELEC_TRNSFRM=False, dilate=0, erode=0):
         # aff_transform = compute_affine_transform(coords_from, coords_to)
 
 
-        # Use the above functions:
-        # seeg_pom_xyz_in_mrielec, pom_vol_in_mrielec = \
-        #     coregister_elec_pom_and_mri(seeg_pom_vol, mrielec,  seeg_pom_xyz, elec_folder, dilate, erode)
-        # or do it step by step explicitly...
         # ------------------------------------coregister_elec_pom_and_mri step by step ---------------------------------
 
-        #step 1 (SHELL). mrielec binarization
+        # step 1 (SHELL). seeg_pom binarization
+        # comment: if dilate = erode = 0, we can do this in python
+        # get a binarized volume of seeg_pom volume which will have to be aligned to the mrielec_seeg
+        # Binarize by running a freesurfer command in SHELL
+        # input file: seeg_pom_vol
+        # output file: seeg_pom_vol_bin
+        # other inputs: dilate: number of voxels to dilate around each seeg contact, default 1 or 2
+        #               erode: number of voxels to erode, default: 0 (if dilate = 1) or 1 (in all other cases)
+        seeg_pom_bin_vol = os.path.join(elec_folder,"seeg_pom_bin.nii.gz")  # the name of the output
+        command = "mri_binarize " + " --i " + seeg_pom_vol + " --o " + seeg_pom_bin_vol + " --min " + str(1)
+        if dilate > 0:
+            command += " --dilate " + str(dilate)
+        if erode > 0:
+            command += " --erode " + str(erode)
+        execute_command(command)
+
+        #step 2 (SHELL). mrielec binarization
         # comment: if dilate = erode = 0, we can do this in python
         # get a binarized volume of mri_elec volume to be used as a reference volume for alignement
 
@@ -238,77 +213,62 @@ def main_mrielec_pos(patient, POM_TO_MRIELEC_TRNSFRM=False, dilate=0, erode=0):
         # other inputs: max_voxel
         #               dilate: number of voxels to dilate around each seeg contact, default 1 or 2
         #               erode: number of voxels to erode, default: 0 (if dilate = 1) or 1 (in all other cases)
-        mrielec_seeg = "mrielec_seeg.nii.gz"  # the name of the output
-        command = "mri_binarize " + " --i " + mrielec + " --o " + mrielec_seeg + " --min " + str(max_voxel)
+        mrielec_bin = os.path.join(elec_folder, "mrielec_bin.nii.gz")  # the name of the output
+        command = "mri_binarize " + " --i " + mrielec + " --o " + mrielec_bin + " --min " + str(max_voxel)
         if dilate > 0:
             command += " --dilate " + str(dilate)
         if erode > 0:
             command += " --erode " + str(erode)
         execute_command(command)
 
-        # step 2 (SHELL). seeg_pom binarization
-        # comment: if dilate = erode = 0, we can do this in python
-        # get a binarized volume of seeg_pom volume which will have to be aligned to the mrielec_seeg
-        # Binarize by running a freesurfer command in SHELL
-        # input file: seeg_pom_vol
-        # output file: seeg_pom_vol_bin
-        # other inputs: dilate: number of voxels to dilate around each seeg contact, default 1 or 2
-        #               erode: number of voxels to erode, default: 0 (if dilate = 1) or 1 (in all other cases)
-        seeg_pom_vol_bin = seeg_pom_vol.split(".")[0] + "_bin.nii.gz" # the name of the output
-        command = "mri_binarize " + " --i " + seeg_pom_vol + " --o " + seeg_pom_vol_bin + " --min " + str(1)
-        if dilate > 0:
-            command += " --dilate " + str(dilate)
-        if erode > 0:
-            command += " --erode " + str(erode)
+        # step 3 (SHELL): Apply the mrielec -> t1 transform to mrielec_bin:
+        mrielec_bin_in_t1 = os.path.join(elec_folder, "mrielec_bin_in_t1.nii.gz")
+        command = "flirt -applyxfm -in %s -ref %s -out %s -init %s -interp nearestneighbour" % \
+                  (mrielec_bin, mrielec_in_t1, mrielec_bin_in_t1, mrielec_to_t1)
         execute_command(command)
 
-        # step 3 (SHELL): mrielec and seeg_pom alignement via their binarized volumes:
+        # step 4 (SHELL): mrielec_in_t1 and seeg pom alignement via their binarized volumes:
         # Co-register seeg pom and mrielec contacts with a SHELL command
         # input files: seeg_nii_pom_bin, the input volume to be aligned
         #              mrielec_seeg, the reference volume, i.e., the alignement target
         # output files: pom_to_mrielec, the output transform text file name
         #               pom_in_mrielec_seeg, the output aligned volume file name
         # fixed alignement parameters sting: regopts (see below)
-        pom_to_mrielec = "pom_to_mrielec.mat"  # output transform file name
-        pom_in_mrielec_seeg = "pom_in_mrielec_seeg.nii.gz" # output volume file name
-        if not os.path.isfile(pom_to_mrielec):
+        seeg_pom_to_t1 = os.path.join(elec_folder, "pom_to_mrielec.mat")  # output transform file name
+        seeg_pom_bin_in_t1 = os.path.join(elec_folder, "pom_in_mrielec_seeg.nii.gz") # output volume file name
+        if not os.path.isfile(seeg_pom_to_t1):
             # This takes time. It should be independent step and check before repeating
             regopts = "-dof 12 -searchrz -180 180 -searchry -180 180  -searchrx -180 180"  # parameters' string
             execute_command("flirt " + regopts +
-                            " -in " + seeg_pom_vol_bin +
+                            " -in " + seeg_pom_bin_vol +
                             # " -inweight " + elec_nii_pom_dil +
-                            " -ref " + mrielec_seeg +
+                            " -ref " + mrielec_bin_in_t1 +
                             # " -refweight " + mrielec_dil +
-                            " -omat " + pom_to_mrielec +
-                            " -out " + pom_in_mrielec_seeg)
-
-        # step 4 (python): Generate the new seeg labels and coords file in the mrielec space,
-        #         as well as a volume for visual checking
-        # output files:
-        seeg_pom_xyz_in_mrielec = "seeg_pom_xyz_in_mrielec.xyz"  # the seeg labels and coords txt file in mrielec space
-        pom_vol_in_mrielec = "seeg_pom_in_mrielec_vol.nii.gz"  # the seeg contants volume in mrielec space
-        if not os.path.isfile(seeg_pom_xyz_in_mrielec):
-            transform(seeg_pom_xyz, seeg_pom_vol, mrielec, seeg_pom_xyz_in_mrielec, pom_vol_in_mrielec, pom_to_mrielec)
+                            " -omat " + seeg_pom_to_t1 +
+                            " -out " + seeg_pom_bin_in_t1)
 
         # -------------------------------------------------------------------------------------------------------------
 
-    # else:
-    #     # This IF case is deprecated, since it corresponds to a nice exception
-    #     # that we cannot test for on a case by case manner
-    #     seeg_pom_xyz_in_mrielec = seeg_pom_xyz
-    #     pom_vol_in_mrielec = mrielec
+    else:
+        # This IF case is deprecated, since it corresponds to a nice exception
+        # that we cannot test for on a case by case manner
 
+        # B. Preprocessing job. Not necessary if something like seeg_pom.xyz was alraedy given in the input
+        # Read the seeg contacts' names and positions from pom file and save then in text and nifti volume files:
+        if not os.path.isfile(seeg_pom_vol):
+            names, coords_list = read_write_pom_files(pomfile, seeg_pom_xyz, mrielec, seeg_pom_vol)
+        seeg_pom_to_t1 = mrielec_to_t1
 
-    # D. Make the actual transformation from pom/mri_elec space to t1 space
-    # Transform the coordinates along mri_elec -> t1 and save the result to text and nifti files
-    transform(seeg_pom_xyz_in_mrielec, pom_vol_in_mrielec, t1, seeg_xyz, seeg_in_t1, mrielec_to_t1)
+    # D. Make the actu\al transformation from pom/mri_elec space to t1 space
+    # Transform the seeg pom coordinates coordinates along mri_elec -> t1 and save the result to text and nifti files
+    transform(seeg_pom_xyz, seeg_pom_vol, t1, seeg_xyz, seeg_in_t1, seeg_pom_to_t1)
 
 
 if __name__ == "__main__":
 
     # Tested it for TVB3 and it seems to work fine for dilate = erode = 0
     # I have tested combinations 10, 2 and 5, 1 with similar (within 1 voxel) results.
-    main_mrielec_pos("TVB3", True, 0, 0)
+    main_mrielec_pos("TVB25", True, 0, 0)
 
 
     # TODO: quality control snapshots in the end of two overlapping volumes:
