@@ -93,7 +93,7 @@ This means, you should ***adjust your input*** data folder to the following stru
 (TVB1, TVB2, etc, being the ID of the patients. If your DWI data is not made of: dwi.nii + dwi.bvec + dwi.bval, let us know and we will tell you how to specify it differently.)
 
 Once you have this folder structure for your data, you can run the tvb-recon docker image with the following command:  
-***docker run -it -v your_path_to_TVB_patients/TVB_patients/:/home/submitter/data -v your_path_to_tvb_recon/tvb-recon/:/opt/tvb-recon popaula937/tvb-recon:master-pr50 /bin/bash***  
+***docker run -it -v your_path_to_TVB_patients/TVB_patients/:/home/submitter/data -v your_path_to_tvb_recon/tvb-recon/:/opt/tvb-recon thevirtualbrain/tvb-recon /bin/bash***  
 (here you need to replace *your_path_to_TVB_patients* and *your_path_to_tvb_recon* with the paths of your local machine)
 
 Now, you will be able to use bash commands inside the tvb-recon container. And here, you need to do the next steps:
