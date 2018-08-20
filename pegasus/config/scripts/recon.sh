@@ -21,7 +21,8 @@ if [ -d "${SUBJECTS_DIR}/$1" ]; then
     # if the previous recon-all run hasn't finished (i.e., generated wmparc.mgz) or overwrite flag is True, rerun/resume
     if [ ! -f "${SUBJECTS_DIR}/$1/mri/wmparc.mgz" ] || [ $5 == "True" ];
     then
-        for h in "lh rh lh+rh"
+        declare -a hemis=("rh" "lh" "rh+lh" "lh+rh")
+        for h in "${hemis[@]}"
         do
             if [ -f "${SUBJECTS_DIR}/$1/scripts/IsRunning.$h" ]; then
                 echo Deleting ${SUBJECTS_DIR}/$1/scripts/IsRunning.$h!
