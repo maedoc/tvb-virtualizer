@@ -7,6 +7,7 @@ import shutil
 import sys
 from enum import Enum
 from string import Template
+import numpy
 
 PATH_TO_INPUT_SUBJ_FOLDERS = "/home/submitter/data"
 PATH_TO_SUBJ_CONFIG_FOLDERS = "/home/submitter/data"
@@ -214,14 +215,29 @@ if __name__ == "__main__":
         submit_dir = os.path.join(get_specified_submit_folder(current_dir), getpass.getuser(), "pegasus",
                                   "TVB-PIPELINE", PREFIX_JOB_ID + current_job_id)
 
-        print("Starting to monitor the submit folder: %s ..." % submit_dir)
+        output_folder = os.path.join(PATH_TO_OUTPUT_SUBJ_FOLDER, current_subject, "output")
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+        print("Starting to monitor the submit and output folders: %s and %s..." % (submit_dir, output_folder))
 
+        atlases = ATLASES.split(" ")
+        OUTPUTS_EXIST =[]
+        OUTPUT_DONE_FILES = []
+        for atlas in atlases:
+            OUTPUTS_EXIST.append(False)
+            OUTPUT_DONE_FILES.append("%s_done.txt" % atlas)
         while True:
-            if MONITORED_FILE in os.listdir(submit_dir):
+            monitord_done_exists = MONITORED_FILE in os.listdir(submit_dir)
+            print("monitord.done exists=%s" % str(monitord_done_exists))
+            for iatlas, atlas in enumerate(atlases):
+                OUTPUTS_EXIST[iatlas] = OUTPUT_DONE_FILES[iatlas] in os.listdir(output_folder)
+                print("%s exists=%s" % (OUTPUT_DONE_FILES[iatlas], str(OUTPUTS_EXIST[iatlas])))
+            if monitord_done_exists or numpy.all(OUTPUTS_EXIST):
                 break
             else:
-                print("Checked at %s and %s file was not generated yet!" % (
-                    str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())), MONITORED_FILE))
+                print("Checked at %s and %s files were not generated yet!\n" % (
+                    str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())),
+                    str([MONITORED_FILE]+OUTPUT_DONE_FILES)))
                 time.sleep(900)
 
         print("The run has finished for job with id: %s" % current_job_id)

@@ -57,6 +57,15 @@ def create_tvb_dataset(atlas_suffix: AtlasSuffix, mri_direc: os.PathLike,
     if bring_t1:
         shutil.copy2(os.path.join(mri_direc, "T1.nii.gz"), out_dir)
 
+    if len(atlas_suffix) == 0:
+        atlas_name = "default"
+    else:
+        atlas_name = atlas_suffix[1:]
+    message = "%s_done" % atlas_name
+    filename = os.path.join(out_dir, message+".txt")
+    print("Writing file %s..." % filename)
+    numpy.savetxt(filename, numpy.array([message.replace("_", " ")+"!"]), fmt="%s")
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Convert pipeline output to TVB format")

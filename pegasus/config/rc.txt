@@ -1,6 +1,6 @@
 # file-based replica catalog:
 t1_input.nii.gz file://${path}/raw/mri/t1_input.nii.gz site="local"
-dwi_input.nii.gz file://${path}/raw/mri/dwi_raw.nii site="local"
+dwi_input.nii.gz file://${path}/raw/mri/dwi_raw.nii.gz site="local"
 dwi.bvec file://${path}/raw/mri/dwi.bvec site="local"
 dwi.bval file://${path}/raw/mri/dwi.bval site="local"
 mrielec_input.nii.gz file://${path}/raw/mri/MRIelectrode.nii.gz site="local"

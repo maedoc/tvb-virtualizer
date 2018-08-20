@@ -154,6 +154,7 @@ class AsegGenJobNames(Enum):
 class OutputConvFiles(Enum):
     APARC_ASEG_COR_NII_GZ = "aparc+aseg-cor%s.nii.gz"
     CONNECTIVITY_ZIP = "connectivity%s.zip"
+    DONE_FILE = "%s_done.txt"
 
 
 class SEEGCompJobNames(Enum):

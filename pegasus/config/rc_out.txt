@@ -1,5 +1,6 @@
 T1.nii.gz file://$path/tvb/T1.nii.gz site="local"
 surface_cort.zip file://$path/tvb/surface_cort.zip site="local"
 surface_subcort.zip file://$path/tvb/surface_subcort.zip site="local"
+seeg_xyz.txt file://$path/tvb/seeg_xyz.txt site="local"
 .*\.png file://$path/figs/[0] site="local" regex="true"
 .* file://$path/[0] site="local" regex="true"
