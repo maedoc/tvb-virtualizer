@@ -145,7 +145,7 @@ class T1Processing(object):
             jobs4[-1].addArguments(aparc_aseg_mgz_vol, aparc_aseg_nii_gz_vol[-1],
                                   "--out_orientation", "RAS", "-rt", "nearest")
             jobs4[-1].uses(aparc_aseg_mgz_vol, link=Link.INPUT)
-            jobs4[-1].uses(aparc_aseg_nii_gz_vol[-1], link=Link.OUTPUT, transfer=False, register=False)
+            jobs4[-1].uses(aparc_aseg_nii_gz_vol[-1], link=Link.OUTPUT, transfer=True, register=True)
             dax.addJob(jobs4[-1])
 
             dax.depends(jobs4[-1], last_job)
