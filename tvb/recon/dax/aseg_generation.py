@@ -56,7 +56,7 @@ class AsegGeneration(object):
             job3 = Job(AsegGenJobNames.MRIS_EXTRACT.value, node_label="mris_extract_%s" % aseg_label)
             job3.addArguments(aseg_not_smooth, aseg_not_smooth_main)
             job3.uses(aseg_not_smooth, link=Link.INPUT)
-            job3.uses(aseg_not_smooth_main, link=Link.OUTPUT, transfer=False, register=True)
+            job3.uses(aseg_not_smooth_main, link=Link.OUTPUT, transfer=False, register=False)
             dax.addJob(job3)
 
             dax.depends(job3, job2)
@@ -65,7 +65,7 @@ class AsegGeneration(object):
             job4 = Job(AsegGenJobNames.MRIS_SMOOTH.value, node_label="mris_smooth_%s" % aseg_label)
             job4.addArguments("-nw", aseg_not_smooth_main, lh_aseg_lbl)
             job4.uses(aseg_not_smooth_main, link=Link.INPUT)
-            job4.uses(lh_aseg_lbl, link=Link.OUTPUT, transfer=False, register=True)
+            job4.uses(lh_aseg_lbl, link=Link.OUTPUT, transfer=False, register=False)
             dax.addJob(job4)
 
             dax.depends(job4, job3)
