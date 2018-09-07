@@ -226,18 +226,27 @@ if __name__ == "__main__":
         for atlas in atlases:
             OUTPUTS_EXIST.append(False)
             OUTPUT_DONE_FILES.append("%s_done.txt" % atlas)
+        start_time = time.time()
         while True:
             monitord_done_exists = MONITORED_FILE in os.listdir(submit_dir)
             print("monitord.done exists=%s" % str(monitord_done_exists))
             for iatlas, atlas in enumerate(atlases):
                 OUTPUTS_EXIST[iatlas] = OUTPUT_DONE_FILES[iatlas] in os.listdir(output_folder)
                 print("%s exists=%s" % (OUTPUT_DONE_FILES[iatlas], str(OUTPUTS_EXIST[iatlas])))
+            elapsed_time_in_hours = (time.time() - start_time) / 3600
             if monitord_done_exists or numpy.all(OUTPUTS_EXIST):
+                print("Checked at %s and some of the %s files were generated!\n" % (
+                    str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())),
+                    str([MONITORED_FILE] + OUTPUT_DONE_FILES)))
+                print("The run has finished for job with id: %s" % current_job_id)
                 break
             else:
                 print("Checked at %s and %s files were not generated yet!\n" % (
                     str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())),
                     str([MONITORED_FILE]+OUTPUT_DONE_FILES)))
+                if elapsed_time_in_hours > 24:
+                    print("The time limit of %s hours has passed for job %s!" %
+                          (str(elapsed_time_in_hours), current_job_id))
+                    print("Stopping to monitor it!")
+                    break
                 time.sleep(900)
-
-        print("The run has finished for job with id: %s" % current_job_id)
