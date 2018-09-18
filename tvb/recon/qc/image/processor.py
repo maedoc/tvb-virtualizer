@@ -129,7 +129,7 @@ class ImageProcessor(object):
         self.writer.write_surface_with_annotation(surface, annotation,
                                                   self.generate_file_name('surface_annotation', snapshot_name))
 
-    def overlap_volume_surfaces(self, volume_background: os.PathLike, surfaces_path: os.PathLike,
+    def overlap_volume_surfaces(self, volume_background: os.PathLike, surfaces_path: list or str,
                                 use_center_surface: bool, use_cc_point: bool, snapshot_name: str=SNAPSHOT_NAME):
         volume = IOUtils.read_volume(volume_background)
 
@@ -139,6 +139,8 @@ class ImageProcessor(object):
         else:
             ras = volume.get_center_point()
 
+        if not isinstance(surfaces_path, list):
+            surfaces_path = [surfaces_path]
         surfaces = [IOUtils.read_surface(os.path.expandvars(surface), use_center_surface) for surface in
                     surfaces_path]
 
