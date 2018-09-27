@@ -235,15 +235,15 @@ if __name__ == "__main__":
                 print("%s exists=%s" % (OUTPUT_DONE_FILES[iatlas], str(OUTPUTS_EXIST[iatlas])))
             elapsed_time_in_hours = (time.time() - start_time) / 3600
             if monitord_done_exists or numpy.all(OUTPUTS_EXIST):
-                print("Checked at %s and some of the %s files were generated!\n" % (
+                print("Checked at %s and either %s or both of the %s files were generated!\n" % (
                     str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())),
-                    str([MONITORED_FILE] + OUTPUT_DONE_FILES)))
+                    str([MONITORED_FILE]), str(OUTPUT_DONE_FILES)))
                 print("The run has finished for job with id: %s" % current_job_id)
                 break
             else:
-                print("Checked at %s and %s files were not generated yet!\n" % (
+                print("Checked at %s and neither %s nor the pair of %s files were generated yet!\n" % (
                     str(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())),
-                    str([MONITORED_FILE]+OUTPUT_DONE_FILES)))
+                    str([MONITORED_FILE]), str(OUTPUT_DONE_FILES)))
                 if elapsed_time_in_hours > 24:
                     print("The time limit of %s hours has passed for job %s!" %
                           (str(elapsed_time_in_hours), current_job_id))
