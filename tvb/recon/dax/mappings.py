@@ -211,27 +211,16 @@ class HeadModelFiles(Enum):
     HEAD_MAT = "head.mat"
     HEAD_INV_MAT = "head_inv.mat"
 
+class SensorGainCompFiles(Enum):
+    SENSORS_POSITIONS = "%s.xyz"
+    SENSOR_GAIN_DIPOLE_MAT = "%s_dipole_gain%s.txt"
+    SENSOR_GAIN_INV_SQUARE_MAT = "%s_inv_square_gain%s.txt"
+    SENSOR_GAIN_REGIONS_INV_SQUARE_MAT = "%s_regions_inv_square_gain%s.mat"
 
-class SeegGainFiles(Enum):
-    CORTICAL_PIAL = "cortical.pial"
-    SEEG_GAIN_DP_MAT = "seeg_dp_gain%s.txt"
-    SEEG_GAIN_MRS_MAT = "seeg_gain%s.txt"
-    SUBCORTICAL_ASEG = "subcortical.aseg"
-
-
-class SeegGainJobNames(Enum):
-    MERGE_SURFACES = "merge_surfaces"
-    COMPUTE_SEEG_GAIN = "compute_seeg_gain"
-
-
-class ProjectionCompFiles(Enum):
-    SENS_POSITIONS = "%s.xyz"
-    PROJECTION_MAT = "%s_gain%s.mat"
-
-
-class ProjectionCompJobNames(Enum):
-    COMPUTE_PROJ_MAT = "compute_projection_matrix"
-
+class SensorGainCompJobNames(Enum):
+    COMPUTE_SENSOR_GAIN_DIPOLE = "compute_%s_gain_dipole"
+    COMPUTE_SENSOR_GAIN_INV_SQUARE = "compute_%s_gain_inv_square"
+    COMPUTE_SENSOR_GAIN_REGIONS_INV_SQUARE = "compute_%s_gain_regions_inv_square"
 
 class ResamplingFiles(Enum):
     LH_PIAL_RESAMP = "lh.pial-%s"

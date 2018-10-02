@@ -219,15 +219,16 @@ class SensorService(object):
         infile.close()
         outfile.close()
 
-    # This is from tvb_make/util/gain_matrix_seeg.py
-    def _gain_matrix_dipole(self, vertices: numpy.ndarray, orientations: numpy.ndarray, areas: numpy.ndarray,
-                            sensors: numpy.ndarray) -> numpy.ndarray:
+    # The following use tvb_make/util/gain_matrix_seeg.py and the respective TVB code
+
+    def _gain_matrix_dipole(self, vertices: numpy.ndarray, orientations: numpy.ndarray,
+                            verts_areas: numpy.ndarray, sensors: numpy.ndarray)  -> numpy.ndarray:
         """
         Parameters
         ----------
-        vertices             numpy.ndarray of floats of size n x 3, where n is the number of vertices
+        vertices             numpy.ndarray of floats of size n x 3, where n is the number of dipoles
         orientations         numpy.ndarray of floats of size n x 3
-        region_mapping       numpy.ndarray of ints of size n
+        verts_areas          numpy.ndarray of floats of size n x 1
         sensors              numpy.ndarray of floats of size m x 3, where m is the number of sensors
         Returns
         -------
@@ -237,17 +238,28 @@ class SensorService(object):
         nverts = vertices.shape[0]
         nsens = sensors.shape[0]
 
-        gain_mtx_vert = numpy.zeros((nsens, nverts))
+        dipole_gain = numpy.zeros((nsens, nverts)).astype("f")
         for sens_ind in range(nsens):
             a = sensors[sens_ind, :] - vertices
             na = numpy.sqrt(numpy.sum(a ** 2, axis=1))
-            gain_mtx_vert[sens_ind, :] = areas * (numpy.sum(orientations * a, axis=1) / na ** 3) / (
-                4.0 * numpy.pi * SIGMA)
+            dipole_gain[sens_ind, :] = (numpy.sum(orientations * a, axis=1) / na ** 3) / (4.0 * numpy.pi * SIGMA)
 
-        return gain_mtx_vert
+        return verts_areas * dipole_gain
 
-    def _gain_matrix_inv_square(self, vertices: numpy.ndarray, areas: numpy.ndarray, sensors: numpy.ndarray) \
-            -> numpy.ndarray:
+
+    def _gain_matrix_inv_square(self, vertices: numpy.ndarray, verts_areas: numpy.ndarray, sensors: numpy.ndarray) \
+                                -> numpy.ndarray:
+        """
+        Parameters
+        ----------
+        vertices            numpy.ndarray of floats of size n x 3, where n is the number of dipoles
+        orientations         numpy.ndarray of floats of size n x 3
+        verts_areas          numpy.ndarray of floats of size n x 1
+        sensors              numpy.ndarray of floats of size m x 3, where m is the number of sensors
+        Returns
+        -------
+        numpy.ndarray of size m x n
+        """
         nverts = vertices.shape[0]
         nsens = sensors.shape[0]
 
@@ -255,7 +267,7 @@ class SensorService(object):
         for sens_ind in range(nsens):
             a = sensors[sens_ind, :] - vertices
             na = numpy.sqrt(numpy.sum(a ** 2, axis=1))
-            gain_mtx_vert[sens_ind, :] = areas / na ** 2
+            gain_mtx_vert[sens_ind, :] = verts_areas / na ** 2
 
         return gain_mtx_vert
 
@@ -268,9 +280,18 @@ class SensorService(object):
 
         return reg_map_mtx
 
-    def compute_seeg_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike, subcort_file: os.PathLike,
-                                 cort_rm: os.PathLike, subcort_rm: os.PathLike,
-                                 out_gain_mat: os.PathLike) -> numpy.ndarray:
+    def _normalize_gain_matrix(self, gain_matrix: numpy.ndarray, normalize: float=99.0, ceil: bool=False):
+        if normalize:
+            gain_matrix /= numpy.percentile(gain_matrix, normalize)
+        if ceil:
+            if ceil is True:
+                ceil = 1.0
+            gain_matrix[gain_matrix > ceil] = ceil
+        return gain_matrix
+
+    def compute_seeg_dipole_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike, subcort_file: os.PathLike,
+                                 cort_rm: os.PathLike, subcort_rm: os.PathLike, out_gain_mat: os.PathLike, normalize:
+                                 float=100.0, ceil: bool=False) -> numpy.ndarray:
         genericIO = GenericIO()
 
         sensors = numpy.genfromtxt(seeg_xyz, usecols=[1, 2, 3])
@@ -279,12 +300,10 @@ class SensorService(object):
         cort_triangles = genericIO.read_field_from_zip("triangles.txt", cort_file, dtype="i")
         cort_surf = Surface(cort_vertices, cort_triangles)
         cort_normals = cort_surf.vertex_normals()
-        cort_areas = cort_surf.get_vertex_areas()
 
         subcort_vertices = genericIO.read_field_from_zip("vertices.txt", subcort_file)
         subcort_triangles = genericIO.read_field_from_zip("triangles.txt", subcort_file, dtype="i")
         subcort_surf = Surface(subcort_vertices, subcort_triangles)
-        subcort_areas = subcort_surf.get_vertex_areas()
 
         cort_rm = list(numpy.genfromtxt(cort_rm, usecols=[0], dtype='i'))
         subcort_rm = list(numpy.genfromtxt(subcort_rm, usecols=[0], dtype='i'))
@@ -295,38 +314,77 @@ class SensorService(object):
 
         verts_regions_mat = self._get_verts_regions_matrix(nr_vertices, nr_regions, cort_rm + subcort_rm)
 
-        gain_matrix = self._gain_matrix_dipole(cort_surf.vertices, cort_normals, cort_areas, sensors)
+        # Weight each vertex with the 1/3 of the areas of all triangles it is involved with
+        # This is to account for inhomogeneous spacing of vertices on the surface
+        cort_verts_areas = cort_surf.get_vertex_areas()
+        subcort_verts_areas = subcort_surf.get_vertex_areas()
 
-        gain_matrix_subcort = self._gain_matrix_inv_square(subcort_surf.vertices, subcort_areas, sensors)
+        gain_matrix = self._gain_matrix_dipole(cort_surf.vertices, cort_normals, cort_verts_areas, sensors)
+
+        gain_matrix_subcort = self._gain_matrix_inv_square(subcort_surf.vertices, subcort_verts_areas, sensors)
 
         gain_total = numpy.concatenate((gain_matrix, gain_matrix_subcort), axis=1)
 
         gain_out = gain_total @ verts_regions_mat
+        gain_out = self._normalize_gain_matrix(gain_out, normalize, ceil)
         numpy.savetxt(out_gain_mat, gain_out)
 
         return gain_out
 
-    # This is from tvb-epilepsy
-    def compute_sensors_projection(self, sensors_file: os.PathLike, centers_file: os.PathLike,
-                                   out_matrix_file: os.PathLike, normalize: float=100.0, ceil: bool=False) \
-            -> numpy.ndarray:
-        sensors = numpy.genfromtxt(sensors_file, usecols=[1, 2, 3])
+    def compute_seeg_inv_square_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike,
+                                            subcort_file: os.PathLike, cort_rm: os.PathLike, subcort_rm: os.PathLike,
+                                            out_gain_mat: os.PathLike, normalize: float=99.0, ceil: bool=False) \
+                                            -> numpy.ndarray:
+        genericIO = GenericIO()
+
+        sensors = numpy.genfromtxt(seeg_xyz, usecols=[1, 2, 3])
+
+        cort_vertices = genericIO.read_field_from_zip("vertices.txt", cort_file)
+        cort_triangles = genericIO.read_field_from_zip("triangles.txt", cort_file, dtype="i")
+        cort_surf = Surface(cort_vertices, cort_triangles)
+
+        subcort_vertices = genericIO.read_field_from_zip("vertices.txt", subcort_file)
+        subcort_triangles = genericIO.read_field_from_zip("triangles.txt", subcort_file, dtype="i")
+        subcort_surf = Surface(subcort_vertices, subcort_triangles)
+
+        cort_rm = list(numpy.genfromtxt(cort_rm, usecols=[0], dtype='i'))
+        subcort_rm = list(numpy.genfromtxt(subcort_rm, usecols=[0], dtype='i'))
+        region_list = numpy.unique(cort_rm + subcort_rm)
+
+        nr_regions = len(region_list)
+        nr_vertices = cort_surf.vertices.shape[0] + subcort_surf.vertices.shape[0]
+
+        verts_regions_mat = self._get_verts_regions_matrix(nr_vertices, nr_regions, cort_rm + subcort_rm)
+
+        # Weight each vertex with the 1/3 of the areas of all triangles it is involved with
+        # This is to account for inhomogeneous spacing of vertices on the surface
+        cort_verts_areas = cort_surf.get_vertex_areas()
+        subcort_verts_areas = subcort_surf.get_vertex_areas()
+
+        gain_matrix = self._gain_matrix_inv_square(cort_surf.vertices, cort_verts_areas, sensors)
+
+        gain_matrix_subcort = self._gain_matrix_inv_square(subcort_surf.vertices, subcort_verts_areas, sensors)
+
+        gain_total = numpy.concatenate((gain_matrix, gain_matrix_subcort), axis=1)
+
+        gain_out = gain_total @ verts_regions_mat
+        gain_out = self._normalize_gain_matrix(gain_out, normalize, ceil)
+        numpy.savetxt(out_gain_mat, gain_out)
+
+        return gain_out
+
+    def compute_seeg_regions_inv_square_gain_matrix(self, seeg_xyz: os.PathLike, centers_file: os.PathLike,
+                                                    areas_file: os.PathLike, out_matrix_file: os.PathLike,
+                                                    normalize: float=99.0, ceil: bool=False) -> numpy.ndarray:
+
+        sensors = numpy.genfromtxt(seeg_xyz, usecols=[1, 2, 3])
         centers = numpy.genfromtxt(centers_file, usecols=[1, 2, 3])
+        areas = numpy.genfromtxt(areas_file)
 
-        n1 = sensors.shape[0]
-        n2 = centers.shape[0]
-        projection = numpy.zeros((n1, n2))
-        dist = numpy.zeros((n1, n2))
-        for i1, i2 in product(range(n1), range(n2)):
-            dist[i1, i2] = numpy.abs(numpy.sum((sensors[i1, :] - centers[i2, :]) ** 2))
-            projection[i1, i2] = 1 / dist[i1, i2]
-        if normalize:
-            projection /= numpy.percentile(projection, normalize)
-        if ceil:
-            if ceil is True:
-                ceil = 1.0
-            projection[projection > ceil] = ceil
+        gain_matrix = self._gain_matrix_inv_square(centers, areas, sensors)
 
-        numpy.savetxt(out_matrix_file, projection)
+        gain_matrix = self._normalize_gain_matrix(gain_matrix, normalize, ceil)
+        numpy.savetxt(out_matrix_file, gain_matrix)
 
-        return projection
+        return gain_matrix
+

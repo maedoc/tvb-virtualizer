@@ -17,9 +17,9 @@ from tvb.recon.dax.sensor_model import SensorModel
 from tvb.recon.dax.source_model import SourceModel
 from tvb.recon.dax.lead_field_model import LeadFieldModel
 from tvb.recon.dax.mrielec_seeg_computation import MriElecSEEGComputation
-from tvb.recon.dax.projection_computation import ProjectionComputation
+from tvb.recon.dax.projection_computation import SensorGainComputation
 from tvb.recon.dax.seeg_computation import SEEGComputation
-from tvb.recon.dax.seeg_gain_computation import SeegGainComputation
+from tvb.recon.dax.seeg_gain_computation import SensorGainComputation
 from tvb.recon.dax.output_conversion import OutputConversion
 
 
@@ -136,80 +136,84 @@ if __name__ == "__main__":
         job_bem_surfaces = head_model.generate_bem_surfaces(dax, job_t1)
 
     if config.props[ConfigKey.PROCESS_SENSORS] == "True":
-        if config.props[ConfigKey.SEEG_FLAG] == "True":
-            # SEEG
-            if config.props[ConfigKey.USE_OPENMEEG] == "True":
+        gain_computation = []
+        for sensor_type in [SensorsType.SEEG.value, SensorsType.EEG.value, SensorsType.MEEG.value]:
+            # We assume we know the positions of EEG and MEG sensors for the moment:
+            job_sensor_xyz = None
+            if sensor_type == SensorsType.SEEG.value:
+                # We have the OpenMEEG choice only for seeg for now (?..)
+                # TODO: finalize OpenMEEG workflow & include all sensors for it
+                if config.props[ConfigKey.USE_OPENMEEG] == "True":
 
-                # OpenMEEG workflow
-                # Gain matrix will include only cortical sources
-                job_head_model = head_model.add_head_model_steps(dax, job_bem_surfaces)
+                    # OpenMEEG workflow
+                    # Gain matrix will include only cortical sources
+                    job_head_model = head_model.add_head_model_steps(dax, job_bem_surfaces)
 
-                source_model = SourceModel(subject, trg_subject, atlas_suffixes)
-                jobs_source_model = source_model.add_source_model_steps(dax, job_head_model, jobs_mapping_details)
+                    source_model = SourceModel(subject, trg_subject, atlas_suffixes)
+                    jobs_source_model = source_model.add_source_model_steps(dax, job_head_model,
+                                                                            jobs_mapping_details)
 
-                sensor_model = SensorModel(subject, trg_subject, atlas_suffixes)
-                jobs_sensor_model_lh, jobs_sensor_model_rh = \
-                    sensor_model.add_sensor_model_steps(dax, job_head_model, jobs_source_model)
+                    sensor_model = SensorModel(subject, trg_subject, atlas_suffixes)
+                    jobs_sensor_model_lh, jobs_sensor_model_rh = \
+                        sensor_model.add_sensor_model_steps(dax, job_head_model, jobs_source_model)
 
-                lead_field_models = []
-                for atlas_suffix, job_sensor_model_lh, job_sensor_model_rh \
-                        in zip(atlas_suffixes, jobs_sensor_model_lh, jobs_sensor_model_rh):
-                    lead_field_models.append(LeadFieldModel(subject, trg_subject, atlas_suffix))
-                    lead_field_models[-1].add_lead_field_model_steps(dax, job_sensor_model_lh, job_sensor_model_rh)
+                    lead_field_models = []
+                    for atlas_suffix, job_sensor_model_lh, job_sensor_model_rh \
+                            in zip(atlas_suffixes, jobs_sensor_model_lh, jobs_sensor_model_rh):
+                        lead_field_models.append(LeadFieldModel(subject, trg_subject, atlas_suffix))
+                        lead_field_models[-1].add_lead_field_model_steps(dax, job_sensor_model_lh,
+                                                                         job_sensor_model_rh)
 
-                # TODO: Those should undergo the same process as SEEG for OPENMEEG workflow
-
-            else:
-                # Ignoring sources dipoles orientations.
-                # Gain matrix will result only from euclidean distances between sources and sensors.
-                # Gain matrix will include subcortical sources as well
-                seeg_gain_computation = []
-                job_seeg_xyz = None
-                if config.props[ConfigKey.MRIELEC_FLAG] == "True":
-                    # MRIELEC: SEEG sensors depicted on T1
-                    mrielec_seeg_computation = MriElecSEEGComputation(subject, config.props[ConfigKey.MRIELEC_FRMT],
-                                                                      config.props[ConfigKey.SAME_SPACE_VOL_POM],
-                                                                      config.props[ConfigKey.MRIELEC_BIN_DILATE],
-                                                                      config.props[ConfigKey.MRIELEC_BIN_ERODE])
-                    job_seeg_xyz = mrielec_seeg_computation.add_computation_steps(dax, job_t1)
+                    # TODO: Those should undergo the same process as SEEG for OPENMEEG workflow
+                    continue
 
                 else:
-                    if config.props[ConfigKey.CT_FLAG] == "True":
-                        # CT scan with SEEG sensors' positions
-                        seeg_computation = SEEGComputation(subject, config.props[ConfigKey.CT_FRMT],
-                                                           config.props[ConfigKey.CT_ELEC_INTENSITY_TH])
+                    # Compute the seeg positions
+                    if config.props[ConfigKey.MRIELEC_FLAG] == "True":
+                        # MRIELEC: SEEG sensors depicted on T1
+                        mrielec_seeg_computation = \
+                            MriElecSEEGComputation(subject, config.props[ConfigKey.MRIELEC_FRMT],
+                                                   config.props[ConfigKey.SAME_SPACE_VOL_POM],
+                                                   config.props[ConfigKey.MRIELEC_BIN_DILATE],
+                                                   config.props[ConfigKey.MRIELEC_BIN_ERODE])
+                        job_sensor_xyz = mrielec_seeg_computation.add_computation_steps(dax, job_t1)
 
-                        job_seeg_xyz = seeg_computation.add_seeg_positions_computation_steps(dax, job_t1, job_recon)
-                for atlas_suffix, job_mapping_details in zip(atlas_suffixes, jobs_mapping_details):
-                    if job_seeg_xyz is not None:
-                        seeg_gain_computation.append(SeegGainComputation(config.props[ConfigKey.SUBJECT], atlas_suffix))
-                        if config.props[ConfigKey.SEEG_GAIN_USE_DP] == "True":
-                            seeg_gain_computation[-1].add_seeg_gain_dp_computation_steps(dax, job_seeg_xyz,
-                                                                                         job_mapping_details)
-                        if config.props[ConfigKey.SEEG_GAIN_USE_MRS] == "True":
-                            seeg_gain_computation[-1].add_seeg_mrs_gain_computation_steps(dax, job_seeg_xyz,
-                                                                                          job_mapping_details)
+                    else:
+                        if config.props[ConfigKey.CT_FLAG] == "True":
+                            # CT scan with SEEG sensors' positions
+                            seeg_computation = SEEGComputation(subject, config.props[ConfigKey.CT_FRMT],
+                                                               config.props[ConfigKey.CT_ELEC_INTENSITY_TH])
 
-        # Additionally EEG and/or MEG forward solutions
-        # TODO: Move this under "else" in the previous if statement when OpenMEEG workflow for EEG/MEG is implemented
-        if config.props[ConfigKey.EEG_FLAG] == "True":
-            # EEG
-            projection_computation_EEG = []
+                            job_sensor_xyz = \
+                                seeg_computation.add_seeg_positions_computation_steps(dax, job_t1, job_recon)
+                if job_sensor_xyz is None:
+                    continue
+
+            else:
+                if sensor_type == SensorsType.EEG.value and config.props[ConfigKey.EEG_FLAG] == "False":
+                    continue
+
+                if sensor_type == SensorsType.MEG.value and config.props[ConfigKey.MEG_FLAG] == "False":
+                    continue
+
             for atlas_suffix, job_mapping_details in zip(atlas_suffixes, jobs_mapping_details):
-                projection_computation_EEG.append(ProjectionComputation(config.props[ConfigKey.SUBJECT],
-                                                                        SensorsType.EEG.value,
-                                                                        atlas_suffix))
-                projection_computation_EEG[-1].add_projection_computation_steps(dax, job_mapping_details)
-
-        if config.props[ConfigKey.MEG_FLAG] == "True":
-            # MEG
-            projection_computation_MEG = []
-            for atlas_suffix, job_mapping_details in zip(atlas_suffixes, jobs_mapping_details):
-                projection_computation_MEG.append(ProjectionComputation(config.props[ConfigKey.SUBJECT],
-                                                                        SensorsType.MEG.value,
-                                                                        atlas_suffix))
-                projection_computation_MEG[-1].add_projection_computation_steps(dax, job_mapping_details)
-
+                gain_computation.append(SensorGainComputation(config.props[ConfigKey.SUBJECT],
+                                                                  sensor_type, atlas_suffix))
+                # Ignoring only subcortical sources dipoles' orientations.
+                if config.props[ConfigKey.SENSOR_GAIN_USE_DIPOLE] == "True":
+                    gain_computation[-1].add_sensor_dipole_gain_computation_steps(dax, job_sensor_xyz,
+                                                                                  job_mapping_details)
+                # From here and on ignoring all sources dipoles orientations.
+                # Gain matrix will result only from euclidean distances between sources and sensors.
+                # Gain matrix will include subcortical sources as well
+                if config.props[ConfigKey.SENSOR_GAIN_USE_INV_SQUARE] == "True":
+                    gain_computation[-1].add_sensor_inv_square_gain_computation_steps(dax, job_sensor_xyz,
+                                                                                      job_mapping_details)
+                # Here we compute directly for regions' centers and areas' centers, instead via vertices'sources
+                if config.props[ConfigKey.SENSOR_GAIN_USE_REGIONS_INV_SQUARE] == "True":
+                    gain_computation[-1]. \
+                        add_sensor_regions_inv_square_gain_computation_steps(dax, job_sensor_xyz,
+                                                                             job_mapping_details)
 
     out_dir = os.path.dirname(daxfile)
     if not os.path.exists(out_dir):
