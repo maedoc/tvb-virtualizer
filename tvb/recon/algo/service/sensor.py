@@ -286,7 +286,7 @@ class SensorService(object):
 
         return reg_map_mtx
 
-    def _normalize_gain_matrix(self, gain_matrix: numpy.ndarray, normalize: float=100.0):
+    def _normalize_gain_matrix(self, gain_matrix: numpy.ndarray, normalize: float=100.0) -> numpy.ndarray:
         if normalize:
             gain_matrix /= numpy.percentile(numpy.abs(gain_matrix), normalize)
         return gain_matrix
