@@ -1,6 +1,6 @@
 region_mapping_cort${atlas_suffix}.txt file://$path/tvb/$atlas/region_mapping_cort.txt site="local"
 region_mapping_subcort${atlas_suffix}.txt file://$path/tvb/$atlas/region_mapping_subcort.txt site="local"
-aparc+aseg-cor${atlas_suffix}.nii.gz file://$path/tvb/$atlas/aparc+aseg-cor.nii.gz site="local"
+aparc+aseg-cor${atlas_suffix}.nii.gz file://$path/tvb/$atlas/aparc+aseg.nii.gz site="local"
 connectivity${atlas_suffix}.zip file://$path/tvb/$atlas/connectivity.zip site="local"
 .*\_gain${atlas_suffix}.txt file://$path/tvb/$atlas/[0] site="local" regex="true"
 ${atlas}_done.txt file://$path/[0] site="local" regex="true"
