@@ -7,6 +7,6 @@ export SUBJECTS_DIR
 export SUBJECT=$5
 
 python <<EOF
-from tvb.recon.algo.reconutils import compute_seeg_regions_inv_square_gain_matrix
-compute_seeg_regions_inv_square_gain_matrix("$1", "$2", "$3", "$4")
+from tvb.recon.algo.reconutils import compute_seeg_regions_distance_gain_matrix
+compute_seeg_regions_distance_gain_matrix("$1", "$2", "$3", "$4")
 EOF

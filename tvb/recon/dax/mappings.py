@@ -215,14 +215,14 @@ class HeadModelFiles(Enum):
 class SensorGainCompFiles(Enum):
     SENSORS_POSITIONS = "%s_xyz.txt"
     SENSOR_DIPOLE_GAIN = "%s_dipole_gain%s.txt"
-    SENSOR_INV_SQUARE_GAIN = "%s_inv_square_gain%s.txt"
-    SENSOR_REGIONS_INV_SQUARE_GAIN = "%s_regions_inv_square_gain%s.txt"
+    SENSOR_DISTANCE_GAIN = "%s_distance_gain%s.txt"
+    SENSOR_REGIONS_DISTANCE_GAIN = "%s_regions_distance_gain%s.txt"
 
 
 class SensorGainCompJobNames(Enum):
     COMPUTE_SENSOR_DIPOLE_GAIN = "compute_%s_dipole_gain"
-    COMPUTE_SENSOR_INV_SQUARE_GAIN = "compute_%s_inv_square_gain"
-    COMPUTE_SENSOR_REGIONS_INV_SQUARE_GAIN = "compute_%s_regions_inv_square_gain"
+    COMPUTE_SENSOR_DISTANCE_GAIN = "compute_%s_distance_gain"
+    COMPUTE_SENSOR_REGIONS_DISTANCE_GAIN = "compute_%s_regions_distance_gain"
 
 
 class ResamplingFiles(Enum):

@@ -70,22 +70,30 @@ if __name__ == "__main__":
             # atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
             # copyfile(out_gain_path, os.path.join(outpath, atlasgain_filename))
 
-            gain_filename = "seeg_inv_square_gain.txt"
+            gain_filename = "seeg_distance_gain.txt"
             out_gain_path = os.path.join(atlaspath, gain_filename)
-            gain_matrices[subject][atlas]["inv_square"] = \
-                sensor_service.compute_seeg_inv_square_gain_matrix(seeg_xyz, cort_surf_path, subcort_surf_path,
-                                                                   cort_rm_path, subcort_rm_path, out_gain_path,
-                                                                   normalize=100)
+            gain_matrices[subject][atlas]["distance"] = \
+                sensor_service.compute_seeg_distance_gain_matrix(seeg_xyz, cort_surf_path, subcort_surf_path,
+                                                                 cort_rm_path, subcort_rm_path, out_gain_path,
+                                                                 normalize=100)
             # atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
             # copyfile(out_gain_path, os.path.join(outpath, atlasgain_filename))
+            try:
+                os.remove(out_gain_path.replace("distance", "inv_square"))
+            except:
+                pass
 
-            gain_filename = "seeg_regions_inv_square_gain.txt"
+            gain_filename = "seeg_regions_distance_gain.txt"
             out_gain_path = os.path.join(atlaspath, gain_filename)
-            gain_matrices[subject][atlas]["regions_inv_square"] = \
-                sensor_service.compute_seeg_regions_inv_square_gain_matrix(seeg_xyz, centers_path, areas_path,
-                                                                           out_gain_path, normalize=100)
+            gain_matrices[subject][atlas]["regions_distance"] = \
+                sensor_service.compute_seeg_regions_distance_gain_matrix(seeg_xyz, centers_path, areas_path,
+                                                                         out_gain_path, normalize=100)
             # atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
             # copyfile(out_gain_path, os.path.join(outpath, atlasgain_filename))
+            try:
+                os.remove(out_gain_path.replace("distance", "inv_square"))
+            except:
+                pass
 
             rmtree(conn_path)
 

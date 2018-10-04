@@ -210,16 +210,15 @@ if __name__ == "__main__":
                 # From here and on ignoring all sources dipoles orientations.
                 # Gain matrix will result only from euclidean distances between sources and sensors.
                 # Gain matrix will include subcortical sources as well
-                if config.props[ConfigKey.SENSOR_GAIN_USE_INV_SQUARE] == "True":
+                if config.props[ConfigKey.SENSOR_GAIN_USE_DISTANCE] == "True":
                     print("...using only dipole distances to sensors...")
-                    gain_computation[-1].add_sensor_inv_square_gain_computation_steps(dax, job_sensor_xyz,
-                                                                                      job_mapping_details)
+                    gain_computation[-1].add_sensor_distance_gain_computation_steps(dax, job_sensor_xyz,
+                                                                                    job_mapping_details)
                 # Here we compute directly for regions' centers and areas' centers, instead via vertices'sources
-                if config.props[ConfigKey.SENSOR_GAIN_USE_REGIONS_INV_SQUARE] == "True":
+                if config.props[ConfigKey.SENSOR_GAIN_USE_REGIONS_DISTANCE] == "True":
                     print("...using only regions' centers' distances to sensors...")
                     gain_computation[-1]. \
-                        add_sensor_regions_inv_square_gain_computation_steps(dax, job_sensor_xyz,
-                                                                             job_mapping_details)
+                        add_sensor_regions_distance_gain_computation_steps(dax, job_sensor_xyz, job_mapping_details)
 
     out_dir = os.path.dirname(daxfile)
     if not os.path.exists(out_dir):

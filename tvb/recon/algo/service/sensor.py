@@ -253,7 +253,7 @@ class SensorService(object):
         return verts_areas * dipole_gain
 
 
-    def _gain_matrix_inv_square(self, vertices: numpy.ndarray, verts_areas: numpy.ndarray, sensors: numpy.ndarray) \
+    def _gain_matrix_distance(self, vertices: numpy.ndarray, verts_areas: numpy.ndarray, sensors: numpy.ndarray) \
                                 -> numpy.ndarray:
         """
         Parameters
@@ -323,7 +323,7 @@ class SensorService(object):
 
         gain_matrix = self._gain_matrix_dipole(cort_surf.vertices, cort_normals, cort_verts_areas, sensors)
 
-        gain_matrix_subcort = self._gain_matrix_inv_square(subcort_surf.vertices, subcort_verts_areas, sensors)
+        gain_matrix_subcort = self._gain_matrix_distance(subcort_surf.vertices, subcort_verts_areas, sensors)
 
         gain_total = numpy.concatenate((gain_matrix, gain_matrix_subcort), axis=1)
 
@@ -333,9 +333,9 @@ class SensorService(object):
 
         return gain_out
 
-    def compute_seeg_inv_square_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike,
-                                            subcort_file: os.PathLike, cort_rm: os.PathLike, subcort_rm: os.PathLike,
-                                            out_gain_mat: os.PathLike, normalize: float=100.0) \
+    def compute_seeg_distance_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike,
+                                          subcort_file: os.PathLike, cort_rm: os.PathLike, subcort_rm: os.PathLike,
+                                          out_gain_mat: os.PathLike, normalize: float=100.0) \
                                             -> numpy.ndarray:
         genericIO = GenericIO()
 
@@ -363,9 +363,9 @@ class SensorService(object):
         cort_verts_areas = cort_surf.get_vertex_areas()
         subcort_verts_areas = subcort_surf.get_vertex_areas()
 
-        gain_matrix = self._gain_matrix_inv_square(cort_surf.vertices, cort_verts_areas, sensors)
+        gain_matrix = self._gain_matrix_distance(cort_surf.vertices, cort_verts_areas, sensors)
 
-        gain_matrix_subcort = self._gain_matrix_inv_square(subcort_surf.vertices, subcort_verts_areas, sensors)
+        gain_matrix_subcort = self._gain_matrix_distance(subcort_surf.vertices, subcort_verts_areas, sensors)
 
         gain_total = numpy.concatenate((gain_matrix, gain_matrix_subcort), axis=1)
 
@@ -375,15 +375,15 @@ class SensorService(object):
 
         return gain_out
 
-    def compute_seeg_regions_inv_square_gain_matrix(self, seeg_xyz: os.PathLike, centers_file: os.PathLike,
-                                                    areas_file: os.PathLike, out_matrix_file: os.PathLike,
-                                                    normalize: float=100.0) -> numpy.ndarray:
+    def compute_seeg_regions_distance_gain_matrix(self, seeg_xyz: os.PathLike, centers_file: os.PathLike,
+                                                  areas_file: os.PathLike, out_matrix_file: os.PathLike,
+                                                  normalize: float=100.0) -> numpy.ndarray:
 
         sensors = numpy.genfromtxt(seeg_xyz, usecols=[1, 2, 3])
         centers = numpy.genfromtxt(centers_file, usecols=[1, 2, 3])
         areas = numpy.genfromtxt(areas_file)
 
-        gain_matrix = self._gain_matrix_inv_square(centers, areas, sensors)
+        gain_matrix = self._gain_matrix_distance(centers, areas, sensors)
 
         gain_matrix = self._normalize_gain_matrix(gain_matrix, normalize)
         numpy.savetxt(out_matrix_file, gain_matrix)

@@ -37,16 +37,16 @@ class SensorGainComputation(object):
             dax.depends(job, job_sensor_xyz)
         dax.depends(job, job_mapping_details)
 
-    def add_sensor_inv_square_gain_computation_steps(self, dax, job_sensor_xyz, job_mapping_details):
+    def add_sensor_distance_gain_computation_steps(self, dax, job_sensor_xyz, job_mapping_details):
         sensor_positions = File(SensorGainCompFiles.SENSORS_POSITIONS.value % self.sensors_type)
         cort_surf = File(AsegFiles.SURF_CORT_ZIP.value)
         subcort_surf = File(AsegFiles.SURF_SUBCORT_ZIP.value)
         cort_rm = File(AsegFiles.RM_CORT_TXT.value % self.atlas_suffix)
         subcort_rm = File(AsegFiles.RM_SUBCORT_TXT.value % self.atlas_suffix)
 
-        gain_mat = File(SensorGainCompFiles.SENSOR_INV_SQUARE_GAIN.value % (self.sensors_type, self.atlas_suffix))
+        gain_mat = File(SensorGainCompFiles.SENSOR_DISTANCE_GAIN.value % (self.sensors_type, self.atlas_suffix))
 
-        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_INV_SQUARE_GAIN.value % self.sensors_type,
+        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_DISTANCE_GAIN.value % self.sensors_type,
                   node_label="Compute inverse square %s gain matrix for atlas %s" %
                              (self.sensors_type, self.atlas_suffix))
         job.addArguments(sensor_positions, cort_surf, subcort_surf, cort_rm, subcort_rm, gain_mat, self.subject)
@@ -63,14 +63,14 @@ class SensorGainComputation(object):
         dax.depends(job, job_mapping_details)
 
 
-    def add_sensor_regions_inv_square_gain_computation_steps(self, dax, job_sensor_xyz, job_mapping_details):
+    def add_sensor_regions_distance_gain_computation_steps(self, dax, job_sensor_xyz, job_mapping_details):
         sensor_positions = File(SensorGainCompFiles.SENSORS_POSITIONS.value % self.sensors_type)
         centers_txt = File(AsegFiles.CENTERS_TXT.value % self.atlas_suffix)
         areas_txt = File(AsegFiles.AREAS_TXT.value % self.atlas_suffix)
 
-        gain_mat = File(SensorGainCompFiles.SENSOR_REGIONS_INV_SQUARE_GAIN.value % (self.sensors_type, self.atlas_suffix))
+        gain_mat = File(SensorGainCompFiles.SENSOR_REGIONS_DISTANCE_GAIN.value % (self.sensors_type, self.atlas_suffix))
 
-        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_REGIONS_INV_SQUARE_GAIN.value % self.sensors_type,
+        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_REGIONS_DISTANCE_GAIN.value % self.sensors_type,
                   node_label = "Compute regions' wise inverse square %s gain matrix for atlas %s" %
                                (self.sensors_type, self.atlas_suffix))
         job.addArguments(sensor_positions, centers_txt, areas_txt, gain_mat, self.subject)
