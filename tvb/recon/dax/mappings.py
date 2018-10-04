@@ -211,16 +211,19 @@ class HeadModelFiles(Enum):
     HEAD_MAT = "head.mat"
     HEAD_INV_MAT = "head_inv.mat"
 
+
 class SensorGainCompFiles(Enum):
-    SENSORS_POSITIONS = "%s.xyz"
-    SENSOR_GAIN_DIPOLE_MAT = "%s_dipole_gain%s.txt"
-    SENSOR_GAIN_INV_SQUARE_MAT = "%s_inv_square_gain%s.txt"
-    SENSOR_GAIN_REGIONS_INV_SQUARE_MAT = "%s_regions_inv_square_gain%s.mat"
+    SENSORS_POSITIONS = "%s_xyz.txt"
+    SENSOR_DIPOLE_GAIN = "%s_dipole_gain%s.txt"
+    SENSOR_INV_SQUARE_GAIN = "%s_inv_square_gain%s.txt"
+    SENSOR_REGIONS_INV_SQUARE_GAIN = "%s_regions_inv_square_gain%s.txt"
+
 
 class SensorGainCompJobNames(Enum):
-    COMPUTE_SENSOR_GAIN_DIPOLE = "compute_%s_gain_dipole"
-    COMPUTE_SENSOR_GAIN_INV_SQUARE = "compute_%s_gain_inv_square"
-    COMPUTE_SENSOR_GAIN_REGIONS_INV_SQUARE = "compute_%s_gain_regions_inv_square"
+    COMPUTE_SENSOR_DIPOLE_GAIN = "compute_%s_dipole_gain"
+    COMPUTE_SENSOR_INV_SQUARE_GAIN = "compute_%s_inv_square_gain"
+    COMPUTE_SENSOR_REGIONS_INV_SQUARE_GAIN = "compute_%s_regions_inv_square_gain"
+
 
 class ResamplingFiles(Enum):
     LH_PIAL_RESAMP = "lh.pial-%s"

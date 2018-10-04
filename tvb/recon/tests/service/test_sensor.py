@@ -21,6 +21,8 @@ if __name__ == "__main__":
 
     subjects = (np.array(range(30)) + 1).tolist()
     del subjects[14]
+    subjects = ["TVB%s" % subject for subject in subjects]
+    subjects += ["TVB4_mrielec", "TVB10_mrielec"]
 
     atlases = ["default", "a2009s"]
 
@@ -28,12 +30,15 @@ if __name__ == "__main__":
 
     gain_matrices = {}
 
-    for isubject in subjects:
+    for subject in subjects:
 
-        subject = "TVB%s" % isubject
+        print(subject)
+
         gain_matrices[subject] = {}
 
         for atlas in atlases:
+
+            print(atlas)
 
             gain_matrices[subject][atlas] = {}
 
@@ -57,29 +62,30 @@ if __name__ == "__main__":
             areas_path = os.path.join(conn_path, "areas.txt")
 
             gain_filename = "seeg_dipole_gain.txt"
-            atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
-            out_gain_path = os.path.join(outpath, atlasgain_filename)
+            out_gain_path = os.path.join(atlaspath, gain_filename)
             gain_matrices[subject][atlas]["dipole"] = \
                 sensor_service.compute_seeg_dipole_gain_matrix(seeg_xyz, cort_surf_path, subcort_surf_path,
                                                                cort_rm_path, subcort_rm_path, out_gain_path,
-                                                               normalize=99, ceil=False)
-            copyfile(out_gain_path, os.path.join(atlaspath, gain_filename))
+                                                               normalize=100)
+            # atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
+            # copyfile(out_gain_path, os.path.join(outpath, atlasgain_filename))
 
             gain_filename = "seeg_inv_square_gain.txt"
-            atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
-            out_gain_path = os.path.join(outpath, atlasgain_filename)
+            out_gain_path = os.path.join(atlaspath, gain_filename)
             gain_matrices[subject][atlas]["inv_square"] = \
                 sensor_service.compute_seeg_inv_square_gain_matrix(seeg_xyz, cort_surf_path, subcort_surf_path,
                                                                    cort_rm_path, subcort_rm_path, out_gain_path,
-                                                                   normalize=99, ceil=False)
-            copyfile(out_gain_path, os.path.join(atlaspath, gain_filename))
+                                                                   normalize=100)
+            # atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
+            # copyfile(out_gain_path, os.path.join(outpath, atlasgain_filename))
 
             gain_filename = "seeg_regions_inv_square_gain.txt"
-            atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
-            out_gain_path = os.path.join(outpath, atlasgain_filename)
+            out_gain_path = os.path.join(atlaspath, gain_filename)
             gain_matrices[subject][atlas]["regions_inv_square"] = \
                 sensor_service.compute_seeg_regions_inv_square_gain_matrix(seeg_xyz, centers_path, areas_path,
-                                                                           out_gain_path, normalize=99, ceil=False)
-            copyfile(out_gain_path, os.path.join(atlaspath, gain_filename))
+                                                                           out_gain_path, normalize=100)
+            # atlasgain_filename = gain_filename.split(".txt")[0] + atlas_suffix + ".txt"
+            # copyfile(out_gain_path, os.path.join(outpath, atlasgain_filename))
 
             rmtree(conn_path)
+

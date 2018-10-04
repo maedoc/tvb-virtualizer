@@ -47,7 +47,6 @@ class ConfigKey(Enum):
     SENSOR_GAIN_USE_DIPOLE = "sensor.gain.use.dipole"
     SENSOR_GAIN_USE_INV_SQUARE = "sensor.gain.use.inv_square"
     SENSOR_GAIN_USE_REGIONS_INV_SQUARE = "sensor.gain.use.regions_inv_square"
-    SENSOR_GAIN_NORMALIZATION_PERCENTILE = "sensor.gain.normalization_percentile"
     RESAMPLE_FLAG = "resample.flag"
     TRGSUBJECT = "trgsubject"
     DECIM_FACTOR = "decim.factor"

@@ -532,14 +532,42 @@ tr merge_surfaces {
     }
 }
 
-tr compute_seeg_gain {
+tr compute_seeg_dipole_gain {
     profile env "ANACONDA_ACTIVATE" "${ANACONDA_ACTIVATE}"
     profile env "PYTHON3_ENVIRONMENT" "${PYTHON3_ENVIRONMENT}"
     profile env "FREESURFER_HOME" "${FREESURFER_HOME}"
     profile env "SUBJECTS_DIR" "${SUBJECTS_DIR}"
 
     site condorpool {
-        pfn "${SH_CUSTOM_FILES}/compute_seeg_gain.sh"
+        pfn "${SH_CUSTOM_FILES}/compute_seeg_dipole_gain.sh"
+        arch "x86_64"
+        os "${OS}"
+        type "STAGEABLE"
+    }
+}
+
+tr compute_seeg_inv_square_gain {
+    profile env "ANACONDA_ACTIVATE" "${ANACONDA_ACTIVATE}"
+    profile env "PYTHON3_ENVIRONMENT" "${PYTHON3_ENVIRONMENT}"
+    profile env "FREESURFER_HOME" "${FREESURFER_HOME}"
+    profile env "SUBJECTS_DIR" "${SUBJECTS_DIR}"
+
+    site condorpool {
+        pfn "${SH_CUSTOM_FILES}/compute_seeg_inv_square_gain.sh"
+        arch "x86_64"
+        os "${OS}"
+        type "STAGEABLE"
+    }
+}
+
+tr compute_seeg_regions_inv_square_gain {
+    profile env "ANACONDA_ACTIVATE" "${ANACONDA_ACTIVATE}"
+    profile env "PYTHON3_ENVIRONMENT" "${PYTHON3_ENVIRONMENT}"
+    profile env "FREESURFER_HOME" "${FREESURFER_HOME}"
+    profile env "SUBJECTS_DIR" "${SUBJECTS_DIR}"
+
+    site condorpool {
+        pfn "${SH_CUSTOM_FILES}/compute_seeg_regions_inv_square_gain.sh"
         arch "x86_64"
         os "${OS}"
         type "STAGEABLE"

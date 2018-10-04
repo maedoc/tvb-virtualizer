@@ -147,12 +147,14 @@ def periodic_xyz_for_object(lab, val, aff, bw=0.1, doplot=False):
     return sensorService.periodic_xyz_for_object(lab, val, aff, bw, doplot)
 
 
-def compute_seeg_gain_matrix(seeg_xyz, cort_surf, subcort_surf, cort_rm, subcort_rm, out_gain_mat):
-    sensorService.compute_seeg_gain_matrix(seeg_xyz, cort_surf, subcort_surf, cort_rm, subcort_rm, out_gain_mat)
+def compute_seeg_dipole_gain_matrix(seeg_xyz, cort_surf, subcort_surf, cort_rm, subcort_rm, out_gain_mat):
+    sensorService.compute_seeg_dipole_gain_matrix(seeg_xyz, cort_surf, subcort_surf, cort_rm, subcort_rm, out_gain_mat)
 
+def compute_seeg_inv_square_gain_matrix(seeg_xyz, cort_surf, subcort_surf, cort_rm, subcort_rm, out_gain_mat):
+    sensorService.compute_seeg_inv_square_gain_matrix(seeg_xyz, cort_surf, subcort_surf, cort_rm, subcort_rm, out_gain_mat)
 
-def compute_projection_matrix(sensor_positions_file, centers_file, out_matrix):
-    sensorService.compute_sensors_projection(sensor_positions_file, centers_file, out_matrix)
+def compute_seeg_regions_inv_square_gain_matrix(sensor_positions_file, centers_file, areas_file, out_matrix):
+    sensorService.compute_seeg_regions_inv_square_gain_matrix(sensor_positions_file, centers_file, areas_file, out_matrix)
 
 
 if __name__ == '__main__':

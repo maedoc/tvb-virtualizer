@@ -238,6 +238,12 @@ class SensorService(object):
         nverts = vertices.shape[0]
         nsens = sensors.shape[0]
 
+        # For EEG from TVB:
+        # center = numpy.mean(vertices, axis=0)[numpy.newaxis,]
+        # radius = 1.05125 * max(numpy.sqrt(numpy.sum((vertices - center) ** 2, axis=1)))
+        # sen_dis = numpy.sqrt(numpy.sum((sensors) ** 2, axis=1))
+        # sensors = sensors / sen_dis[:, numpy.newaxis] * radius + center
+
         dipole_gain = numpy.zeros((nsens, nverts)).astype("f")
         for sens_ind in range(nsens):
             a = sensors[sens_ind, :] - vertices
@@ -280,18 +286,14 @@ class SensorService(object):
 
         return reg_map_mtx
 
-    def _normalize_gain_matrix(self, gain_matrix: numpy.ndarray, normalize: float=99.0, ceil: bool=False):
+    def _normalize_gain_matrix(self, gain_matrix: numpy.ndarray, normalize: float=100.0):
         if normalize:
-            gain_matrix /= numpy.percentile(gain_matrix, normalize)
-        if ceil:
-            if ceil is True:
-                ceil = 1.0
-            gain_matrix[gain_matrix > ceil] = ceil
+            gain_matrix /= numpy.percentile(numpy.abs(gain_matrix), normalize)
         return gain_matrix
 
     def compute_seeg_dipole_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike, subcort_file: os.PathLike,
                                  cort_rm: os.PathLike, subcort_rm: os.PathLike, out_gain_mat: os.PathLike, normalize:
-                                 float=100.0, ceil: bool=False) -> numpy.ndarray:
+                                 float=100.0) -> numpy.ndarray:
         genericIO = GenericIO()
 
         sensors = numpy.genfromtxt(seeg_xyz, usecols=[1, 2, 3])
@@ -326,14 +328,14 @@ class SensorService(object):
         gain_total = numpy.concatenate((gain_matrix, gain_matrix_subcort), axis=1)
 
         gain_out = gain_total @ verts_regions_mat
-        gain_out = self._normalize_gain_matrix(gain_out, normalize, ceil)
+        gain_out = self._normalize_gain_matrix(gain_out, normalize)
         numpy.savetxt(out_gain_mat, gain_out)
 
         return gain_out
 
     def compute_seeg_inv_square_gain_matrix(self, seeg_xyz: os.PathLike, cort_file: os.PathLike,
                                             subcort_file: os.PathLike, cort_rm: os.PathLike, subcort_rm: os.PathLike,
-                                            out_gain_mat: os.PathLike, normalize: float=99.0, ceil: bool=False) \
+                                            out_gain_mat: os.PathLike, normalize: float=100.0) \
                                             -> numpy.ndarray:
         genericIO = GenericIO()
 
@@ -368,14 +370,14 @@ class SensorService(object):
         gain_total = numpy.concatenate((gain_matrix, gain_matrix_subcort), axis=1)
 
         gain_out = gain_total @ verts_regions_mat
-        gain_out = self._normalize_gain_matrix(gain_out, normalize, ceil)
+        gain_out = self._normalize_gain_matrix(gain_out, normalize)
         numpy.savetxt(out_gain_mat, gain_out)
 
         return gain_out
 
     def compute_seeg_regions_inv_square_gain_matrix(self, seeg_xyz: os.PathLike, centers_file: os.PathLike,
                                                     areas_file: os.PathLike, out_matrix_file: os.PathLike,
-                                                    normalize: float=99.0, ceil: bool=False) -> numpy.ndarray:
+                                                    normalize: float=100.0) -> numpy.ndarray:
 
         sensors = numpy.genfromtxt(seeg_xyz, usecols=[1, 2, 3])
         centers = numpy.genfromtxt(centers_file, usecols=[1, 2, 3])
@@ -383,7 +385,7 @@ class SensorService(object):
 
         gain_matrix = self._gain_matrix_inv_square(centers, areas, sensors)
 
-        gain_matrix = self._normalize_gain_matrix(gain_matrix, normalize, ceil)
+        gain_matrix = self._normalize_gain_matrix(gain_matrix, normalize)
         numpy.savetxt(out_matrix_file, gain_matrix)
 
         return gain_matrix

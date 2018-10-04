@@ -20,12 +20,11 @@ class SensorGainComputation(object):
         cort_rm = File(AsegFiles.RM_CORT_TXT.value % self.atlas_suffix)
         subcort_rm = File(AsegFiles.RM_SUBCORT_TXT.value % self.atlas_suffix)
 
-        gain_mat = File(SensorGainCompFiles.SENSOR_GAIN_DIPOLE_MAT.value % (self.sensors_type, self.atlas_suffix))
+        gain_mat = File(SensorGainCompFiles.SENSOR_DIPOLE_GAIN.value % (self.sensors_type, self.atlas_suffix))
 
-        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_GAIN_DIPOLE.value % self.sensors_type,
+        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_DIPOLE_GAIN.value % self.sensors_type,
                   node_label="Compute dipole %s gain matrix for atlas %s" % (self.sensors_type, self.atlas_suffix))
-        job.addArguments(sensor_positions, cort_surf, subcort_surf, cort_rm, subcort_rm, gain_mat,
-                         ConfigKey.SENSOR_GAIN_NORMALIZATION_PERCENTILE, self.subject)
+        job.addArguments(sensor_positions, cort_surf, subcort_surf, cort_rm, subcort_rm, gain_mat, self.subject)
         job.uses(sensor_positions, link=Link.INPUT)
         job.uses(cort_surf, link=Link.INPUT)
         job.uses(subcort_surf, link=Link.INPUT)
@@ -45,13 +44,12 @@ class SensorGainComputation(object):
         cort_rm = File(AsegFiles.RM_CORT_TXT.value % self.atlas_suffix)
         subcort_rm = File(AsegFiles.RM_SUBCORT_TXT.value % self.atlas_suffix)
 
-        gain_mat = File(SensorGainCompFiles.SENSOR_GAIN_INV_SQUARE_MAT.value % (self.sensors_type, self.atlas_suffix))
+        gain_mat = File(SensorGainCompFiles.SENSOR_INV_SQUARE_GAIN.value % (self.sensors_type, self.atlas_suffix))
 
-        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_GAIN_INV_SQUARE.value % self.sensors_type,
+        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_INV_SQUARE_GAIN.value % self.sensors_type,
                   node_label="Compute inverse square %s gain matrix for atlas %s" %
                              (self.sensors_type, self.atlas_suffix))
-        job.addArguments(sensor_positions, cort_surf, subcort_surf, cort_rm, subcort_rm, gain_mat,
-                         ConfigKey.SENSOR_GAIN_NORMALIZATION_PERCENTILE, self.subject)
+        job.addArguments(sensor_positions, cort_surf, subcort_surf, cort_rm, subcort_rm, gain_mat, self.subject)
         job.uses(sensor_positions, link=Link.INPUT)
         job.uses(cort_surf, link=Link.INPUT)
         job.uses(subcort_surf, link=Link.INPUT)
@@ -70,13 +68,12 @@ class SensorGainComputation(object):
         centers_txt = File(AsegFiles.CENTERS_TXT.value % self.atlas_suffix)
         areas_txt = File(AsegFiles.AREAS_TXT.value % self.atlas_suffix)
 
-        gain_mat = File(SensorGainCompFiles.SENSOR_GAIN_INV_SQUARE_MAT.value % (self.sensors_type, self.atlas_suffix))
+        gain_mat = File(SensorGainCompFiles.SENSOR_REGIONS_INV_SQUARE_GAIN.value % (self.sensors_type, self.atlas_suffix))
 
-        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_GAIN_REGIONS_INV_SQUARE.value % self.sensors_type,
+        job = Job(SensorGainCompJobNames.COMPUTE_SENSOR_REGIONS_INV_SQUARE_GAIN.value % self.sensors_type,
                   node_label = "Compute regions' wise inverse square %s gain matrix for atlas %s" %
                                (self.sensors_type, self.atlas_suffix))
-        job.addArguments(sensor_positions, centers_txt, areas_txt, gain_mat,
-                         ConfigKey.SENSOR_GAIN_NORMALIZATION_PERCENTILE, self.subject)
+        job.addArguments(sensor_positions, centers_txt, areas_txt, gain_mat, self.subject)
         job.uses(sensor_positions, link=Link.INPUT)
         job.uses(centers_txt, link=Link.INPUT)
         job.uses(areas_txt, link=Link.INPUT)
