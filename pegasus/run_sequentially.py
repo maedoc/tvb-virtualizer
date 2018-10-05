@@ -110,26 +110,29 @@ def create_config_files_for_subj(current_subject, atlases):
         with open(subj_rc_path, "w+") as subj_rc_file:
             subj_rc_file.write(rc_config)
 
+    rc_out_config = ""
+    # For outputs for all desired atlases
+    atlases_list, atlas_suffixes = get_atlases_and_suffixes_lists(atlases)
+    default_rc_out_atlas_path = os.path.join(PATH_TO_DEFAULT_PEGASUS_CONFIGURATION, configs.RC_OUT_ATLAS.value)
+    with open(default_rc_out_atlas_path) as default_rc_out_atlas_file:
+        template_atlas = Template(default_rc_out_atlas_file.read())
+        for atlas, atlas_suffix in zip(atlases_list, atlas_suffixes):
+            rc_out_config += \
+                template_atlas.substitute(
+                    path=os.path.join(PATH_TO_OUTPUT_SUBJ_FOLDER, current_subject, "output"),
+                    atlas=atlas, atlas_suffix=atlas_suffix)
+            print(rc_out_config)
     # For outputs that do not depend on atlas
     default_rc_out_path = os.path.join(PATH_TO_DEFAULT_PEGASUS_CONFIGURATION, configs.RC_OUT.value)
     with open(default_rc_out_path) as default_rc_out_file:
         template = Template(default_rc_out_file.read())
-        rc_out_config = template.substitute(path=os.path.join(PATH_TO_OUTPUT_SUBJ_FOLDER, current_subject, "output"))
-
-        # For outputs for all desired atlases
-        atlases_list, atlas_suffixes = get_atlases_and_suffixes_lists(atlases)
-        default_rc_out_atlas_path = os.path.join(PATH_TO_DEFAULT_PEGASUS_CONFIGURATION, configs.RC_OUT_ATLAS.value)
-        with open(default_rc_out_atlas_path) as default_rc_out_atlas_file:
-            template_atlas = Template(default_rc_out_atlas_file.read())
-            for atlas, atlas_suffix in zip(atlases_list, atlas_suffixes):
-                rc_out_config +=\
-                    template_atlas.substitute(path=os.path.join(PATH_TO_OUTPUT_SUBJ_FOLDER, current_subject, "output"),
-                                              atlas=atlas, atlas_suffix=atlas_suffix)
-
-            # Finally, write the subject's rc_out
-            subj_rc_out_path = os.path.join(current_dir, configs.RC_OUT.value)
-            with open(subj_rc_out_path, "w+") as subj_rc_out_file:
-                subj_rc_out_file.write(rc_out_config)
+        rc_out_config += template.substitute(path=os.path.join(PATH_TO_OUTPUT_SUBJ_FOLDER, current_subject, "output"))
+        print(rc_out_config)
+    # Finally, write the subject's rc_out
+    subj_rc_out_path = os.path.join(current_dir, configs.RC_OUT.value)
+    with open(subj_rc_out_path, "w+") as subj_rc_out_file:
+        print(rc_out_config)
+        subj_rc_out_file.write(rc_out_config)
 
     default_sites_path = os.path.join(PATH_TO_DEFAULT_PEGASUS_CONFIGURATION, configs.SITES.value)
     shutil.copy(default_sites_path, current_dir)
