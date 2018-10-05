@@ -14,6 +14,62 @@ def unzip_folder(zippath, outdir=None):
     zip_ref.close()
 
 
+def inplace_change(filename, old_string, new_string):
+    # Safely read the input filename using 'with'
+    with open(filename) as f:
+        s = f.read()
+        if old_string not in s:
+            return
+
+    # Safely write the changed content, if found in the file
+    with open(filename, 'w') as f:
+        s = s.replace(old_string, new_string)
+        f.write(s)
+
+
+# if __name__ == "__main__":
+#
+#     datapath = "/Users/dionperd/Dropbox/Work/VBtech/VEP/data/CC"
+#
+#     subjects = (np.array(range(1, 30)) + 1).tolist()
+#     subjects = ["TVB%s" % subject for subject in subjects]
+#     subjects += ["TVB34", "TVB40", "TVB45"]
+#     tvb1_configs_path = os.path.join(datapath, "TVB1", "configs")
+#     # rc_out_path_template = os.path.join(tvb1_configs_path, "rc_out.txt")
+#     tc_path_template = os.path.join(tvb1_configs_path, "tc.txt")
+#     pfp_path_template = os.path.join(tvb1_configs_path, "patient_flow.properties")
+#
+#     for subject in subjects:
+#         print(subject)
+#         configspath = os.path.join(datapath, subject, "configs")
+#         # rc_out_path = os.path.join(configspath, "rc_out.txt")
+#         # rc_out1_path = os.path.join(configspath, "rc_out1.txt")
+#         tc_path = os.path.join(configspath, "tc.txt")
+#         tc1_path = os.path.join(configspath, "tc1.txt")
+#         pfp_path = os.path.join(configspath, "patient_flow.properties")
+#         pfp1_path = os.path.join(configspath, "patient_flow.properties1")
+#
+#         # os.rename(rc_out_path, rc_out1_path)
+#         os.rename(tc_path, tc1_path)
+#         os.rename(pfp_path, pfp1_path)
+#         # copyfile(rc_out_path_template, rc_out_path)
+#         copyfile(tc_path_template, tc_path)
+#         copyfile(pfp_path_template, pfp_path)
+#
+#         if subject == "TVB34":
+#             subject_string = "TVB4"
+#         elif subject == "TVB40":
+#                 subject_string = "TVB10"
+#         elif subject == "TVB45":
+#                 subject_string = "TVB15"
+#         else:
+#             subject_string = subject
+#
+#         # inplace_change(rc_out_path, "TVB1", subject_string)
+#         inplace_change(pfp_path, "TVB1", subject_string)
+
+
+
 if __name__ == "__main__":
 
     datapath = "/Users/dionperd/Dropbox/Work/VBtech/VEP/data/CC"
