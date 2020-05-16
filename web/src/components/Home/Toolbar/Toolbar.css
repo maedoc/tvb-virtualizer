@@ -40,3 +40,13 @@
     width: 50px;
     height: 38px;
 }
+@media (max-width:768px){
+    .toolbar_nav_items{
+        display: none;
+    }
+}
+@media (min-width:769px){
+    .toolbar_toggle_btn{
+        display: none;
+    }
+}

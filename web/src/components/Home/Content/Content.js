@@ -30,13 +30,13 @@ export default function CenteredGrid() {
   return (
     <div className={classes.root}>
       <Grid container spacing={3}>
-        <Grid item xs={6}>
+        <Grid item sm={6} md={6} lg={6}>
           <Paper className={classes.paper}>
           <img className={classes.img} alt="complex" src={img1} />
 
           </Paper>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item sm={6} md={6} lg={6}>
           <Paper className={classes.paper}><p className={classes.detail}>A real brain can turn to a virtual brain in 3 steps. First, the patient goes to a RMN scanner, then, the measured images go through a reconstruction pipeline, 
           and finally, the results are uploaded in TVB.
           <br/> This reconstruction pipeline is a mandatory tool,

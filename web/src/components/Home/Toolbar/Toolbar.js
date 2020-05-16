@@ -6,7 +6,7 @@ import DrawerToggleButton from '../SideDrawer/DrawerToggleButton';
 const toolbar=props=>(
     <header className="toolbar">
         <nav className="toolbar_nav">
-            <div>
+            <div className="toolbar_toggle_btn">
                 <DrawerToggleButton click={props.drawerClickHandler}/>
                 </div>
             <div className="toolbar_logo">
