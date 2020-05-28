@@ -1,3 +1,6 @@
-.container {
-  margin-top: 56px;
-     }
+.head{
+    position:fixed;
+    width:100%;
+    top:0;
+    height: whatever 
+}

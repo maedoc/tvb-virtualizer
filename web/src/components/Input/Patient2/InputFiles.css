@@ -1,0 +1,42 @@
+.btn:disabled{
+    padding: 10px 20x;
+    font-size: 20px;
+   background-color: red; 
+   color:white;
+   border-radius: 10px;
+   
+
+}
+.btn:enabled{
+    padding: 10px 20x;
+    font-size: 20px;
+    background-color:blue;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+
+}
+.input{
+    font-size: 20px;
+    padding-left: 20px;
+    text-align: center;
+}
+.input_type{
+    font-size: 20px;
+    color: #085af1;
+}
+.form{
+    text-align: center;
+    display: block;
+}
+.button{
+    font-size: 20px;
+    background-color:green;
+    color: white;
+    border-radius: 10px;
+    width: 30%;
+    margin-left: 35%;
+    margin-right: 35%;
+    margin-top:50px;
+    cursor: pointer
+}
