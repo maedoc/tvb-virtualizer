@@ -35,7 +35,7 @@ onClickHandler = event => {
     return (
       <div className="container">
                <form className="form">
-               <h1>Upload data for Patient1</h1>
+               <h1>Upload data for Patient 1</h1>
                    <h3> Input T1 data</h3>
                 <label className="input_type">T1.nii.gz</label>
                 <input type="file" className="input" accept=".nii.gz" onChange={this.onChangeHandler} required/>

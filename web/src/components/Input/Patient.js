@@ -5,22 +5,11 @@ import Patient3 from './Patient3/InputFiles';
 import Patient4 from './Patient4/InputFiles';
 import Header from '../Home/Header/Header'
 import Slider from "react-slick";
-import {withRouter} from 'react-router';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
+import ProcessType from './ProcessType/ProcessType';
 
 class Patient extends Component{
-    handleClick() {
-        alert("Proceed only if all the files are uploaded");
-        this.props.history.push('/');
-    }
-    constructor(props) {
-      super(props);
-      this.state={
-         
-      }
-      this.handleClick = this.handleClick.bind(this);
-    }
     render(){
         const settings = {
             dots: true,
@@ -38,9 +27,9 @@ class Patient extends Component{
                 <Patient3/>
                 <Patient4/>
                 </Slider>
-                <button type="submit" className="button" onClick={this.handleClick}>Click Here To Proceed >>></button>
+                <ProcessType/>
             </div>
         )
     }
 }
-export default withRouter(Patient);
+export default Patient;

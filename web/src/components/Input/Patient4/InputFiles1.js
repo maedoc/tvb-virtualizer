@@ -33,7 +33,7 @@ onClickHandler = event => {
 
   render() {
     return (
-      <div className="container">
+      <div className="container"> 
                <form className="form">
                    <h1>Upload data for Patient 4</h1>
                    <h3> Input T1 data</h3>
