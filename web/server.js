@@ -2,13 +2,16 @@ var express = require('express');
 var app = express();
 var multer = require('multer')
 var cors = require('cors');
+var fs=require('fs')
 app.use(cors())
 
 
 //For Patient 1
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'TVB_patients/TVB1/raw/mri')
+      const path='TVB_patients/TVB1/raw/mri'
+      fs.mkdirSync(path, { recursive: true })
+     cb(null,path )
     },
     filename: function (req, file, cb) {
       cb(null, file.originalname )
@@ -38,7 +41,9 @@ app.post('/upload1',function(req, res) {
 //For Patient 2
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'TVB_patients/TVB2/raw/mri')
+    const path='TVB_patients/TVB2/raw/mri'
+    fs.mkdirSync(path, { recursive: true })
+    cb(null,path )
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname )
@@ -69,7 +74,9 @@ app.post('/upload2',function(req, res) {
 //For Patient 3
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'TVB_patients/TVB3/raw/mri')
+    const path='TVB_patients/TVB3/raw/mri'
+    fs.mkdirSync(path, { recursive: true })
+    cb(null,path )
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname )
@@ -100,7 +107,9 @@ app.post('/upload3',function(req, res) {
 //For Patient 4
 var storage = multer.diskStorage({
 destination: function (req, file, cb) {
-  cb(null, 'TVB_patients/TVB4/raw/mri')
+  const path='TVB_patients/TVB4/raw/mri'
+  fs.mkdirSync(path, { recursive: true })
+  cb(null,path )
 },
 filename: function (req, file, cb) {
   cb(null, file.originalname )
