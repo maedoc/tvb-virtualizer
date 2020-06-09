@@ -23,7 +23,7 @@ class ProcessType extends React.Component {
     handleClick(event) {
       event.preventDefault();
       alert(`You chose the ${this.state.type} processing type and Proceed only if all the files are uploaded.`);
-      this.props.history.push('/');
+      this.props.history.push('/configuration');
     }
     
     render() {

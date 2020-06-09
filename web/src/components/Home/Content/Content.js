@@ -6,7 +6,6 @@ import img1 from '../image/img1.jpeg';
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
-  
   },
   paper: {
     padding: theme.spacing(2),
