@@ -4,10 +4,6 @@ import './Configuration.css'
 class Configuration1 extends Component{
     constructor(props){
         super(props);
-        const label1= "openmp.threads"
-        const label2= "mrtrix.threads"
-        const label3="ct.elec.intensity.th"
-        const label4="decim.factor"
         this.state = {  
            "openmp.threads": 4,
             "mrtrix.threads": 2,
@@ -51,17 +47,15 @@ class Configuration1 extends Component{
             
                 <form className="config_form">
                  <h1>Configuration for Patient 1 </h1>
-                
-                   
        
      <label className="l_name"> openmp.threads 
-    <input  type="number" name="openmp.threads"  className="field" value={this.state.label1} onChange={this.handleChangeAll} />
+    <input  type="number" name="openmp.threads"  className="field" value={this.state["openmp.threads"]} onChange={this.handleChangeAll} />
     <i  class="fa fa-info-circle fa-1x" title="Default values is 4.Determine no of threads in multi-processing." ></i>
  
     </label>
 
     <label className="l_name"> mrtrix.threads
-    <input  type="number" name="mrtrix.threads" className="field"value= {this.state.label2} onChange={this.handleChangeAll} /> 
+    <input  type="number" name="mrtrix.threads" className="field"value= {this.state["mrtrix.threads"]} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" title="Default value is 2.Set the number of CPU threads to use for multi-threading." ></i>
     </label>
 
@@ -101,12 +95,12 @@ class Configuration1 extends Component{
     </label>
 
     <label className="l_name"> ct.elec.intensity.th
-    <input  type="number" name="ct.elec.intensity.th" className="field" value= {this.state.label3} onChange={this.handleChangeAll} /> 
+    <input  type="number" name="ct.elec.intensity.th" className="field" value= {this.state["ct.elec.intensity.th"]} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" ></i>
     </label>
 
     <label className="l_name"> decim.factor 
-    <input  type="text" name="decim.factor" className="field" value= {this.state.label4} onChange={this.handleChangeAll} /> 
+    <input  type="text" name="decim.factor" className="field" value= {this.state["ct.elec.intensity.th"]} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" ></i>
     </label>
     <button type="button" className="save_btn" onClick={this.onClickHandler}>Save Data for Patient 1</button>
