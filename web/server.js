@@ -130,7 +130,7 @@ upload4(req, res, function (err) {
 
 
 //Config for Patient 1
-var path1 = __dirname + '/TVB_patients/TVB1';
+var path1 = __dirname + '/TVB_patients/TVB1/configs';
 fs.mkdirSync(path1, { recursive: true })
 var file1=path1+'/patient_flow.properties'
 app.post("/input1",function(req,res){
@@ -157,14 +157,12 @@ app.post("/input1",function(req,res){
   (err) => {
     if(err) {
       return console.log(err);
-    } else{
-      console.log("The file was saved!");
     }
 })
 })
 
 //Config for Patient 2
-var path2 = __dirname + '/TVB_patients/TVB2';
+var path2 = __dirname + '/TVB_patients/TVB2/configs';
 fs.mkdirSync(path2, { recursive: true })
 var file2=path2+'/patient_flow.properties'
 app.post("/input2",function(req,res){
@@ -191,14 +189,12 @@ app.post("/input2",function(req,res){
   (err) => {
     if(err) {
       return console.log(err);
-    } else{
-      console.log("The file was saved!");
     }
 })
 })
 
 //Config for Patient 3
-var path3 = __dirname + '/TVB_patients/TVB3';
+var path3 = __dirname + '/TVB_patients/TVB3/configs';
 fs.mkdirSync(path3, { recursive: true })
 var file3=path3+'/patient_flow.properties'
 app.post("/input3",function(req,res){
@@ -225,14 +221,12 @@ app.post("/input3",function(req,res){
   (err) => {
     if(err) {
       return console.log(err);
-    } else{
-      console.log("The file was saved!");
     }
 })
 })
 
 //Config for Patient 4
-var path4 = __dirname + '/TVB_patients/TVB4';
+var path4 = __dirname + '/TVB_patients/TVB4/configs';
 fs.mkdirSync(path4, { recursive: true })
 var file4=path4+'/patient_flow.properties'
 app.post("/input4",function(req,res){
@@ -259,8 +253,6 @@ app.post("/input4",function(req,res){
   (err) => {
     if(err) {
       return console.log(err);
-    } else{
-      console.log("The file was saved!");
     }
 })
 })

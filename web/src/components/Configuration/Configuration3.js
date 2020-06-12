@@ -23,6 +23,7 @@ class Configuration3 extends Component{
        }
        
     onClickHandler=(event)=>{
+        alert("Data Saved for Patient 3")
  event.preventDefault();
  const label1=this.state["openmp.threads"]
  const label2=this.state["mrtrix.threads"]
