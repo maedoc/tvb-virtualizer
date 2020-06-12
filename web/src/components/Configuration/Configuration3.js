@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import './Configuration.css'
 class Configuration3 extends Component{
     constructor(props){
@@ -8,20 +9,8 @@ class Configuration3 extends Component{
         const label3="ct.elec.intensity.th"
         const label4="decim.factor"
         this.state = {  
-            "subject":"TVB1",
-             "t1.format":"nii",
-            "t2.flag":"False",
-            "t2.format":"nii",
-            "flair.flag":"False",
-            "flair.format":"nii",
-            "openmp.threads": 4,
-            "parcelation.atlas":"default",
-            "dwi.scan.direction":"ap",
-            "dwi.format":"mif",
-            "dwi.use.gradient":"True",
-            "dwi.multi.shell":"False",
+           "openmp.threads": 4,
             "mrtrix.threads": 2,
-            "dwi.is.reversed":"False",
             aseg_lh_labels : "8 10 11 12 13 16 17 18 26",
             aseg_rh_labels:"47 49 50 51 52 53 54 58",
             use_flirt:"True",
@@ -29,95 +18,98 @@ class Configuration3 extends Component{
             strmlns_sift_no:"1M",
             strmlns_len:250,
             strmlns_step:0.5,
-            "ct.flag":"False",
-            "ct.format":"nii",
-            "bem.surfaces":"False",
-            "use.openmeeg":"False",
             "ct.elec.intensity.th":1000,
-            "seeg.flag":"False",
-            "seeg.gain.use.dp":"False",
-            "seeg.gain.use.mrs":"False",
-            "eeg.flag":"False",
-            "meg.flag":"False",
-            "resample.flag":"False",
-            "trgsubject":"fsaverage5",
-            "decim.factor":0.1,
-            os:"LINUX"
+            "decim.factor":0.1
         }
     }
     handleChangeAll = (event) =>{
         this.setState ( { [event.target.name] :event.target.value  } )
        }
        
-     
-       
+    onClickHandler=(event)=>{
+ event.preventDefault();
+ const label1=this.state["openmp.threads"]
+ const label2=this.state["mrtrix.threads"]
+ const label3=this.state["ct.elec.intensity.th"]
+ const label4=this.state["decim.factor"]
+ const aseg_lh_labels=this.state.aseg_lh_labels
+ const aseg_rh_labels=this.state.aseg_rh_labels
+ const use_flirt=this.state.use_flirt
+ const strmlns_no=this.state.strmlns_no
+ const strmlns_sift_no=this.state.strmlns_sift_no
+ const strmlns_len=this.state.strmlns_len
+ const strmlns_step=this.state.strmlns_step
+ const data={label1,label2,label3,label4,aseg_lh_labels,aseg_rh_labels,use_flirt,strmlns_no,strmlns_sift_no,strmlns_len,strmlns_step}
+ axios.post("http://localhost:8000/input3", data)
+.then(res => {
+  console.log(res.statusText)
+})
+    }
     render(){
-        const downloadableData = encodeURIComponent(JSON.stringify(this.state,null,2))
-
         return(
             <div className="container">
-            <form onSubmit = {this.handlesubmit} className="config_form">
+            
+                <form className="config_form">
                  <h1>Configuration for Patient 3 </h1>
-               
+                
                    
        
      <label className="l_name"> openmp.threads 
     <input  type="number" name="openmp.threads"  className="field" value={this.state.label1} onChange={this.handleChangeAll} />
     <i  class="fa fa-info-circle fa-1x" title="Default values is 4.Determine no of threads in multi-processing." ></i>
-            </label>
+ 
+    </label>
 
     <label className="l_name"> mrtrix.threads
     <input  type="number" name="mrtrix.threads" className="field"value= {this.state.label2} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" title="Default value is 2.Set the number of CPU threads to use for multi-threading." ></i>
-            </label>
+    </label>
 
     <label className="l_name"> aseg_lh_labels 
     <input  type="text" name="aseg_lh_labels" className="field" value= {this.state.aseg_lh_labels} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" title=" used for females who have gone through menopause, the normal range is 14.2–52.3 IU/L."></i>
-            </label>
+    </label>
 
     <label className="l_name"> aseg_rh_labels 
     <input  type="text" name="aseg_rh_labels" className="field" value= {this.state.aseg_rh_labels} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> use_flirt 
     <input  type="text" name="use_flirt" className="field" value= {this.state.use_flirt} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> strmlns_no
     <input  type="text" name="strmlns_no" className="field" value= {this.state.strmlns_no} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> strmlns_sift_no 
     <input  type="text" name="strmlns_sift_no" className="field"  value= {this.state.strmlns_sift_no} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> strmlns_len
     <input  type="number" name="strmlns_len" className="field" value= {this.state.strmlns_len} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> strmlns_step
     <input  type="text" name="strmlns_step" className="field" value= {this.state.strmlns_step} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> ct.elec.intensity.th
     <input  type="number" name="ct.elec.intensity.th" className="field" value= {this.state.label3} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
 
     <label className="l_name"> decim.factor 
     <input  type="text" name="decim.factor" className="field" value= {this.state.label4} onChange={this.handleChangeAll} /> 
-        <i  class="fa fa-info-circle fa-1x" ></i>
-            </label>
-
-            <a href={`data:applicatiom/json,${downloadableData}`} download="patient_flow.properties">Save Data for Patient 3</a>
-
+    <i  class="fa fa-info-circle fa-1x" ></i>
+    </label>
+    <button type="button" className="save_btn" onClick={this.onClickHandler}>Save Data for Patient 3</button>
    </form>
             </div>
             

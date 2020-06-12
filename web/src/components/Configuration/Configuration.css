@@ -38,3 +38,12 @@
     color:rgba(0, 0, 0, 0.741);
     margin-left: 10px;
 }
+.save_btn{
+    padding: 10px 20x;
+    font-size: 20px;
+    background-color:blue;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+
+}
