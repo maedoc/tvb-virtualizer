@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import './Configuration.css'
-class Configuration4 extends Component{
+class InputConfiguration extends Component{
     constructor(props){
         super(props);
         this.state = {  
@@ -23,7 +23,7 @@ class Configuration4 extends Component{
        }
        
     onClickHandler=(event)=>{
-        alert("Data Saved for Patient 4")
+        alert("Data Saved for Patient "+this.props.no)
  event.preventDefault();
  const label1=this.state["openmp.threads"]
  const label2=this.state["mrtrix.threads"]
@@ -37,7 +37,7 @@ class Configuration4 extends Component{
  const strmlns_len=this.state.strmlns_len
  const strmlns_step=this.state.strmlns_step
  const data={label1,label2,label3,label4,aseg_lh_labels,aseg_rh_labels,use_flirt,strmlns_no,strmlns_sift_no,strmlns_len,strmlns_step}
- axios.post("http://localhost:8000/input4", data)
+ axios.post("http://localhost:8000/input"+this.props.no, data)
 .then(res => {
   console.log(res.statusText)
 })
@@ -47,9 +47,7 @@ class Configuration4 extends Component{
             <div className="container">
             
                 <form className="config_form">
-                 <h1>Configuration for Patient 4 </h1>
-                
-                   
+                 <h1>Configuration for Patient {this.props.no} </h1>
        
      <label className="l_name"> openmp.threads 
     <input  type="number" name="openmp.threads"  className="field" value={this.state["openmp.threads"]} onChange={this.handleChangeAll} />
@@ -103,14 +101,14 @@ class Configuration4 extends Component{
     </label>
 
     <label className="l_name"> decim.factor 
-    <input  type="text" name="decim.factor" className="field" value= {this.state["decim.factor"]} onChange={this.handleChangeAll} /> 
+    <input  type="text" name="decim.factor" className="field" value= {this.state["ct.elec.intensity.th"]} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" ></i>
     </label>
-    <button type="button" className="save_btn" onClick={this.onClickHandler}>Save Data for Patient 4</button>
+    <button type="button" className="save_btn" onClick={this.onClickHandler}>Save Data for Patient {this.props.no}</button>
    </form>
             </div>
             
         )
     }
 }
-export default Configuration4;
+export default InputConfiguration;

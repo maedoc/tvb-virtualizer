@@ -7,6 +7,7 @@ app.use(cors())
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json())
+var parser = require("properties-file");
 
 //For Patient 1
 var storage = multer.diskStorage({
@@ -20,7 +21,7 @@ var storage = multer.diskStorage({
     }
   })
   
-  var upload1 = multer({ storage: storage }).single('file')
+  var upload1 = multer({ storage: storage }).array('file')
   
 app.get('/',function(req,res){
     return res.send('Hello Server')
@@ -52,7 +53,7 @@ var storage = multer.diskStorage({
   }
 })
 
-var upload2 = multer({ storage: storage }).single('file')
+var upload2 = multer({ storage: storage }).array('file')
 
 app.post('/upload2',function(req, res) {
   
@@ -82,7 +83,7 @@ var storage = multer.diskStorage({
   }
 })
 
-var upload3 = multer({ storage: storage }).single('file')
+var upload3 = multer({ storage: storage }).array('file')
 
 app.post('/upload3',function(req, res) {
   
@@ -112,7 +113,7 @@ filename: function (req, file, cb) {
 }
 })
 
-var upload4 = multer({ storage: storage }).single('file')
+var upload4 = multer({ storage: storage }).array('file')
 
 app.post('/upload4',function(req, res) {
 
@@ -153,7 +154,7 @@ app.post("/input1",function(req,res){
      "decim.factor":req.body.label4,
      os:"LINUX"
     }
-  fs.writeFile(file1,JSON.stringify(data,null,2) ,'utf-8',
+  fs.writeFile(file1,parser.stringify(data) ,'utf-8',
   (err) => {
     if(err) {
       return console.log(err);
@@ -185,7 +186,7 @@ app.post("/input2",function(req,res){
      "decim.factor":req.body.label4,
      os:"LINUX"
     }
-  fs.writeFile(file2,JSON.stringify(data,null,2) ,'utf-8',
+  fs.writeFile(file2,parser.stringify(data) ,'utf-8',
   (err) => {
     if(err) {
       return console.log(err);
@@ -217,7 +218,7 @@ app.post("/input3",function(req,res){
      "decim.factor":req.body.label4,
      os:"LINUX"
     }
-  fs.writeFile(file3,JSON.stringify(data,null,2) ,'utf-8',
+  fs.writeFile(file3,parser.stringify(data) ,'utf-8',
   (err) => {
     if(err) {
       return console.log(err);
@@ -249,11 +250,29 @@ app.post("/input4",function(req,res){
      "decim.factor":req.body.label4,
      os:"LINUX"
     }
-  fs.writeFile(file4,JSON.stringify(data,null,2) ,'utf-8',
+  fs.writeFile(file4,parser.stringify(data) ,'utf-8',
   (err) => {
     if(err) {
       return console.log(err);
     }
+})
+})
+
+
+//Start docker
+const { exec } = require("child_process");
+const { cwd } = require('process');
+app.post("/start",function(req,res){
+exec("sudo docker run -it -v "+  (cwd())+"/TVB_patients/:/home/submitter/data thevirtualbrain/tvb-recon /bin/bash", (error, stdout, stderr) => {
+  if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+    }
+    console.log(`stdout: ${stdout}`);
 })
 })
 app.listen(8000, function() {

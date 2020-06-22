@@ -16,14 +16,25 @@
     cursor: pointer;
 
 }
-.input{
+.input {
+    height: 20px;
+    flex: 0 0 200px;
+    margin-left: 60px;
     font-size: 20px;
-    padding-left: 20px;
-    text-align: center;
-}
-.input_type{
-    font-size: 20px;
-    color: #085af1;
+  }
+  .file_name {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  text-align:center;
+  width: 600px;
+  line-height: 26px;
+  margin-bottom: 30px;
+  color: blue;
+  margin-left: auto;
+  margin-right:auto;
+  font-weight: bold;
+  font-size:large
 }
 .form{
     text-align: center;

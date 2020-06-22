@@ -1,15 +1,12 @@
 import React, { Component } from 'react';
-import Patient1 from './Patient1/InputFiles';
-import Patient2 from './Patient2/InputFiles';
-import Patient3 from './Patient3/InputFiles';
-import Patient4 from './Patient4/InputFiles';
+import InputFiles from './InputFiles';
 import Header from '../Home/Header/Header'
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import ProcessType from './ProcessType/ProcessType';
 
-class Patient extends Component{
+class Input extends Component{
     render(){
         const settings = {
             dots: true,
@@ -22,14 +19,14 @@ class Patient extends Component{
             <div>
                 <Header/>
                 <Slider {...settings}>
-                <Patient1/>
-                <Patient2/>
-                <Patient3/>
-                <Patient4/>
+                <InputFiles no="1"/>
+                <InputFiles no="2"/>
+                <InputFiles no="3"/>
+                <InputFiles no="4"/>
                 </Slider>
                 <ProcessType/>
             </div>
         )
     }
 }
-export default Patient;
+export default Input;

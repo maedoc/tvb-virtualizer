@@ -50,7 +50,7 @@ class ProcessType extends React.Component {
               </label></div>
               
             
-              <button type="submit" className="button" onClick={this.handleClick}>Click Here To Proceed >>></button>
+              <button type="submit" className="button" onClick={this.handleClick}>Click Here To Proceed </button>
 
   
         </form>

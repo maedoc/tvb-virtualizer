@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import Header from '../Home/Header/Header';
-import Configuration1 from './Configuration1';
-import Configuration2 from './Configuration2';
-import Configuration3 from './Configuration3';
-import Configuration4 from './Configuration4';
+import InputConfiguration from './InputConfiguration'
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import './Configuration.css'
+import './Configuration.css';
+import axios from 'axios'
 class Configuration extends Component{
-
+    handleClick=()=>{
+           alert("Docker started on server")
+           axios.post('http://localhost:8000/start')
+         
+         }
     render(){
         const settings = {
             dots: true,
@@ -22,12 +24,12 @@ class Configuration extends Component{
             <div>
                 <Header/>
                 <Slider {...settings}>
-                <Configuration1/>
-                <Configuration2/>
-                <Configuration3/>
-                <Configuration4/>
+                <InputConfiguration no="1"/>
+                <InputConfiguration no="2"/>
+                <InputConfiguration no="3"/>
+                <InputConfiguration no="4"/>
                 </Slider>
-                <button type="submit" className="proceed_btn" onClick={this.handleClick}>Click Here To Proceed >>></button>
+                <button className="proceed_btn" onClick={this.handleClick}>Start the Docker Container</button>
 
 
             </div>
