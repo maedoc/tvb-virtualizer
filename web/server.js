@@ -13,7 +13,9 @@ var parser = require("properties-file");
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
       const path='TVB_patients/TVB1/raw/mri'
-      fs.mkdirSync(path, { recursive: true })
+      if(!fs.existsSync(path)){
+        fs.mkdirSync(path, { recursive: true })
+      }
      cb(null,path )
     },
     filename: function (req, file, cb) {
@@ -26,8 +28,8 @@ var storage = multer.diskStorage({
 app.get('/',function(req,res){
     return res.send('Hello Server')
 })
+
 app.post('/upload1',function(req, res) {
-    
     upload1(req, res, function (err) {
      
         if (err instanceof multer.MulterError) {
@@ -45,8 +47,10 @@ app.post('/upload1',function(req, res) {
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const path='TVB_patients/TVB2/raw/mri'
-    fs.mkdirSync(path, { recursive: true })
-    cb(null,path )
+    if(!fs.existsSync(path)){
+      fs.mkdirSync(path, { recursive: true })
+    }
+      cb(null,path )
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname )
@@ -75,7 +79,9 @@ app.post('/upload2',function(req, res) {
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const path='TVB_patients/TVB3/raw/mri'
-    fs.mkdirSync(path, { recursive: true })
+    if(!fs.existsSync(path)){
+      fs.mkdirSync(path, { recursive: true })
+    }
     cb(null,path )
   },
   filename: function (req, file, cb) {
@@ -105,8 +111,10 @@ app.post('/upload3',function(req, res) {
 var storage = multer.diskStorage({
 destination: function (req, file, cb) {
   const path='TVB_patients/TVB4/raw/mri'
-  fs.mkdirSync(path, { recursive: true })
-  cb(null,path )
+  if(!fs.existsSync(path)){
+    fs.mkdirSync(path, { recursive: true })
+  }
+    cb(null,path )
 },
 filename: function (req, file, cb) {
   cb(null, file.originalname )
@@ -138,7 +146,8 @@ app.post("/input1",function(req,res){
   const data={
     "subject":"TVB1", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
     "openmp.threads":req.body.label1,
-    "parcelation.atlas":"default", "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
+    "parcelation.atlas":req.body.label5, 
+    "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
     "mrtrix.threads":req.body.label2,
     "dwi.is.reversed":"False",
     aseg_lh_labels:req.body.aseg_lh_labels,
@@ -168,9 +177,10 @@ fs.mkdirSync(path2, { recursive: true })
 var file2=path2+'/patient_flow.properties'
 app.post("/input2",function(req,res){
   const data={
-    "subject":"TVB1", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
+    "subject":"TVB2", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
     "openmp.threads":req.body.label1,
-    "parcelation.atlas":"default", "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
+    "parcelation.atlas":req.body.label5, 
+    "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
     "mrtrix.threads":req.body.label2,
     "dwi.is.reversed":"False",
     aseg_lh_labels:req.body.aseg_lh_labels,
@@ -200,9 +210,10 @@ fs.mkdirSync(path3, { recursive: true })
 var file3=path3+'/patient_flow.properties'
 app.post("/input3",function(req,res){
   const data={
-    "subject":"TVB1", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
+    "subject":"TVB3", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
     "openmp.threads":req.body.label1,
-    "parcelation.atlas":"default", "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
+    "parcelation.atlas":req.body.label5,
+    "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
     "mrtrix.threads":req.body.label2,
     "dwi.is.reversed":"False",
     aseg_lh_labels:req.body.aseg_lh_labels,
@@ -232,9 +243,10 @@ fs.mkdirSync(path4, { recursive: true })
 var file4=path4+'/patient_flow.properties'
 app.post("/input4",function(req,res){
   const data={
-    "subject":"TVB1", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
+    "subject":"TVB4", "t1.format":"nii","t2.flag":"False","t2.format":"nii","flair.flag":"False","flair.format":"nii",
     "openmp.threads":req.body.label1,
-    "parcelation.atlas":"default", "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
+    "parcelation.atlas":req.body.label5,
+    "dwi.scan.direction":"ap","dwi.format":"mif","dwi.use.gradient":"True", "dwi.multi.shell":"False",
     "mrtrix.threads":req.body.label2,
     "dwi.is.reversed":"False",
     aseg_lh_labels:req.body.aseg_lh_labels,

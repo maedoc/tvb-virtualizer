@@ -7,6 +7,7 @@ class InputConfiguration extends Component{
         this.state = {  
            "openmp.threads": 4,
             "mrtrix.threads": 2,
+            "parcelation.atlas":"default",
             aseg_lh_labels : "8 10 11 12 13 16 17 18 26",
             aseg_rh_labels:"47 49 50 51 52 53 54 58",
             use_flirt:"True",
@@ -29,6 +30,7 @@ class InputConfiguration extends Component{
  const label2=this.state["mrtrix.threads"]
  const label3=this.state["ct.elec.intensity.th"]
  const label4=this.state["decim.factor"]
+ const label5=this.state["parcelation.atlas"]
  const aseg_lh_labels=this.state.aseg_lh_labels
  const aseg_rh_labels=this.state.aseg_rh_labels
  const use_flirt=this.state.use_flirt
@@ -36,7 +38,7 @@ class InputConfiguration extends Component{
  const strmlns_sift_no=this.state.strmlns_sift_no
  const strmlns_len=this.state.strmlns_len
  const strmlns_step=this.state.strmlns_step
- const data={label1,label2,label3,label4,aseg_lh_labels,aseg_rh_labels,use_flirt,strmlns_no,strmlns_sift_no,strmlns_len,strmlns_step}
+ const data={label1,label2,label3,label4,label5,aseg_lh_labels,aseg_rh_labels,use_flirt,strmlns_no,strmlns_sift_no,strmlns_len,strmlns_step}
  axios.post("http://localhost:8000/input"+this.props.no, data)
 .then(res => {
   console.log(res.statusText)
@@ -63,6 +65,11 @@ class InputConfiguration extends Component{
     <label className="l_name"> aseg_lh_labels 
     <input  type="text" name="aseg_lh_labels" className="field" value= {this.state.aseg_lh_labels} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" title=" used for females who have gone through menopause, the normal range is 14.2–52.3 IU/L."></i>
+    </label>
+
+    <label className="l_name"> parcelation.atlas 
+    <input  type="text" name="parcelation.atlas" className="field" value= {this.state["parcelation.atlas"]} onChange={this.handleChangeAll} /> 
+    <i  class="fa fa-info-circle fa-1x"></i>
     </label>
 
     <label className="l_name"> aseg_rh_labels 
@@ -101,9 +108,10 @@ class InputConfiguration extends Component{
     </label>
 
     <label className="l_name"> decim.factor 
-    <input  type="text" name="decim.factor" className="field" value= {this.state["ct.elec.intensity.th"]} onChange={this.handleChangeAll} /> 
+    <input  type="text" name="decim.factor" className="field" value= {this.state["decim.factor"]} onChange={this.handleChangeAll} /> 
     <i  class="fa fa-info-circle fa-1x" ></i>
     </label>
+    
     <button type="button" className="save_btn" onClick={this.onClickHandler}>Save Data for Patient {this.props.no}</button>
    </form>
             </div>

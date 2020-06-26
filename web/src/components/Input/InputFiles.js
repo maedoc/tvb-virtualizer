@@ -51,9 +51,7 @@ onClickHandler = event => {
     data.append('file', this.state.selectedFile2)
     data.append('file', this.state.selectedFile3)
     data.append('file', this.state.selectedFile4)
-    axios.post("http://localhost:8000/upload"+this.props.no, data, { 
-      
-   })
+    axios.post("http://localhost:8000/upload"+this.props.no, data)
  .then(res => { 
      console.log(res.statusText)
   })

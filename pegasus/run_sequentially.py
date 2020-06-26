@@ -11,8 +11,8 @@ from configobj import ConfigObj
 
 config = ConfigObj()
 
-config = ConfigObj('/home/punit/github/GSOC/tvb-recon/web/TVB_patients/TVB1/configs/patient_flow.properties')
-print(config['parcelation.atlas'])
+config = ConfigObj('/home/submitter/data/TVB1/configs/patient_flow.properties')
+current_atlas=config['parcelation.atlas']
 
 PATH_TO_INPUT_SUBJ_FOLDERS = "/home/submitter/data"
 PATH_TO_SUBJ_CONFIG_FOLDERS = "/home/submitter/data"
@@ -143,19 +143,17 @@ if __name__ == "__main__":
             os.mkdir(current_dir)
             print "Folder %s has been created..." % current_dir
 
-            create_config_files_for_subj(current_subject, atlas)
+            create_config_files_for_subj(current_subject, current_atlas)
 
             
-        elif os.path.exists(current_dir):
+        else:
             print "Files are adding in the existing configs Folder"
                 
-            create_config_files_for_subj(current_subject, atlas)
-        else:
-            prepare_config_for_new_atlas(current_dir, atlas)
-
+            create_config_files_for_subj(current_subject, current_atlas)
+        
         existent_job_ids = get_currently_running_job_ids()
 
-        print "Starting pegasus run for subject: " + current_subject + "with atlas: " + atlas
+        print "Starting pegasus run for subject: " + current_subject + "with current atlas: " + current_atlas
         current_dax_dir = os.path.join(current_dir, "dax")
         p = subprocess.call(["sh", "main_pegasus.sh", current_dir, current_dax_dir])
 
