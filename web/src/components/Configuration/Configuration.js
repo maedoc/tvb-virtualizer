@@ -5,13 +5,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import './Configuration.css';
-import axios from 'axios'
 class Configuration extends Component{
-    handleClick=()=>{
-           alert("Docker started on server")
-           axios.post('http://localhost:8000/start')
-         
-         }
     render(){
         const settings = {
             dots: true,
@@ -29,11 +23,7 @@ class Configuration extends Component{
                 <InputConfiguration no="3"/>
                 <InputConfiguration no="4"/>
                 </Slider>
-                <button className="proceed_btn" onClick={this.handleClick}>Start the Docker Container</button>
-
-
             </div>
-            
         )
     }
 }

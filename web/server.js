@@ -8,6 +8,8 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json())
 var parser = require("properties-file");
+var base64 = require('base-64');
+var fetch=require('node-fetch');
 
 //For Patient 1
 var storage = multer.diskStorage({
@@ -270,23 +272,79 @@ app.post("/input4",function(req,res){
 })
 })
 
-
-//Start docker
-const { exec } = require("child_process");
-const { cwd } = require('process');
-app.post("/start",function(req,res){
-exec("sudo docker run -it -v "+  (cwd())+"/TVB_patients/:/home/submitter/data thevirtualbrain/tvb-recon /bin/bash", (error, stdout, stderr) => {
-  if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    console.log(`stdout: ${stdout}`);
+//Monitoring Api
+app.get('/auth',function(request,response){
+var url = 'https://localhost:5000/api/v1/user/punit/root/';
+var username = 'punit';
+var password = '123';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" 
+global.fetch = fetch
+global.Headers = fetch.Headers;
+var headers = new Headers();
+headers.append('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+fetch(url, {method:'GET',
+        headers: headers,
+       })
+       .then((res) => { 
+        status = res.status; 
+        return res.json() 
+      })
+      .then((jsonData) => {
+        response.send(jsonData);
+      })
+      .catch((err) => {
+        response.error(err);
+      });
 })
-})
+app.get('/auth/:wf_id',function(request,response){
+  var wf_id=request.params.wf_id
+  var url = 'https://localhost:5000/api/v1/user/punit/root/'+wf_id+'/workflow/1/job';
+  var username = 'punit';
+  var password = '123';
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" 
+  global.fetch = fetch
+  global.Headers = fetch.Headers;
+  var headers = new Headers();
+  headers.append('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+  fetch(url, {method:'GET',
+          headers: headers,
+         })
+         .then((res) => { 
+          status = res.status; 
+          return res.json() 
+        })
+        .then((jsonData) => {
+          response.send(jsonData);
+        })
+        .catch((err) => {
+          response.error(err);
+        });
+  })
+app.get('/auth/:wf_id/:status',function(request,response){
+  var wf_id=request.params.wf_id
+  var status=request.params.status
+  var url = 'https://localhost:5000/api/v1/user/punit/root/'+wf_id+'/workflow/1/job/'+status;
+  var username = 'punit';
+  var password = '123';
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" 
+  global.fetch = fetch
+  global.Headers = fetch.Headers;
+  var headers = new Headers();
+  headers.append('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+  fetch(url, {method:'GET',
+          headers: headers,
+         })
+         .then((res) => { 
+          status = res.status; 
+          return res.json() 
+        })
+        .then((jsonData) => {
+          response.send(jsonData);
+        })
+        .catch((err) => {
+          response.error(err);
+        });
+  })
 app.listen(8000, function() {
     console.log('App running on port 8000');
 });

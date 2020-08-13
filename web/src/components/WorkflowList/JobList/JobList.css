@@ -1,0 +1,15 @@
+.job{
+    text-align: center;
+    font-weight: bolder;
+    font-size:xx-large;
+}
+.job_table{
+    padding: 40px;
+}
+
+.spinner{
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    
+}

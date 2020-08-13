@@ -44,7 +44,7 @@ class InputFiles extends Component {
   }
  
 onClickHandler = event => {
-  alert("Files Uploaded in the folder for Patient "+this.props.no)
+  alert("Files Uploaded for Patient "+this.props.no)
     event.preventDefault();
     const data = new FormData()
     data.append('file', this.state.selectedFile1)

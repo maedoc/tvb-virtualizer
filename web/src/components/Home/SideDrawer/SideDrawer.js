@@ -12,12 +12,7 @@ const sideDrawer=props=>{
          <li><Link to="/">Home</Link></li>
          <li><Link to="/input">Input</Link></li>
          <li><Link to="/workflowList">Workflow List</Link></li>
-         <li><Link to="/newWorkflow">New Workflow</Link></li>
-
-
         </ul>
     </nav>);
 };
-
-
 export default sideDrawer;

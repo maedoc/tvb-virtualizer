@@ -18,8 +18,6 @@ const toolbar=props=>(
                     <li><Link to="/">Home</Link></li>
                     <li><Link to="/input">Input</Link></li>
                     <li><Link to="/workflowList">Workflow List</Link></li>
-                    <li><Link to="/newWorkflow">New Workflow</Link></li>
-
                 </ul>
             </div>
         </nav>

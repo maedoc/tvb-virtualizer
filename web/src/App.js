@@ -4,18 +4,18 @@ import Home from "./components/Home/Home";
 import Input from './components/Input/Input';
 import Configuration from './components/Configuration/Configuration'
 import WorkflowList from './components/WorkflowList/WorkflowList';
-import NewWorkflow from './components/NewWorkflow/NewWorkflow';
+import JobList from './components/WorkflowList/JobList/JobList';
 class App extends Component {
   render(){
     return (
       <Router>
       <div>
         <Switch>
+          <Route path="/jobList">
+            <JobList />
+          </Route>
           <Route path="/workflowList">
             <WorkflowList />
-          </Route>
-          <Route path="/newWorkflow">
-            <NewWorkflow />
           </Route>
           <Route path="/configuration">
             <Configuration />
