@@ -11,7 +11,7 @@ class App extends Component {
       <Router>
       <div>
         <Switch>
-          <Route path="/jobList">
+          <Route path="/jobList/:jobid">
             <JobList />
           </Route>
           <Route path="/workflowList">

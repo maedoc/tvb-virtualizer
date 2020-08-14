@@ -2,22 +2,20 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import {BootstrapTable,TableHeaderColumn } from 'react-bootstrap-table';
 import BeatLoader from "react-spinners/BeatLoader";
+import {Link} from 'react-router-dom';
 import "./WorkflowList.css"
 
 function showState(cell) {
   return cell.state;
 }
 
-function showJobs(cell, row) {
-  return (<div><a href={"http://localhost:8000/auth/"+row.wf_id}>{cell}</a>
-  </div>);
+function showJobs(cell,row){
+  return <Link to={{ pathname: "/jobList/"+row.wf_id }} >{cell}</Link>
 }
-// function showJobs(cell,row){
-//   //return <Link to='/jobList' params={{}}>{cell}</Link>
-// }
 
 function rowStyleFormat(row, rowIdx) {
-  return { backgroundColor: row.workflow_state.state==='WORKFLOW_TERMINATED'  ? 'red' : 'lightblue' };
+  return { backgroundColor: row.workflow_state.state==='WORKFLOW_TERMINATED'  ? '#F05' : row.workflow_state.state==='WORKFLOW_EXECUTED' ? 'green' :
+  row.workflow_state.state==='WORKFLOW_STARTED' ? 'lightblue' : 'gray' };
 }
 class WorkflowList extends Component {
   state = {

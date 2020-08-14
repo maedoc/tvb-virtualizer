@@ -320,10 +320,10 @@ app.get('/auth/:wf_id',function(request,response){
           response.error(err);
         });
   })
-app.get('/auth/:wf_id/:status',function(request,response){
+app.get('/auth/:wf_id/:state',function(request,response){
   var wf_id=request.params.wf_id
-  var status=request.params.status
-  var url = 'https://localhost:5000/api/v1/user/punit/root/'+wf_id+'/workflow/1/job/'+status;
+  var state=request.params.state
+  var url = 'https://localhost:5000/api/v1/user/punit/root/'+wf_id+'/workflow/1/job/'+state;
   var username = 'punit';
   var password = '123';
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" 
@@ -342,7 +342,7 @@ app.get('/auth/:wf_id/:status',function(request,response){
           response.send(jsonData);
         })
         .catch((err) => {
-          response.error(err);
+          console.log("No Jobs are in the "+state+" state");
         });
   })
 app.listen(8000, function() {

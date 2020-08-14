@@ -2,44 +2,69 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import {BootstrapTable,TableHeaderColumn } from 'react-bootstrap-table';
 import BeatLoader from "react-spinners/BeatLoader";
+import {withRouter} from 'react-router-dom';
 import './JobList.css';
 
+function runningStyle(row) {
+  return { backgroundColor: row  ='lightblue'  };
+}
+function failingStyle(row) {
+  return { backgroundColor: row  ='gray'  };
+}
+function failedStyle(row) {
+  return { backgroundColor: row  ='#F05'  };
+}
+function successfulStyle(row) {
+  return { backgroundColor: row  ='green'  };
+}
 class JobList extends Component {
   state = {
     jobs: [],
-    success:[],
+    successful:[],
     failed:[],
     running:[],
     failing:[],
-    loading:false,
-    noData:''
+    loading:false
   }
   componentDidMount() {
-    // console.log(this.props.location.sampleParam)
-    axios.all([
-      axios.get('http://localhost:8000/auth/12'),
-      axios.get('http://localhost:8000/auth/12/successful'),
-      axios.get('http://localhost:8000/auth/12/failed'),
-      axios.get('http://localhost:8000/auth/12/running'),
-      axios.get('http://localhost:8000/auth/12/failing')
-    ])
-      .then(axios.spread((response1, response2, response3, response4, response5) => {  
-        // if(!response4.data.length || response5.data.records){
-        //   this.setState({noData:true})
-        // }
-        // else{
-          this.setState({
-            jobs: response1.data.records,
-            success: response2.data.records,
-            failed: response3.data.records,
-            running: response4.data.records,
-            failing: response5.data.records,
-            loading:true,
-            // noData:false
-        });
-      // }
-    }))
+    var wf_id=this.props.match.params.jobid
+    axios.get('http://localhost:8000/auth/'+wf_id)
+    .then(response => {
+      this.setState({
+        jobs: response.data.records,
+        loading:true
+      });
+    })
+    axios.get('http://localhost:8000/auth/'+wf_id+'/successful')
+    .then(response => {
+      this.setState({
+        successful: response.data.records,
+        loading:true
+      });
+    });
+    axios.get('http://localhost:8000/auth/'+wf_id+'/failed')
+    .then(response => {
+      this.setState({
+        failed: response.data.records,
+        loading:true
+      });
+    });
+    axios.get('http://localhost:8000/auth/'+wf_id+'/running')
+    .then(response => {
+      this.setState({
+        running: response.data.records,
+        loading:true
+      });
+    });
+    axios.get('http://localhost:8000/auth/'+wf_id+'/failing')
+    .then(response => {
+      this.setState({
+        failing: response.data.records,
+        loading:true
+      });
+    });
   }
+
 
   render() {
     return (
@@ -55,7 +80,7 @@ class JobList extends Component {
      
       <p className="job"> Successful Jobs</p>
      {this.state.loading ? 
-       <BootstrapTable data={this.state.success} version="4" striped condensed pagination keyField="job_id">
+       <BootstrapTable data={this.state.successful} version="4" striped condensed pagination trStyle={successfulStyle} keyField="job_id">
         <TableHeaderColumn dataField="job_id" >Job ID</TableHeaderColumn>
         <TableHeaderColumn dataField="exec_job_id">Job Name</TableHeaderColumn>
       </BootstrapTable>:
@@ -63,7 +88,7 @@ class JobList extends Component {
     
      <p className="job">Failed Jobs</p>
      {this.state.loading ? 
-       <BootstrapTable data={this.state.failed} version="4" striped condensed pagination keyField="job_id">
+       <BootstrapTable data={this.state.failed} version="4" striped condensed pagination trStyle={failedStyle} keyField="job_id">
         <TableHeaderColumn dataField="job_id" >Job ID</TableHeaderColumn>
         <TableHeaderColumn dataField="exec_job_id">Job Name</TableHeaderColumn>
       </BootstrapTable>:
@@ -71,7 +96,7 @@ class JobList extends Component {
 
      <p className="job">Running Jobs</p>
      {this.state.loading ? 
-       <BootstrapTable data={this.state.running} version="4" striped condensed pagination keyField="job_id">
+       <BootstrapTable data={this.state.running} version="4" striped condensed pagination trStyle={runningStyle} keyField="job_id">
         <TableHeaderColumn dataField="job_id" >Job ID</TableHeaderColumn>
         <TableHeaderColumn dataField="exec_job_id">Job Name</TableHeaderColumn>
       </BootstrapTable>:
@@ -79,7 +104,7 @@ class JobList extends Component {
 
      <p className="job">Failing Jobs</p>
      {this.state.loading ? 
-       <BootstrapTable data={this.state.failing} version="4" striped condensed pagination keyField="job_id">
+       <BootstrapTable data={this.state.failing} version="4" striped condensed pagination trStyle={failingStyle} keyField="job_id">
         <TableHeaderColumn dataField="job_id" >Job ID</TableHeaderColumn>
         <TableHeaderColumn dataField="exec_job_id">Job Name</TableHeaderColumn>
       </BootstrapTable>:
@@ -88,4 +113,4 @@ class JobList extends Component {
     );
   }
 }
-export default JobList;
+export default withRouter(JobList);
