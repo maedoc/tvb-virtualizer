@@ -59,7 +59,7 @@ At http://localhost:3000/ you can see the GUI and use all the components accordi
 
 
 ### Home Page 
-![](Images/Home.png)
+![](web/Images/Home.png)
 
 On Home Page We have Header and Content. 
 
@@ -72,7 +72,7 @@ On Home Page We have Header and Content.
 
 
 ### Input Page
-![](Images/Input.png)
+![](web/Images/Input.png)
 
 Input page requires the patients input data files. We can upload the patient data here and it search only the specific extension files in our local system. 
 Once all the files are uploaded the `Red` Button color changes to `Blue` automatically and on click the upload button all the files are uploaded dynamically in the folder structure as `TVB_patients/TVB1/raw/mri`. 
@@ -88,7 +88,7 @@ Now we can click on `Proceed` button and it renders the configuration page.
 
 ### Configuration Page
 
-![](Images/Configuration.png)
+![](web/Images/Configuration.png)
 
 In configuration page we have multiple inputs with default values whose value can also be edited as per the user choice.We can also use **`i`** button for more information about the properties.
 <br/>
@@ -221,7 +221,7 @@ $ pegasus-service
 Now after following all these steps and running the pegasus-service command you can use the Workflow List component in the NavBar and it shows the list of all workflows with status,submit directory and timestamp.<br/>
 
 ### Workflow List Page
-![](Images/WorkflowList.png)
+![](web/Images/WorkflowList.png)
 
 **Note:- The workflow list shown in the image is just for the reference according to the <a href="https://pegasus.isi.edu/documentation/tutorial.php">Pegasus official tutorial</a>.**
 
@@ -229,7 +229,7 @@ By clicking on these workflow labels we can check the details of respective jobs
 <br/>
 
 ### Job List Page 
-![](Images/JobList.png)
+![](web/Images/JobList.png)
 
 In this page we have five tables.
 * For All the Jobs
