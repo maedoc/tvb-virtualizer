@@ -1,68 +1,252 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<h1 align="center">
+  <br>
+  <a href="http://www.amitmerchant.com/electron-markdownify"><img src="https://cdn.evbuc.com/eventlogos/50084740/tvbtaglinecrop.jpg" alt="The Virtual Brain" width="300"></a>
+  <br>
+  Web GUI for reconstruction pipeline
+  <br>
+</h1>
 
-## Available Scripts
+<p align="center">
+  <a href="https://pegasus.isi.edu/downloads/">
+    <img src="https://img.shields.io/badge/Pegasus%20WMS-4.9.3-%2349A13D"
+         alt="Gitter">
+  </a>
+  <a href="https://groups.google.com/forum/#!forum/tvb-users ">
+	  <img src="https://img.shields.io/badge/Chat-TVB%20forum-%236B3E90">
+</a>
+  <a href="https://req.thevirtualbrain.org/">
+      <img src="https://img.shields.io/badge/Install-Jira-%23624426">
+  </a>
+  <a href="https://www.thevirtualbrain.org/tvb/zwei/brainsimulator-software">
+    <img src="https://img.shields.io/badge/Download-TVB%20v1.5.8-%23902B29">
+  </a>
+</p>
+<p>
+<hr>
 
-In the project directory, you can run:
+A real brain can turn to a virtual brain in 3 steps. First, the patient goes to a RMN scanner, then, the measured images go through a reconstruction pipeline, and finally, the results are uploaded in TVB.
+<br/>
+It provides the GUI for the reconstruction pipeline. This interface allow users to provide input data, choosing and editing the configurations, define the output structure, launch the workflow and monitor progress. We have integrated this GUI with our workflow engine <a href="https://pegasus.isi.edu/">Pegasus</a> in order to provide job status and job execution statistics.
+</p>
 
-### `yarn start`
+## How To Launch the GUI
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+For launching the GUI, Make sure you have npm and node installed on your local machine.
+```bash
+# Clone this web GUI repository
+$ git clone [url]
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+# Go into the repository
+$ cd web
 
-### `yarn test`
+# Install all the dependencies
+$ npm install
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Run the frontend
+$ npm start
 
-### `yarn build`
+## Open another terminal for backend
+# Run the backend
+$ node server # or nodemon server
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+After doing all these steps `frontend` starts on http://localhost:3000/ and `server` runs on http://localhost:8000/.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+<hr/>
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## How To Use
+At http://localhost:3000/ you can see the GUI and use all the components accordingly.
 
-### `yarn eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Home Page 
+![](Images/Home.png)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+On Home Page We have Header and Content. 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+#### We have three Nav Link in Header `Home`, `Input` and `Workflow List`.
+* Home Link is for rendering the Home Page.
+* Input Link is for input the patient data files.
+* Workflow List is for showing all the details of workflow (Successful,Running,Failed, Failing).
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+**Note:- All these Components can be used sequentially only. You have to first complete the input, configuration and manual part then only we can use Workflow List component.**
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Input Page
+![](Images/Input.png)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Input page requires the patients input data files. We can upload the patient data here and it search only the specific extension files in our local system. 
+Once all the files are uploaded the `Red` Button color changes to `Blue` automatically and on click the upload button all the files are uploaded dynamically in the folder structure as `TVB_patients/TVB1/raw/mri`. 
 
-### Code Splitting
+**We have functionality for uploading the 4 patients data and all these files are uploaded in the respective folder dynamically. We can use the below slider (four dots) for uploading the other patients data.**
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+After uploading all the files we have a option for choosing the processing type. Currently TVB has all the working according to the `sequential` processing. If we want the `parallel` processing then we have to do the necessary changes.
 
-### Analyzing the Bundle Size
+**Note:- Parallel processing requires more computation so, we generally use sequential processing of data.**
+ 
+Now we can click on `Proceed` button and it renders the configuration page.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
 
-### Making a Progressive Web App
+### Configuration Page
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+![](Images/Configuration.png)
 
-### Advanced Configuration
+In configuration page we have multiple inputs with default values whose value can also be edited as per the user choice.We can also use **`i`** button for more information about the properties.
+<br/>
+On click `Save Patient data` button all these data is saved in the `patient_flow.properties` file dynamically in the folder structure as TVB_patients/TVB1/configs.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+**Properties which can't be edited by user are also present as default in the patient_flow.properties file.**
+<br/>
 
-### Deployment
+**In the same way, we have functionality for choosing and editing the configuration properties for 4 patients. We can use the below slider (four dots) for different patients respectively.**
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
 
-### `yarn build` fails to minify
+## Manual Part
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+### Docker image
+We provide a docker image which gathers all the dependencies necessary for tvb-recon code to run.
+The docker image can be found on docker hub at: **thevirtualbrain/tvb-recon**. Take it using the most recent tag, with:
+
+```bash
+# import docker image
+$ docker pull thevirtualbrain/tvb-recon
+```
+
+In order to use tvb-recon GUI within the proposed docker image, you will need some details about its configurations and input data and it can be done by using the above GUI steps and after that you will have these folder structures for input and configurations as below in the web folder.
+
+```
+	TVB_patients 
+		│
+		├── TVB1 
+		|     |
+		|     └── raw  
+		|	  |	    |
+		|	  |     └── mri 
+		|     |         |
+		|	  |         ├── t1_input.nii.gz
+		|     |         |
+		|     |         ├── dwi_raw.nii
+		|	  |         |
+		|     |         ├── dwi.bvec
+		|     |         |
+		|     |         └── dwi.bval		
+		|     |
+        |     └── configs
+    	|           |
+		|	        └── patient_flow.properties 
+    	└── TVB2 
+		      |
+		      └── raw  
+			  |	    |
+		 	  |     └── mri 
+		      |         |
+		 	  |         ├── t1_input.nii.gz
+		      |         |
+		      |         ├── dwi_raw.nii
+		 	  |         |
+		      |         ├── dwi.bvec
+		      |         |
+		      |         └── dwi.bval		
+		      |
+              └── configs
+    	            |
+			        └── patient_flow.properties 
+```
+
+(TVB1, TVB2, etc, being the ID of the patients. If your DWI data is not made of: dwi.nii + dwi.bvec + dwi.bval, let us know and we will tell you how to specify it differently.)
+
+
+Now, you can run the tvb-recon docker image with the following command: 
+
+``` bash
+# To run the tvb-recon docker image
+$ docker run -it -v your_path_to_TVB_patients/TVB_patients/:/home/submitter/data -v your_path_to_tvb_recon/tvb-recon/:/opt/tvb-recon thevirtualbrain/tvb-recon /bin/bash
+``` 
+(here you need to replace *your_path_to_TVB_patients* and *your_path_to_tvb_recon* with the paths of your local machine)
+
+Now, you will be able to use bash commands inside the tvb-recon container. And here, you need to do the next steps:
+
+``` bash 
+# Run the following command and provide the sudo password: 123456
+$ sudo condor_master
+
+# Move to pegasus folder 
+$ cd pegasus
+
+# Run the pipeline by the following command. The “1” argument is the patient number you want to process. By specifying “1”, you choose to process TVB1.
+$ python run_sequentially.py “1”
+```
+If everything is correct, some messages will be displayed. Look for the following flow of messages:   
+```
+*...  
+Starting to process the subject: TVB1  
+...  
+2020.07.28 11:11:40.285 UTC:    Your workflow has been started and is running in the base directory:  
+2020.07.28 11:11:40.293 UTC:     /home/submitter/pegasus/submit/submitter/pegasus/TVB-PIPELINE/run0001   
+...  
+
+The job that has been started has the id: 0001  
+Starting to monitor the submit folder: /home/submitter/pegasus/submit/submitter/pegasus/TVB-PIPELINE/run0001 ...  
+Checked at Thu, 28 Jul 2020 11:11:42 and monitord.done file was not generated yet!*
+
+```
+
+If the messages flow is not similar, let us know what is the error.
+
+Once, you have started the workflow, you should see the ***configs*** folder on your local machine at path:<br> ***your_path_to_TVB_patients/TVB_patients/TVB1***
+with all the other default configurations we need for a patient.
+
+Later on, after some important steps have finished, you will also have an ***output*** folder inside:<br> ***your_path_to_TVB_patients/TVB_patients/TVB1***. 
+Here is where all the output data will be stored, and of more interest will be the folders:
+- **output/figs** (figures generated during different pipeline steps to check the quality of the data)
+- **output/tvb** (files that are compatible with TVB and can be uploaded and used there)
+
+
+We use the Pegasus workflow engine in order to automatize the pipeline steps. This tool will let you check the status of the workflow anytime.
+In order to check the status of your current workflow:
+
+``` bash 
+# You can open a new terminal on the tvb-recon docker container with:
+$ docker exec -i -t container_id /bin/bash
+
+# Then run this command
+$ pegasus-status -l /home/submitter/pegasus/submit/submitter/pegasus/TVB-PIPELINE/run0001
+
+# To run the dashborad at https://localhost:5000/
+$ pegasus-service
+
+```
+
+### How to check Workflow and Job Status
+
+Now after following all these steps and running the pegasus-service command you can use the Workflow List component in the NavBar and it shows the list of all workflows with status,submit directory and timestamp.<br/>
+
+### Workflow List Page
+![](Images/WorkflowList.png)
+
+**Note:- The workflow list shown in the image is just for the reference according to the <a href="https://pegasus.isi.edu/documentation/tutorial.php">Pegasus official tutorial</a>.**
+
+By clicking on these workflow labels we can check the details of respective jobs of the workflow.
+<br/>
+
+### Job List Page 
+![](Images/JobList.png)
+
+In this page we have five tables.
+* For All the Jobs
+* For Successful Jobs (GREEN COLOR)
+* For Failed Jobs (RED COLOR)
+* For Running Jobs (BLUE COLOR)
+* For Failing Jobs (GRAY COLOR)
+
+So, We can check the Job status along with other details. 
+
+**Note:- The job list shown in the image is also just for the reference according to the <a href="https://pegasus.isi.edu/documentation/tutorial.php">Pegasus official tutorial</a>.**
+
+
+## Contributing
+
+Contributions, issues and more feature requests are welcome! If you find any issue feel free to create.
+
+## Contact
+
+You can reach the maintainers and our community on [TVB-Jira](https://req.thevirtualbrain.org/secure/Dashboard.jspa) . Where you can ask questions and interact with the community, join with us!
