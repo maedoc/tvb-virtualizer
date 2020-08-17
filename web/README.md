@@ -119,36 +119,36 @@ In order to use tvb-recon GUI within the proposed docker image, you will need so
 		├── TVB1 
 		|     |
 		|     └── raw  
-		|	  |	    |
-		|	  |     └── mri 
+	        |     |     |
+		|     |     └── mri 
 		|     |         |
-		|	  |         ├── t1_input.nii.gz
+		|     |         ├── t1_input.nii.gz
 		|     |         |
 		|     |         ├── dwi_raw.nii
-		|	  |         |
+		|     |         |
 		|     |         ├── dwi.bvec
 		|     |         |
 		|     |         └── dwi.bval		
 		|     |
-        |     └── configs
-    	|           |
+        	|     └── configs
+    	        |               |
 		|	        └── patient_flow.properties 
-    	└── TVB2 
+    	        └── TVB2 
 		      |
 		      └── raw  
-			  |	    |
-		 	  |     └── mri 
+		      |	    |
+		      |     └── mri 
 		      |         |
-		 	  |         ├── t1_input.nii.gz
+	              |         ├── t1_input.nii.gz
 		      |         |
 		      |         ├── dwi_raw.nii
-		 	  |         |
+		      |         |
 		      |         ├── dwi.bvec
 		      |         |
 		      |         └── dwi.bval		
 		      |
-              └── configs
-    	            |
+                      └── configs
+    	                        |
 			        └── patient_flow.properties 
 ```
 
