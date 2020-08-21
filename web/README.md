@@ -29,12 +29,14 @@ A real brain can turn to a virtual brain in 3 steps. First, the patient goes to 
 It provides the GUI for the reconstruction pipeline. This interface allow users to provide input data, choosing and editing the configurations, define the output structure, launch the workflow and monitor progress. We have integrated this GUI with our workflow engine <a href="https://pegasus.isi.edu/">Pegasus</a> in order to provide job status and job execution statistics.
 </p>
 
+**Note:- This WEB GUI is a Prototype. It's not fully automated. We have to start condor manually as described in the below steps. We can automate that part too. For this have a look on section `What we tried`. If you have any other ideas to do that part feel free to share.**
+
 ## How To Launch the GUI
 
 For launching the GUI, Make sure you have npm and node installed on your local machine.
 ```bash
-# Clone this web GUI repository
-$ git clone [url]
+# Clone the web GUI repository and change the name `PUNITBATRA` by your GitHub Username.
+$ git clone https://github.com/PUNITBATRA/tvb-recon.git
 
 # Go into the repository
 $ cd web
@@ -242,6 +244,19 @@ So, We can check the Job status along with other details.
 
 **Note:- The job list shown in the image is also just for the reference according to the <a href="https://pegasus.isi.edu/documentation/tutorial.php">Pegasus official tutorial</a>.**
 
+## What we tried
+
+To start condor automatically, we have changed the docker image of TVB-recon and TVB-recon software. We have used [andypohl/htcondor](https://hub.docker.com/r/andypohl/htcondor/dockerfile) docker image in TVB-recon software. This `andypohl/htcondor` docker image works on CentOS 7. So, we have changed the TVB-recon software and TVB-recon dockerfile commands according to CentOS 7 instructions and after building both the image, still result was unexpected means condor didn't started automatically.<br/>
+For more information about the changed Dockerfile you can pull the docker images by using the command `docker pull thevirtualbrain/tvb-recon:GSOC`.
+
+
+## Improvements
+
+These are some of the improvements which can be done in future for making the Web GUI more user interactive.
+* Automate the docker part by starting condor automatically inside docker too.
+* Testing can also be done for the components and API part.
+* Some code snippets can also be make more generalised in server file.
+* As it's the initial version of the GUI, Many more features can be added in future. 
 
 ## Contributing
 
@@ -249,4 +264,12 @@ Contributions, issues and more feature requests are welcome! If you find any iss
 
 ## Contact
 
-You can reach the maintainers and our community on [TVB-Jira](https://req.thevirtualbrain.org/secure/Dashboard.jspa) . Where you can ask questions and interact with the community, join with us!
+If you have any query, you can reach out to the contributor, maintainers and our community on [TVB-Jira](https://req.thevirtualbrain.org/secure/Dashboard.jspa) . Where you can ask questions and interact, join with us!
+
+### Contributor
+[Punit Batra](https://github.com/PUNITBATRA) [GSOC-2020]
+
+### Maintainer
+[Paula Popa](https://github.com/popaula937)
+
+**Thanks!!! Contributions are welcome!**
