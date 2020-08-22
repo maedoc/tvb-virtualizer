@@ -53,63 +53,63 @@ class InputConfiguration extends Component{
        
      <label className="l_name"> openmp.threads 
     <input  type="number" name="openmp.threads"  className="field" value={this.state["openmp.threads"]} onChange={this.handleChangeAll} />
-    <i  class="fa fa-info-circle fa-1x" title="Default values is 4.Determine no of threads in multi-processing." ></i>
+    <i  class="fa fa-info-circle fa-1x" title="No of threads in multi-processing.For more details check MRtrix3 Flags." ></i>
  
     </label>
 
     <label className="l_name"> mrtrix.threads
     <input  type="number" name="mrtrix.threads" className="field"value= {this.state["mrtrix.threads"]} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" title="Default value is 2.Set the number of CPU threads to use for multi-threading." ></i>
+    <i  class="fa fa-info-circle fa-1x" title="No of CPU threads to use for multi-threading.For more details check MRtrix3 Flags." ></i>
     </label>
 
     <label className="l_name"> aseg_lh_labels 
     <input  type="text" name="aseg_lh_labels" className="field" value= {this.state.aseg_lh_labels} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" title=" used for females who have gone through menopause, the normal range is 14.2–52.3 IU/L."></i>
+    <i  class="fa fa-info-circle fa-1x" title="Used for left subcortical region.For more details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> parcelation.atlas 
     <input  type="text" name="parcelation.atlas" className="field" value= {this.state["parcelation.atlas"]} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x"></i>
+    <i  class="fa fa-info-circle fa-1x" title="Value is default.For details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> aseg_rh_labels 
     <input  type="text" name="aseg_rh_labels" className="field" value= {this.state.aseg_rh_labels} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="Used for right subcortical region.For more details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> use_flirt 
     <input  type="text" name="use_flirt" className="field" value= {this.state.use_flirt} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="Tools for Image registraion.For more details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> strmlns_no
     <input  type="text" name="strmlns_no" className="field" value= {this.state.strmlns_no} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="For details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> strmlns_sift_no 
     <input  type="text" name="strmlns_sift_no" className="field"  value= {this.state.strmlns_sift_no} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="For details check MRtrix3 Flags." ></i>
     </label>
 
     <label className="l_name"> strmlns_len
     <input  type="number" name="strmlns_len" className="field" value= {this.state.strmlns_len} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="For details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> strmlns_step
     <input  type="text" name="strmlns_step" className="field" value= {this.state.strmlns_step} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="For details check MRtrix3 Flags."></i>
     </label>
 
     <label className="l_name"> ct.elec.intensity.th
     <input  type="number" name="ct.elec.intensity.th" className="field" value= {this.state["ct.elec.intensity.th"]} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="It's optional.For more details check Open MEG Flags."></i>
     </label>
 
     <label className="l_name"> decim.factor 
     <input  type="text" name="decim.factor" className="field" value= {this.state["decim.factor"]} onChange={this.handleChangeAll} /> 
-    <i  class="fa fa-info-circle fa-1x" ></i>
+    <i  class="fa fa-info-circle fa-1x" title="Decimal factor is by default 0.1."></i>
     </label>
     
     <button type="button" className="save_btn" onClick={this.onClickHandler}>Save Data for Patient {this.props.no}</button>
