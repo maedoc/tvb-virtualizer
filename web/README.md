@@ -244,6 +244,10 @@ So, We can check the Job status along with other details.
 
 **Note:- The job list shown in the image is also just for the reference according to the <a href="https://pegasus.isi.edu/documentation/tutorial.php">Pegasus official tutorial</a>.**
 
+**WIP:-** We have a button `Click Here to View the DAX` which render the DAX graph for these jobs accordingly and shows the dependency between the Jobs.
+For this, we have parsed the nodes and edges of the dax file (present at TVB_patients/TVB1/configs/dax/main_bnm.dax) in the server.js. We can see these nodes and edges response on `http://localhost:8000/nodes and http://localhost:8000/edges` respectively.<br/> 
+We have a graph component inside JobList where we can fetch the data according to nodes and edges by sending requests on server side and make a graph. We have used the **reactjs-graphs** npm package for this. Currently, it has the same example graph from the reactjs-graphs which have predefined nodes and edges. 
+
 ## What we tried
 
 To start condor automatically, we have changed the docker image of TVB-recon and TVB-recon software. We have used [andypohl/htcondor](https://hub.docker.com/r/andypohl/htcondor/dockerfile) docker image in TVB-recon software. This `andypohl/htcondor` docker image works on CentOS 7. So, we have changed the TVB-recon software and TVB-recon dockerfile commands according to CentOS 7 instructions and after building both the image, still result was unexpected means condor didn't started automatically.<br/>
@@ -254,6 +258,7 @@ For more information about the changed Dockerfile you can pull the docker images
 
 These are some of the improvements which can be done in future for making the Web GUI more user interactive.
 * Automate the docker part by starting condor automatically inside docker too.
+* Fetch the nodes and edges data from server side to the client side properly and display the DAX.
 * Testing can also be done for the components and API part.
 * Some code snippets can also be make more generalised in server file.
 * As it's the initial version of the GUI, Many more features can be added in future. 
