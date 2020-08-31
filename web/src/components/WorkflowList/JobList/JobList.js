@@ -18,7 +18,9 @@ function successfulStyle(row) {
   return { backgroundColor: row  ='green'  };
 }
 class JobList extends Component {
-  state = {
+  constructor() {
+    super();
+  this.state = {
     jobs: [],
     successful:[],
     failed:[],
@@ -26,6 +28,14 @@ class JobList extends Component {
     failing:[],
     loading:false
   }
+  this.handleClick = this.handleClick.bind(this);
+}
+
+  handleClick=(event)=>{
+    event.preventDefault();
+    this.props.history.push('/daxgraph');
+  }
+
   componentDidMount() {
     var wf_id=this.props.match.params.jobid
     axios.get('http://localhost:8000/auth/'+wf_id)
@@ -109,7 +119,10 @@ class JobList extends Component {
         <TableHeaderColumn dataField="exec_job_id">Job Name</TableHeaderColumn>
       </BootstrapTable>:
      <div className='spinner'><BeatLoader color={"#00BFFF"}/></div> }
-      </div>
+
+
+    <button className="button_dax" onClick={this.handleClick}>Click Here To View the DAX </button>
+    </div>
     );
   }
 }

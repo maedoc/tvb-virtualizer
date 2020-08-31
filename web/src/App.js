@@ -5,6 +5,8 @@ import Input from './components/Input/Input';
 import Configuration from './components/Configuration/Configuration'
 import WorkflowList from './components/WorkflowList/WorkflowList';
 import JobList from './components/WorkflowList/JobList/JobList';
+import DAXGraph from './components/WorkflowList/JobList/DAXGraph'
+
 class App extends Component {
   render(){
     return (
@@ -13,6 +15,9 @@ class App extends Component {
         <Switch>
           <Route path="/jobList/:jobid">
             <JobList />
+          </Route>
+          <Route path="/daxgraph">
+            <DAXGraph />
           </Route>
           <Route path="/workflowList">
             <WorkflowList />

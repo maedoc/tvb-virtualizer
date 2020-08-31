@@ -31,8 +31,10 @@
     "react-scripts": "3.4.1",
     "react-slick": "^0.26.1",
     "react-spinners": "^0.9.0",
+    "reactjs-graphs": "^1.4.0",
     "slick-carousel": "^1.8.1",
-    "styled-components": "^5.1.0"
+    "styled-components": "^5.1.0",
+    "xml2js": "^0.4.23"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -10,6 +10,8 @@ app.use(express.json())
 var parser = require("properties-file");
 var base64 = require('base-64');
 var fetch=require('node-fetch');
+var xml2js = require('xml2js');
+var parser = new xml2js.Parser();
 
 //For Patient 1
 var storage = multer.diskStorage({
@@ -345,6 +347,35 @@ app.get('/auth/:wf_id/:state',function(request,response){
           console.log("No Jobs are in the "+state+" state");
         });
   })
+
+
+// parse the dax edges and nodes
+function length(obj) {
+  return Object.keys(obj).length;
+}
+app.get('/nodes',function(req,res){
+  fs.readFile( './TVB_patients/TVB1/configs/dax/main_bnm.dax', function(err, data) {
+      parser.parseString(data, function (err, result) {
+        for(var i=0;i< length (result.adag.child);i++){
+          res.write(result.adag.child[i].$.ref+'\n')
+        }
+        res.end()
+      });
+          });
+      });
+
+app.get('/edges',function(req,res){
+    fs.readFile( './TVB_patients/TVB1/configs/dax/main_bnm.dax', function(err, data) {
+      parser.parseString(data, function (err, result) {
+        for(var i=0;i< length (result.adag.child);i++){
+                for(var j=0;j<length (result.adag.child[i].parent);j++)
+                res.write(result.adag.child[i].$.ref+","+result.adag.child[i].parent[j].$.ref+'\n')
+              }
+              res.end()
+            });
+                });
+              })
+              
 app.listen(8000, function() {
     console.log('App running on port 8000');
 });
