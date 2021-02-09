@@ -195,8 +195,8 @@ $ sudo condor_master
 # Move to pegasus folder 
 $ cd pegasus
 
-# Run the pipeline by the following command. The “1” argument is the patient number you want to process. By specifying “1”, you choose to process TVB1.
-$ python run_sequentially.py “1”
+# Run the pipeline by the following command. The "1" argument is the patient number you want to process. By specifying "1", you choose to process TVB1.
+$ python run_sequentially.py "1"
 ```
 If everything is correct, some messages will be displayed. Look for the following flow of messages:   
 ```
