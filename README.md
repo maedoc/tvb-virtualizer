@@ -89,31 +89,34 @@ We are using the <a href="https://pegasus.isi.edu/">Pegasus WMS</a> in order to 
 **For a multi-patient sequential run, the data needs to be structured in a similar manner for each patient. Also, it is important to name the patient folders in a predefined manner. As an example, a simple folder structure can be:**
 
 ```
-	data_folder
+	TVB_patients 
 		│
-		├── raw_data
-		|	|
-		|	├── patient1 
-		|	|
-		|	├── patient2 
-		|	|
-		|	└── patient3 
-		│
-		├── configurations
-		|	|
-		|	├── patient1 
-		|	|
-		|	├── patient2 
-		|	|
-		|	└── patient3 
-		│
-		└── outputs
-			|
-			├── patient1 
-			|
-			├── patient2 
-			|
-			└── patient3 
+		├── TVB1 
+		|     |
+		|     └── raw  
+		|	    |
+		|	    └── mri 
+		|		  |
+		|		  ├── t1_input.nii.gz
+		|		  |
+		|		  ├── dwi_raw.nii
+		|		  |
+		|		  ├── dwi.bvec
+		|		  |
+		|		  └── dwi.bval		
+		└── TVB2 
+		      |
+		      └── raw  
+			    |
+			    └── mri 
+				  |
+				  ├── t1_input.nii.gz
+				  |
+				  ├── dwi_raw.nii
+				  |
+				  ├── dwi.bvec
+				  |
+				  └── dwi.bval	
 ```
 
 ## How to launch
@@ -141,7 +144,7 @@ $ cd tvb-recon
 In order to use tvb-recon within the proposed docker image, you will need some details about its configurations and steps to follow for specifying your input data and start a workflow.
 We recommend new users to start with the ***default configurations*** and ***adjust their data structure*** as required. After a first workflow run has finished successfully, the configurations and data structure can be chosen by the user.
 
-First of all, we process mostly T1 and DWI data. There is an option to process also CT scans. But, we would advise you to start only with T1 and DWI, for now.
+First of all, we process mostly T1 and DWI data. There is an option to process also CT scans. But, we would advise you to start only with T1 and DWI.
 In order to access the T1 and DWI input, tvb-recon pipeline expects, by default, a certain folder structure, and file naming. These can be changed later as you wish, but keep the default configurations for a first test.
 This means you should ***adjust your input*** data folder to the following structure (also rename your files as below):
 
@@ -178,7 +181,8 @@ This means you should ***adjust your input*** data folder to the following struc
 
 (TVB1, TVB2, etc, being the ID of the patients. If your DWI data is not made of: dwi.nii + dwi.bvec + dwi.bval, let us know and we will tell you how to specify it differently.)
 
-Once you have this folder structure for your data, you can run the tvb-recon docker image with the following command: 
+Once you have this folder structure for your data, you can run the tvb-recon docker image with the command below.
+Please make sure Docker has enough RAM memory assigned, we recommend at least 6 GB.
 
 ``` bash
 # To run the tvb-recon docker image
@@ -195,7 +199,7 @@ $ sudo condor_master
 # Move to pegasus folder 
 $ cd pegasus
 
-# Run the pipeline by the following command. The "1" argument is the patient number you want to process. By specifying "1", you choose to process TVB1.
+# Run the pipeline by the following command. The "1" argument is the patient number you want to process. By specifying "1", you choose to process TVB1. For running multiple patients (TVB1, TVB2 and TVB3), the argument should be: "1 2 3".
 $ python run_sequentially.py "1"
 ```
 If everything is correct, some messages will be displayed. Look for the following flow of messages:   
