@@ -1,0 +1,47 @@
+FROM andypohl/htcondor
+USER root 
+
+
+#gcc
+RUN yum install -y wget
+RUN wget http://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-5.1.0/gcc-5.1.0.tar.gz && tar zxf gcc-5.1.0.tar.gz && cd gcc-5.1.0 && yum -y install bzip2 && ./contrib/download_prerequisites && ./configure --disable-multilib --enable-languages=c,c++ && make -j 4 && make install
+
+
+#Mrtrix
+RUN yum install -y git g++ python eigen3-devel zlib-devel libqt5-devel libgl1-mesa-dev fftw-devel libtiff-devel libpng-devel
+RUN cd /opt && git clone https://github.com/MRtrix3/mrtrix3.git
+RUN cd /opt/mrtrix3 && export EIGEN_CFLAGS="-isystem /usr/include/eigen3" 
+RUN cd /opt/mrtrix3 && yum install -y qt5-qtbase-devel qt-devel qt5-qtsvg-devel 
+RUN cd /opt/mrtrix3 && wget http://download-ib01.fedoraproject.org/pub/epel/7/aarch64/ && yum install -y epel-release 
+RUN cd /opt/mrtrix3 && yum install -y eigen3-devel && LD_PRELOAD=/usr/local/lib64/libstdc++.so.6.0.21 MOC=/usr/bin/moc-qt5 QMAKE=/usr/bin/qmake-qt5 ./configure
+RUN cd /opt/mrtrix3 && NUMBER_OF_PROCESSORS=1 ./build
+
+
+
+#Freesurfer
+RUN yum install -y tcsh bc libgomp1 perl-modules
+RUN mkdir /opt/freesurfer-stable && wget -N -qO- ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz | tar -xzv -C /opt/freesurfer-stable
+COPY license.txt /opt/freesurfer-stable/freesurfer/license.txt
+ENV FREESURFER_HOME /opt/freesurfer-stable/freesurfer
+
+
+#FSL
+RUN wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py && echo "" | python fslinstaller.py
+ENV FSLDIR /usr/local/fsl
+RUN . ${FSLDIR}/etc/fslconf/fsl.sh
+ENV PATH ${FSLDIR}/bin:${PATH}
+
+
+#Anaconda
+RUN yum install -y bzip2
+RUN wget --quiet --output-document=anaconda.sh "https://repo.continuum.io/archive/Anaconda2-5.1.0-Linux-x86_64.sh" && sh anaconda.sh -b -p /opt/conda
+ENV PATH /opt/conda/bin:${PATH}
+
+
+#Pegasus and HTCondor
+RUN yum install -y gnupg
+RUN wget -O /etc/yum.repos.d/pegasus.repo http://download.pegasus.isi.edu/wms/download/rhel/7/pegasus.repo
+RUN yum search pegasus
+RUN yum -y update
+RUN yum install -y pegasus-4.8.2
+RUN mkdir /opt/pegasus-run && mkdir /opt/pegasus-run/submit && mkdir /opt/pegasus-run/scratch

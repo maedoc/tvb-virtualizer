@@ -1,0 +1,49 @@
+.field {
+    height: 20px;
+    flex: 0 0 200px;
+    margin-left: 40px;
+    font-size: 15px;
+  }
+  .l_name {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  text-align:center;
+  width: 400px;
+  line-height: 26px;
+  margin-bottom: 10px;
+  color: blue;
+  margin-left: auto;
+    margin-right:auto;
+    font-weight: bold;
+    font-size:large
+}
+.config_form{
+    text-align: center;
+    display: block;
+}
+.proceed_btn{
+    font-size: 20px;
+    background-color:green;
+    color: white;
+    border-radius: 10px;
+    width: 30%;
+    margin-left: 35%;
+    margin-right: 35%;
+    margin-top:30px;
+    cursor: pointer
+}
+
+.fa-info-circle{
+    color:rgba(0, 0, 0, 0.741);
+    margin-left: 10px;
+}
+.save_btn{
+    padding: 10px 20x;
+    font-size: 20px;
+    background-color:blue;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+
+}

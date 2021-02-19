@@ -5,7 +5,7 @@ RUN apt-get -y update && apt-get -y install build-essential gcc
 RUN conda update -n base -c defaults conda
 RUN conda create -n tvb-recon-tests python=3.6 numpy scikit-learn Cython pip
 RUN conda install -y --name tvb-recon-tests setuptools scipy matplotlib h5py graphviz pytest pytest-cov
-RUN /opt/conda/envs/tvb-recon-tests/bin/pip install trimesh anytree tvb-gdist nibabel
+RUN /opt/conda/envs/tvb-recon-tests/bin/pip install trimesh anytree tvb-gdist nibabel 
 
 RUN mkdir /opt/tvb-recon
 WORKDIR /opt/tvb-recon

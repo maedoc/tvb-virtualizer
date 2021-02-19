@@ -1,0 +1,42 @@
+.btn:disabled{
+    padding: 10px 20x;
+    font-size: 20px;
+   background-color: red; 
+   color:white;
+   border-radius: 10px;
+   
+
+}
+.btn:enabled{
+    padding: 10px 20x;
+    font-size: 20px;
+    background-color:blue;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+
+}
+.input {
+    height: 20px;
+    flex: 0 0 200px;
+    margin-left: 60px;
+    font-size: 20px;
+  }
+  .file_name {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  text-align:center;
+  width: 600px;
+  line-height: 26px;
+  margin-bottom: 30px;
+  color: blue;
+  margin-left: auto;
+  margin-right:auto;
+  font-weight: bold;
+  font-size:large
+}
+.form{
+    text-align: center;
+    display: block;
+}

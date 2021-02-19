@@ -1,0 +1,15 @@
+.workflow{
+    text-align: center;
+    font-weight: bolder;
+    font-size:xx-large;
+}
+.workflow_table{
+    padding: 40px;
+}
+
+.spinner{
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    
+}
