@@ -237,6 +237,7 @@ $ docker exec -i -t container_id /bin/bash
 # Then run this command
 $ pegasus-status -l /home/submitter/pegasus/submit/submitter/pegasus/TVB-PIPELINE/run0001
 ```
+( Here container_id needs to be replaced with the id of your docker container. You can find it in the terminal itself. The string container_id in "submitter@'container_id':" is your container_id)
 
 After you manage to test a first default workflow, we can speak about adjusting the configurations instead of adjusting the data structure.
 
