@@ -31,8 +31,7 @@ class FlagsMeta(type):
                 attrs: Dict[str, object]) -> type:
         for key, value in list(attrs.items()):
             if not key.startswith('_'):
-                value:
-                    str
+                value: str
                 attrs[key] = Flag(key, value)
         return super().__new__(cls, name, bases, attrs)
 
@@ -55,8 +54,7 @@ class EnvMeta(type):
                 attrs: Dict[str, object]) -> type:
         for key, value in list(attrs.items()):
             if not key.startswith('_'):
-                value:
-                    str
+                value: str
                 attrs[key] = EnvVar(key, value)
         return super().__new__(cls, name, bases, attrs)
 

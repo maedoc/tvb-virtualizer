@@ -39,7 +39,13 @@ else
     mkdir $PREFIX
     chown -R ubuntu:ubuntu $prefix_base
 fi
-    
+
+# Move temp dir
+mkdir /work/tmp
+chmod 1777 /work/tmp
+sudo rm -r /tmp
+sudo ln -s /work/tmp /tmp
+
 # setup /work/env/lib as system wide library location
 echo /work/env/lib > /etc/ld.so.conf.d/work.conf
 ldconfig

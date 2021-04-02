@@ -225,13 +225,18 @@ class recon_all(BaseFsCLI):
         all_ = '-all'
         parallel = '-parallel'
         openmp = '-openmp'
+        t2 = '-T2'
+        t2_pial = '-T2pial'
+        flair = '-FLAIR'
+        flair_pial = '-FLAIRpial'
 
 
 def reconstruct(subjid: str,
                 input_,
-                all_: bool=True,
                 parallel: bool=False,
-                openmp: int=4
+                openmp_num_threads: int=4,
+                t2=None,
+                flair=None,
                 ):
     """
     Perform the FreeSurfer reconstruction process.
@@ -241,13 +246,16 @@ def reconstruct(subjid: str,
     args = [
         recon_all.exe,
         recon_all.Flags.subjid, subjid,
-        recon_all.Flags.input_, input_
+        recon_all.Flags.input_, input_,
+        recon_all.Flags.all_
     ]
-    if all_:
-        args += [recon_all.Flags.all_]
     if parallel:
         args += [recon_all.Flags.parallel]
-        args += [recon_all.Flags.openmp, openmp]
+        args += [recon_all.Flags.openmp, openmp_num_threads]
+    if t2:
+        args += [recon_all.Flags.t2, t2, recon_all.Flags.t2_pial]
+    if flair:
+        args += [recon_all.Flags.flair, flair, recon_all.Flags.flair_pial]
 
     return args
 
